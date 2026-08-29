@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "TypeScriptTeam.native-preview",
+    "bradlc.vscode-tailwindcss",
+    "editorconfig.editorconfig",
+    "oxc.oxc-vscode",
+    "vitest.explorer"
+  ],
+  "unwantedRecommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+}

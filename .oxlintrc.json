@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "perf": "warn",
+    "suspicious": "warn"
+  },
+  "ignorePatterns": ["dist", "coverage", "src/routeTree.gen.ts"],
+  "jsPlugins": [
+    {
+      "name": "better-tailwindcss",
+      "specifier": "eslint-plugin-better-tailwindcss"
+    },
+    {
+      "name": "@tanstack/router",
+      "specifier": "@tanstack/eslint-plugin-router"
+    }
+  ],
+  "plugins": ["import", "jsx-a11y", "oxc", "react", "typescript", "unicorn", "vitest"],
+  "overrides": [
+    {
+      "files": ["src/routes/*.tsx", "src/routes/**/*.tsx"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    }
+  ],
+  "rules": {
+    "@tanstack/router/create-route-property-order": "error",
+    "@tanstack/router/route-param-names": "error",
+    "better-tailwindcss/enforce-canonical-classes": "warn",
+    "better-tailwindcss/enforce-consistent-class-order": "warn",
+    "better-tailwindcss/no-concatenated-classes": "error",
+    "better-tailwindcss/no-conflicting-classes": "error",
+    "better-tailwindcss/no-deprecated-classes": "warn",
+    "better-tailwindcss/no-duplicate-classes": "warn",
+    "better-tailwindcss/no-unknown-classes": "error",
+    "better-tailwindcss/no-unnecessary-whitespace": "warn",
+    "import/no-unassigned-import": "off",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "react/react-in-jsx-scope": "off",
+    "react/rules-of-hooks": "error"
+  },
+  "settings": {
+    "better-tailwindcss": {
+      "entryPoint": "src/index.css"
+    }
+  }
+}
