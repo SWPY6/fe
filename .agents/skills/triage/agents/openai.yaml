@@ -1,0 +1,5 @@
+interface:
+  display_name: "Triage"
+  short_description: "Process opted-in external intake"
+policy:
+  allow_implicit_invocation: false

@@ -1,12 +1,22 @@
-import tailwindcss from '@tailwindcss/vite';
-import { tanstackRouter } from '@tanstack/router-plugin/vite';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import tailwindcss from "@tailwindcss/vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vitest/config"
 
 export default defineConfig({
-  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
+  plugins: [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      semicolons: false,
+      quoteStyle: "double",
+    }),
+    react(),
+    tailwindcss(),
+  ],
   test: {
-    environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    environment: "happy-dom",
+    passWithNoTests: true,
+    setupFiles: ["./src/test/setup.ts"],
   },
-});
+})

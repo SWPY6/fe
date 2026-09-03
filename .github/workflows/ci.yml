@@ -2,24 +2,29 @@ name: CI
 
 on:
   pull_request:
-  push:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
 
 permissions:
   contents: read
+  deployments: write
+  pull-requests: write
+
+concurrency:
+  group: cloudflare-pages-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   quality:
+    name: Check, build, and deploy preview
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@v2
+        uses: pnpm/setup@v2.1.0
         with:
-          version: 12.0.0
-          runtime: node@24.20.0
           cache: true
           install: false
 
@@ -31,3 +36,54 @@ jobs:
 
       - name: Build application
         run: pnpm build
+
+      - name: Validate Cloudflare configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_PAGES_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
+        run: |
+          : "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID secret is required}"
+          : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN secret is required}"
+          : "${CLOUDFLARE_PAGES_PROJECT_NAME:?CLOUDFLARE_PAGES_PROJECT_NAME variable is required}"
+
+      - name: Deploy preview to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }} --branch=${{ github.head_ref }} --commit-hash=${{ github.event.pull_request.head.sha }} --commit-dirty=false
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add preview URL to pull request
+        uses: actions/github-script@v9.0.0
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        with:
+          script: |
+            const marker = "<!-- cloudflare-pages-preview -->";
+            const previewUrl = process.env.PREVIEW_URL || process.env.DEPLOYMENT_URL;
+            const body = `${marker}\nCloudflare preview: ${previewUrl}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: context.issue.number,
+            });
+            const comment = comments.find(
+              ({ body, user }) => user?.type === "Bot" && body?.includes(marker),
+            );
+
+            if (comment) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: comment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

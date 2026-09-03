@@ -1,11 +1,36 @@
+ai:
+  codex:
+    PostToolUse: ai-check
+
+ai-check:
+  parallel: true
+  jobs:
+    - name: lint
+      run: pnpm lint
+    - name: typecheck
+      run: pnpm typecheck
+
+commit-msg:
+  jobs:
+    - name: reject-korean-message
+      run: |
+        node --input-type=module -e '
+          import fs from "node:fs"
+          const message = fs.readFileSync(process.argv[1], "utf8")
+          if (/\p{Script=Hangul}/u.test(message)) {
+            console.error("Commit messages must be written in English.")
+            process.exit(1)
+          }
+        ' "{1}"
+
 pre-commit:
   jobs:
     - name: format
-      glob: '*.{css,html,js,jsx,json,jsonc,md,mjs,ts,tsx,yaml,yml}'
+      glob: "*.{css,html,js,jsx,json,jsonc,md,mjs,ts,tsx,yaml,yml}"
       run: pnpm exec oxfmt --write --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     - name: lint
-      glob: '*.{js,jsx,mjs,ts,tsx}'
+      glob: "*.{js,jsx,mjs,ts,tsx}"
       run: pnpm exec oxlint --fix --deny-warnings --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
 

@@ -1,5 +1,7 @@
 allowBuilds:
+  esbuild: true
   lefthook: true
+  workerd: true
 minimumReleaseAgeExclude:
   - happy-dom@20.11.15
   - lefthook-darwin-arm64@2.1.12
@@ -13,3 +15,5 @@ minimumReleaseAgeExclude:
   - lefthook-windows-arm64@2.1.12
   - lefthook-windows-x64@2.1.12
   - lefthook@2.1.12
+  - miniflare@5.20260831.0-alpha
+  - wrangler@4.128.0
