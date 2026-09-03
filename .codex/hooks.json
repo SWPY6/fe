@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "pnpm exec lefthook run ai-check",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -14,22 +14,13 @@
   "eslint.enable": false,
   "files.eol": "\n",
   "files.insertFinalNewline": true,
-  "files.readonlyInclude": {
-    "**/routeTree.gen.ts": true
-  },
   "files.trimTrailingWhitespace": true,
-  "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
-  },
   "js/ts.experimental.useTsgo": true,
   "js/ts.tsdk.path": "./node_modules/@typescript/native",
   "oxc.enable": true,
   "oxc.enable.oxfmt": true,
   "oxc.enable.oxlint": true,
   "prettier.enable": false,
-  "search.exclude": {
-    "**/routeTree.gen.ts": true
-  },
   "tailwindCSS.experimental.configFile": "src/index.css",
   "testing.automaticallyOpenTestResults": "openOnTestFailure",
   "vitest.rootConfig": "vite.config.ts",

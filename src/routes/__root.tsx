@@ -1,4 +1,4 @@
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
+import { Link, Outlet, createRootRoute } from "@tanstack/react-router"
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -10,7 +10,7 @@ export const Route = createRootRoute({
       </Link>
     </main>
   ),
-});
+})
 
 function RootLayout() {
   return (
@@ -27,5 +27,5 @@ function RootLayout() {
       </header>
       <Outlet />
     </div>
-  );
+  )
 }

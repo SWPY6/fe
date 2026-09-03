@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute('/about')({ component: AboutPage });
+export const Route = createFileRoute("/about")({ component: AboutPage })
 
 function AboutPage() {
   return (
@@ -10,5 +10,5 @@ function AboutPage() {
         제품 요구사항이 확정되면 이 라우트부터 실제 화면으로 교체하세요.
       </p>
     </main>
-  );
+  )
 }

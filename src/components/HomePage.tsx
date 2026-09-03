@@ -11,5 +11,5 @@ export function HomePage() {
         React, Vite, TypeScript, TanStack Router와 Tailwind CSS로 구성된 팀 공용 시작점입니다.
       </p>
     </main>
-  );
+  )
 }
