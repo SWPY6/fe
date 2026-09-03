@@ -1,24 +1,38 @@
 # AGENTS.md
 
-## Project
+## 프로젝트
 
-- Runtime: Node.js 24.20.0
-- Package manager: pnpm 12.0.0
-- App: React 19, Vite 8, TypeScript 7
-- Routing and styles: TanStack Router, Tailwind CSS 4
-- Quality: Vitest, Oxlint, Oxfmt, Lefthook
+- Node.js 24.20.0
+- React 19, TanStack Router, Vite 8, TypeScript 7
+- Tailwind CSS 4
+- Vitest, Oxlint, Oxfmt, Lefthook
 
-## Working rules
+## GitHub 협업 전략
 
-- Use `pnpm`; do not create npm or Yarn lockfiles.
-- Keep changes scoped to the request and match the existing style.
-- Do not edit `src/routeTree.gen.ts`; TanStack Router generates it.
-- Add or update tests for behavior changes.
-- Run `pnpm check` and `pnpm build` before finishing.
+모든 작업은 GitHub을 기반으로 진행한다.
 
-## Commands
+- Issue, Pull Request 또는 연결 브랜치를 다룰 때는 `docs/agents/issue-tracker.md`를 읽는다.
+- 공통 도메인 용어나 기존 설계 결정이 필요한 작업은 `docs/agents/domain.md`를 읽는다.
 
-- `pnpm dev`: start the local server
-- `pnpm test`: run tests in watch mode
-- `pnpm check`: typecheck, lint, format-check, and run tests once
-- `pnpm build`: typecheck and create the production build
+## 커밋 메시지와 Pull Request 작성 규칙
+
+커밋 메시지와 Pull Request는 다음 작업자가 변경의 목적과 유지해야 할 판단을 복원할 수 있는 맥락을
+남긴다. Diff로 알 수 있는 구현 내용은 선택의 이유를 설명하는 데 필요할 때만 언급한다.
+
+커밋 메시지는 영어로 작성한다. 제목에는 해당 변경이 이루려는 결과를 표현한다. 제목과 diff만으로
+그 변경을 이해하기 어려울 때는 본문에 변경이 필요했던 배경, 지켜야 할 제약과 선택의 근거를
+기록한다. 단순하고 자명한 변경은 짧은 메시지로 충분하다.
+
+Pull Request 제목에는 전체 변경이 이루려는 결과를 표현한다. 본문에는 연결된 Issue의 의도가 실제
+구현에서 어떻게 해결되었는지, 구현 과정에서 확정되거나 달라진 결정과 그 근거, 검토에 필요한
+불확실성, 실제 검증 결과를 기록한다. 작업 중 맥락이 달라지면 본문도 현재 상태에 맞게 갱신한다.
+
+관련 Issue, 조사와 설계 기록은 내용을 반복하지 않고 원본을 연결한다. 정해진 목차 없이 변경에 맞는
+구조와 길이를 사용하며, 확인하지 않은 이유, 대안이나 근거를 만들지 않는다.
+
+## 명령어
+
+- `pnpm dev`: 로컬 개발 서버 실행
+- `pnpm test`: 테스트를 감시 모드로 실행
+- `pnpm check`: 타입, 린트, 포맷과 테스트를 한 번에 검사
+- `pnpm build`: 타입 검사 후 프로덕션 빌드 생성
