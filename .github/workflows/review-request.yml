@@ -1,0 +1,91 @@
+name: Request review
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  assign-reviewer:
+    name: Assign reviewer
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    outputs:
+      reviewer: ${{ steps.assign.outputs.result }}
+    steps:
+      - name: Assign reviewer
+        id: assign
+        uses: actions/github-script@v9.0.0
+        env:
+          REVIEWER_MAPPINGS: ${{ vars.REVIEWER_MAPPINGS }}
+        with:
+          result-encoding: string
+          script: |
+            const pullRequest = context.payload.pull_request;
+            const author = pullRequest.user.login;
+            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
+            const authorIndex = members.findIndex(({ github }) => github === author);
+
+            if (authorIndex === -1) {
+              throw new Error("Pull request author is missing from reviewer mappings");
+            }
+
+            if (members.length < 2) {
+              throw new Error("At least two reviewer mappings are required");
+            }
+
+            const reviewer = members[(authorIndex + 1) % members.length];
+
+            await github.rest.issues.addAssignees({
+              ...context.repo,
+              issue_number: pullRequest.number,
+              assignees: [author],
+            });
+
+            await github.rest.pulls.requestReviewers({
+              ...context.repo,
+              pull_number: pullRequest.number,
+              reviewers: [reviewer.github],
+            });
+
+            return reviewer.github;
+
+  notify-discord:
+    name: Notify Discord
+    needs: assign-reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        uses: actions/github-script@v9.0.0
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REVIEWER_GITHUB: ${{ needs.assign-reviewer.outputs.reviewer }}
+          REVIEWER_MAPPINGS: ${{ vars.REVIEWER_MAPPINGS }}
+        with:
+          script: |
+            const pullRequest = context.payload.pull_request;
+            const author = pullRequest.user.login;
+            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
+            const reviewer = members.find(
+              ({ github }) => github === process.env.REVIEWER_GITHUB,
+            );
+
+            if (!reviewer) {
+              throw new Error("Discord mapping is missing for the assigned reviewer");
+            }
+
+            const response = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: `<@${reviewer.discord}>님, ${author}의 PR이 등록되었습니다.`,
+                allowed_mentions: { users: [reviewer.discord] },
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Discord webhook failed with status ${response.status}`);
+            }
