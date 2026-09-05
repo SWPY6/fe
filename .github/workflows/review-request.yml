@@ -67,7 +67,6 @@ jobs:
         with:
           script: |
             const pullRequest = context.payload.pull_request;
-            const author = pullRequest.user.login;
             const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
             const reviewer = members.find(
               ({ github }) => github === process.env.REVIEWER_GITHUB,
@@ -81,7 +80,7 @@ jobs:
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                content: `<@${reviewer.discord}>님, ${author}의 PR이 등록되었습니다.`,
+                content: `<@${reviewer.discord}>님, [PR #${pullRequest.number}](${pullRequest.html_url}) 리뷰가 할당되었습니다.`,
                 allowed_mentions: { users: [reviewer.discord] },
               }),
             });
