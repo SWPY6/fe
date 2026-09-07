@@ -1,90 +1,324 @@
-name: Request review
+name: Handle PR notifications
 
 on:
-  pull_request:
-    types: [opened]
+  workflow_run:
+    workflows: [Collect PR activity]
+    types: [completed]
 
 permissions: {}
 
 jobs:
+  prepare:
+    name: Validate PR activity
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.run_attempt == 1 &&
+      github.run_attempt == 1
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      reference: ${{ steps.validate.outputs.result }}
+    steps:
+      - name: Download activity reference
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: pr-activity
+          path: ${{ runner.temp }}/pr-activity
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate activity reference
+        id: validate
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ACTIVITY_FILE: ${{ runner.temp }}/pr-activity/activity.json
+          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+          SOURCE_PULL_REQUESTS: ${{ toJSON(github.event.workflow_run.pull_requests) }}
+        with:
+          result-encoding: string
+          script: |
+            const fs = require("fs");
+
+            const reference = JSON.parse(
+              fs.readFileSync(process.env.ACTIVITY_FILE, "utf8"),
+            );
+
+            if (reference.version !== 1) {
+              throw new Error("Unsupported PR activity reference version");
+            }
+
+            if (reference.event === "ignored") {
+              return JSON.stringify(reference);
+            }
+
+            const pullRequestEvents = new Set([
+              "pull_request",
+              "pull_request_review",
+            ]);
+            const allowedEvents = new Set([
+              ...pullRequestEvents,
+              "issue_comment",
+            ]);
+
+            if (
+              !allowedEvents.has(reference.event) ||
+              reference.event !== process.env.SOURCE_EVENT
+            ) {
+              throw new Error("PR activity event does not match its workflow run");
+            }
+
+            if (
+              !Number.isSafeInteger(reference.pullRequestNumber) ||
+              reference.pullRequestNumber < 1
+            ) {
+              throw new Error("Invalid pull request number");
+            }
+
+            if (
+              reference.event !== "pull_request" &&
+              (!Number.isSafeInteger(reference.activityId) || reference.activityId < 1)
+            ) {
+              throw new Error("Invalid PR activity ID");
+            }
+
+            if (pullRequestEvents.has(reference.event)) {
+              const sourcePullRequests = JSON.parse(
+                process.env.SOURCE_PULL_REQUESTS,
+              );
+              const matchesSourceRun = sourcePullRequests.some(
+                ({ number }) => number === reference.pullRequestNumber,
+              );
+
+              if (!matchesSourceRun) {
+                throw new Error(
+                  "Pull request does not match the triggering workflow run",
+                );
+              }
+            }
+
+            return JSON.stringify(reference);
+
   assign-reviewer:
     name: Assign reviewer
+    needs: prepare
+    if: >-
+      needs.prepare.result == 'success' &&
+      fromJSON(needs.prepare.outputs.reference).event == 'pull_request'
+    concurrency:
+      group: assign-reviewer-${{ fromJSON(needs.prepare.outputs.reference).pullRequestNumber }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
-    outputs:
-      reviewer: ${{ steps.assign.outputs.result }}
     steps:
-      - name: Assign reviewer
-        id: assign
-        uses: actions/github-script@v9.0.0
+      - name: Assign reviewer and notify Discord
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
+          ACTIVITY_REFERENCE: ${{ needs.prepare.outputs.reference }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           REVIEWER_MAPPINGS: ${{ vars.REVIEWER_MAPPINGS }}
         with:
-          result-encoding: string
           script: |
-            const pullRequest = context.payload.pull_request;
-            const author = pullRequest.user.login;
-            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
-            const authorIndex = members.findIndex(({ github }) => github === author);
+            const reference = JSON.parse(process.env.ACTIVITY_REFERENCE);
+            const pullNumber = reference.pullRequestNumber;
+            const { data: pullRequest } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: pullNumber,
+            });
 
-            if (authorIndex === -1) {
-              throw new Error("Pull request author is missing from reviewer mappings");
+            if (pullRequest.state !== "open" || pullRequest.draft) {
+              return;
             }
 
-            if (members.length < 2) {
+            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
+
+            if (!Array.isArray(members) || members.length < 2) {
               throw new Error("At least two reviewer mappings are required");
             }
 
-            const reviewer = members[(authorIndex + 1) % members.length];
+            const author = pullRequest.user.login;
+            const authorIndex = members.findIndex(
+              ({ github: githubLogin }) =>
+                githubLogin.toLowerCase() === author.toLowerCase(),
+            );
 
-            await github.rest.issues.addAssignees({
+            if (authorIndex === -1) {
+              throw new Error(
+                "Pull request author is missing from reviewer mappings",
+              );
+            }
+
+            const reviewer = members[(authorIndex + 1) % members.length];
+            const reviewerLogin = reviewer.github.toLowerCase();
+            const authorAssigned = pullRequest.assignees.some(
+              ({ login }) => login.toLowerCase() === author.toLowerCase(),
+            );
+            const reviewerRequested = pullRequest.requested_reviewers.some(
+              ({ login }) => login.toLowerCase() === reviewerLogin,
+            );
+            const { data: reviews } = await github.rest.pulls.listReviews({
               ...context.repo,
-              issue_number: pullRequest.number,
-              assignees: [author],
+              pull_number: pullNumber,
+              per_page: 100,
             });
+            const reviewerAlreadyReviewed = reviews.some(
+              ({ user }) => user?.login.toLowerCase() === reviewerLogin,
+            );
+
+            if (!authorAssigned) {
+              await github.rest.issues.addAssignees({
+                ...context.repo,
+                issue_number: pullNumber,
+                assignees: [author],
+              });
+            }
+
+            if (reviewerRequested || reviewerAlreadyReviewed) {
+              return;
+            }
 
             await github.rest.pulls.requestReviewers({
               ...context.repo,
-              pull_number: pullRequest.number,
+              pull_number: pullNumber,
               reviewers: [reviewer.github],
             });
 
-            return reviewer.github;
+            const discord = String(reviewer.discord);
 
-  notify-discord:
-    name: Notify Discord
-    needs: assign-reviewer
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify Discord
-        uses: actions/github-script@v9.0.0
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          REVIEWER_GITHUB: ${{ needs.assign-reviewer.outputs.reviewer }}
-          REVIEWER_MAPPINGS: ${{ vars.REVIEWER_MAPPINGS }}
-        with:
-          script: |
-            const pullRequest = context.payload.pull_request;
-            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
-            const reviewer = members.find(
-              ({ github }) => github === process.env.REVIEWER_GITHUB,
-            );
-
-            if (!reviewer) {
-              throw new Error("Discord mapping is missing for the assigned reviewer");
+            if (!/^\d+$/.test(discord)) {
+              throw new Error("Discord user ID must contain only digits");
             }
 
             const response = await fetch(process.env.DISCORD_WEBHOOK_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                content: `<@${reviewer.discord}>님, [PR #${pullRequest.number}](${pullRequest.html_url}) 리뷰가 할당되었습니다.`,
-                allowed_mentions: { users: [reviewer.discord] },
+                content: `<@${discord}>님, [PR #${pullNumber}](${pullRequest.html_url}) 리뷰가 할당되었습니다.`,
+                allowed_mentions: { users: [discord] },
               }),
             });
 
             if (!response.ok) {
-              throw new Error(`Discord webhook failed with status ${response.status}`);
+              throw new Error(
+                `Discord webhook failed with status ${response.status}`,
+              );
+            }
+
+  notify-author:
+    name: Notify PR author
+    needs: prepare
+    if: >-
+      needs.prepare.result == 'success' &&
+      (fromJSON(needs.prepare.outputs.reference).event == 'pull_request_review' ||
+      fromJSON(needs.prepare.outputs.reference).event == 'issue_comment')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+      pull-requests: read
+    steps:
+      - name: Notify PR author
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ACTIVITY_REFERENCE: ${{ needs.prepare.outputs.reference }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REVIEWER_MAPPINGS: ${{ vars.REVIEWER_MAPPINGS }}
+        with:
+          script: |
+            const reference = JSON.parse(process.env.ACTIVITY_REFERENCE);
+            const pullNumber = reference.pullRequestNumber;
+            const { data: pullRequest } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: pullNumber,
+            });
+            const author = pullRequest.user.login;
+            const members = JSON.parse(process.env.REVIEWER_MAPPINGS);
+            const recipient = members.find(
+              ({ github: githubLogin }) =>
+                githubLogin.toLowerCase() === author.toLowerCase(),
+            );
+
+            if (!recipient) {
+              throw new Error(
+                "Pull request author is missing from Discord mappings",
+              );
+            }
+
+            const activities = {
+              pull_request_review: async () => {
+                const { data: review } = await github.rest.pulls.getReview({
+                  ...context.repo,
+                  pull_number: pullNumber,
+                  review_id: reference.activityId,
+                });
+                const actor = review.user.login;
+
+                if (actor.toLowerCase() === author.toLowerCase()) {
+                  return;
+                }
+
+                const reviewMessage = {
+                  approved: `PR #${pullNumber}을 승인했습니다.`,
+                  changes_requested: `PR #${pullNumber}에 변경을 요청했습니다.`,
+                  commented: `PR #${pullNumber}에 리뷰를 남겼습니다.`,
+                }[review.state.toLowerCase()] ?? `PR #${pullNumber}에 리뷰를 제출했습니다.`;
+
+                return {
+                  actor,
+                  message: `[${reviewMessage}](${review.html_url})`,
+                };
+              },
+
+              issue_comment: async () => {
+                const { data: comment } = await github.rest.issues.getComment({
+                  ...context.repo,
+                  comment_id: reference.activityId,
+                });
+                const commentIssueNumber = Number(
+                  new URL(comment.issue_url).pathname.split("/").pop(),
+                );
+
+                if (commentIssueNumber !== pullNumber) {
+                  throw new Error("Comment does not belong to the pull request");
+                }
+
+                const actor = comment.user.login;
+
+                if (actor.toLowerCase() === author.toLowerCase()) {
+                  return;
+                }
+
+                return {
+                  actor,
+                  message: `[PR #${pullNumber}에 댓글을 남겼습니다.](${comment.html_url})`,
+                };
+              },
+            };
+
+            const activity = await activities[reference.event]();
+
+            if (!activity) {
+              return;
+            }
+
+            const discord = String(recipient.discord);
+
+            if (!/^\d+$/.test(discord)) {
+              throw new Error("Discord user ID must contain only digits");
+            }
+
+            const response = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: `<@${discord}>님, ${activity.actor}님이 ${activity.message}`,
+                allowed_mentions: { users: [discord] },
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(
+                `Discord webhook failed with status ${response.status}`,
+              );
             }
