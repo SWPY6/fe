@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "pnpm exec lefthook run ai-check",
+            "command": "C:\\Users\\user\\Desktop\\ploutos\\fe\\node_modules\\.pnpm\\lefthook-windows-x64@2.1.12\\node_modules\\lefthook-windows-x64\\bin\\lefthook.exe run ai-check",
             "type": "command"
           }
         ]
