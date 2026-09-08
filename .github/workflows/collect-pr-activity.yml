@@ -5,6 +5,8 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
   pull_request_review:
     types: [submitted]
+  pull_request_review_comment:
+    types: [created]
   issue_comment:
     types: [created]
 
@@ -14,6 +16,8 @@ jobs:
   collect:
     name: Collect PR activity
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     steps:
       - name: Write activity reference
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -40,6 +44,22 @@ jobs:
                 pullRequestNumber: payload.pull_request.number,
                 activityId: payload.review.id,
               };
+            } else if (context.eventName === "pull_request_review_comment") {
+              const { data: review } = await github.rest.pulls.getReview({
+                ...context.repo,
+                pull_number: payload.pull_request.number,
+                review_id: payload.comment.pull_request_review_id,
+              });
+
+              reference =
+                review.state.toLowerCase() === "pending"
+                  ? { version: 1, event: "ignored" }
+                  : {
+                      version: 1,
+                      event: context.eventName,
+                      pullRequestNumber: payload.pull_request.number,
+                      activityId: payload.comment.id,
+                    };
             } else if (
               payload.issue.pull_request &&
               payload.comment.user.login.toLowerCase() !==

@@ -55,6 +55,7 @@ jobs:
             const pullRequestEvents = new Set([
               "pull_request",
               "pull_request_review",
+              "pull_request_review_comment",
             ]);
             const allowedEvents = new Set([
               ...pullRequestEvents,
@@ -212,6 +213,7 @@ jobs:
     if: >-
       needs.prepare.result == 'success' &&
       (fromJSON(needs.prepare.outputs.reference).event == 'pull_request_review' ||
+      fromJSON(needs.prepare.outputs.reference).event == 'pull_request_review_comment' ||
       fromJSON(needs.prepare.outputs.reference).event == 'issue_comment')
     runs-on: ubuntu-latest
     permissions:
@@ -254,10 +256,6 @@ jobs:
                 });
                 const actor = review.user.login;
 
-                if (actor.toLowerCase() === author.toLowerCase()) {
-                  return;
-                }
-
                 const reviewMessage = {
                   approved: `PR #${pullNumber}을 승인했습니다.`,
                   changes_requested: `PR #${pullNumber}에 변경을 요청했습니다.`,
@@ -267,6 +265,28 @@ jobs:
                 return {
                   actor,
                   message: `[${reviewMessage}](${review.html_url})`,
+                };
+              },
+
+              pull_request_review_comment: async () => {
+                const { data: comment } =
+                  await github.rest.pulls.getReviewComment({
+                    ...context.repo,
+                    comment_id: reference.activityId,
+                  });
+                const commentPullNumber = Number(
+                  new URL(comment.pull_request_url).pathname.split("/").pop(),
+                );
+
+                if (commentPullNumber !== pullNumber) {
+                  throw new Error(
+                    "Review comment does not belong to the pull request",
+                  );
+                }
+
+                return {
+                  actor: comment.user.login,
+                  message: `[PR #${pullNumber}에 코드 리뷰 댓글을 남겼습니다.](${comment.html_url})`,
                 };
               },
 
@@ -285,10 +305,6 @@ jobs:
 
                 const actor = comment.user.login;
 
-                if (actor.toLowerCase() === author.toLowerCase()) {
-                  return;
-                }
-
                 return {
                   actor,
                   message: `[PR #${pullNumber}에 댓글을 남겼습니다.](${comment.html_url})`,
@@ -298,7 +314,10 @@ jobs:
 
             const activity = await activities[reference.event]();
 
-            if (!activity) {
+            if (
+              !activity ||
+              activity.actor.toLowerCase() === author.toLowerCase()
+            ) {
               return;
             }
 
