@@ -1,0 +1,92 @@
+name: Collect PR activity
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  collect:
+    name: Collect PR activity
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Write activity reference
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ACTIVITY_FILE: ${{ runner.temp }}/pr-activity/activity.json
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+
+            const payload = context.payload;
+            let reference;
+
+            if (context.eventName === "pull_request") {
+              reference = {
+                version: 1,
+                event: context.eventName,
+                pullRequestNumber: payload.pull_request.number,
+              };
+            } else if (context.eventName === "pull_request_review") {
+              reference = {
+                version: 1,
+                event: context.eventName,
+                pullRequestNumber: payload.pull_request.number,
+                activityId: payload.review.id,
+              };
+            } else if (context.eventName === "pull_request_review_comment") {
+              const { data: review } = await github.rest.pulls.getReview({
+                ...context.repo,
+                pull_number: payload.pull_request.number,
+                review_id: payload.comment.pull_request_review_id,
+              });
+
+              reference =
+                review.state.toLowerCase() === "pending"
+                  ? { version: 1, event: "ignored" }
+                  : {
+                      version: 1,
+                      event: context.eventName,
+                      pullRequestNumber: payload.pull_request.number,
+                      activityId: payload.comment.id,
+                    };
+            } else if (
+              payload.issue.pull_request &&
+              payload.comment.user.login.toLowerCase() !==
+                payload.issue.user.login.toLowerCase()
+            ) {
+              reference = {
+                version: 1,
+                event: context.eventName,
+                pullRequestNumber: payload.issue.number,
+                activityId: payload.comment.id,
+              };
+            } else {
+              reference = { version: 1, event: "ignored" };
+            }
+
+            fs.mkdirSync(path.dirname(process.env.ACTIVITY_FILE), {
+              recursive: true,
+            });
+            fs.writeFileSync(
+              process.env.ACTIVITY_FILE,
+              JSON.stringify(reference),
+            );
+
+      - name: Upload activity reference
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-activity
+          path: ${{ runner.temp }}/pr-activity/activity.json
+          if-no-files-found: error
+          retention-days: 1

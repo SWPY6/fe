@@ -30,8 +30,7 @@ GitHub 기록이 어느 작업에 해당하는지 확인되면 현재 상태 파
    [`implement-spec`](../implement-spec/SKILL.md)을 읽고 적용한다. Issue의 완료 조건과 저장소의
    필수 검사가 모두 통과하면 완료다.
 4. **검토와 Pull Request** — [`code-review`](../code-review/SKILL.md)을 적용하고 발견 사항을
-   해결한다. Issue 관리 가이드에 맞는 `main` 대상 Pull Request가 현재 결정과 검증 결과를 담고,
-   CI가 통과하면 완료다.
+   해결한다. Issue 관리 가이드에 맞는 `main` 대상 Pull Request가 있고 CI가 통과하면 완료다.
 
 각 결과가 확인되면 GitHub와 로컬 상태를 다시 읽고 다음 미완료 결과로 진행한다. 다음 스킬을
 안내하는 것으로 단계를 끝내지 않는다.
