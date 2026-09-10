@@ -1,7 +1,8 @@
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vitest/config"
+import { playwright } from "@vitest/browser-playwright"
+import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
   plugins: [
@@ -14,8 +15,19 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  preview: {
+    host: "127.0.0.1",
+    port: 4173,
+    strictPort: true,
+  },
   test: {
-    environment: "happy-dom",
+    exclude: [...configDefaults.exclude, "tests/e2e/**"],
+    browser: {
+      enabled: true,
+      headless: true,
+      instances: [{ browser: "chromium" }, { browser: "firefox" }, { browser: "webkit" }],
+      provider: playwright(),
+    },
     passWithNoTests: true,
     setupFiles: ["./src/test/setup.ts"],
   },

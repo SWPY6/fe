@@ -1,15 +1,17 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 
+import { queryClient } from "./query/client"
+import { QueryErrorFallback } from "./query/error-fallback"
+import { QueryProvider } from "./query/provider"
 import { routeTree } from "./routeTree.gen"
 import "./index.css"
 
-const queryClient = new QueryClient()
 const router = createRouter({
   routeTree,
   context: { queryClient },
+  defaultErrorComponent: QueryErrorFallback,
 })
 
 declare module "@tanstack/react-router" {
@@ -26,8 +28,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <QueryProvider>
       <RouterProvider router={router} />
-    </QueryClientProvider>
+    </QueryProvider>
   </StrictMode>,
 )

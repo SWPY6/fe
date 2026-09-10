@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
+import { Route as ErrorPolicyTestRouteImport } from "./routes/errorPolicyTest"
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
+const ErrorPolicyTestRoute = ErrorPolicyTestRouteImport.update({
+  id: "/errorPolicyTest",
+  path: "/errorPolicyTest",
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
+  "/errorPolicyTest": typeof ErrorPolicyTestRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
+  "/errorPolicyTest": typeof ErrorPolicyTestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
+  "/errorPolicyTest": typeof ErrorPolicyTestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/"
+  fullPaths: "/" | "/errorPolicyTest"
   fileRoutesByTo: FileRoutesByTo
-  to: "/"
-  id: "__root__" | "/"
+  to: "/" | "/errorPolicyTest"
+  id: "__root__" | "/" | "/errorPolicyTest"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ErrorPolicyTestRoute: typeof ErrorPolicyTestRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -48,11 +58,19 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/errorPolicyTest": {
+      id: "/errorPolicyTest"
+      path: "/errorPolicyTest"
+      fullPath: "/errorPolicyTest"
+      preLoaderRoute: typeof ErrorPolicyTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ErrorPolicyTestRoute: ErrorPolicyTestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

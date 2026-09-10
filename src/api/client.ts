@@ -1,5 +1,15 @@
-import { create } from "axios"
-import type { AxiosInstance, AxiosResponse } from "axios"
+import { AxiosError, create, isAxiosError } from "axios"
+import type { AxiosInstance } from "axios"
+
+import { ApiError } from "./error"
+import type { ApiErrorKind } from "./error"
+
+const axiosErrorKinds = {
+  [AxiosError.ERR_CANCELED]: "canceled",
+  [AxiosError.ECONNABORTED]: "timeout",
+  [AxiosError.ETIMEDOUT]: "timeout",
+  [AxiosError.ERR_NETWORK]: "network",
+} satisfies Record<string, ApiErrorKind>
 
 export const api: AxiosInstance = create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -10,22 +20,35 @@ export const api: AxiosInstance = create({
   },
 })
 
-api.interceptors.request.use(
-  (config) => {
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  },
-)
+api.interceptors.response.use(undefined, (error: unknown) => {
+  if (!isAxiosError(error)) {
+    throw new ApiError(
+      error instanceof Error ? error.message : "알 수 없는 API 오류가 발생했습니다.",
+      {
+        kind: "unknown",
+        cause: error,
+      },
+    )
+  }
 
-api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response.data
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-    }
-    return Promise.reject(error)
-  },
-)
+  const data: unknown = error.response?.data
+  const message =
+    typeof data === "object" &&
+    data !== null &&
+    "message" in data &&
+    typeof data.message === "string"
+      ? data.message
+      : error.message
+  let kind: ApiErrorKind = error.response ? "http" : "unknown"
+
+  if (error.code && Object.hasOwn(axiosErrorKinds, error.code)) {
+    kind = axiosErrorKinds[error.code as keyof typeof axiosErrorKinds]
+  }
+
+  throw new ApiError(message, {
+    kind,
+    status: error.response?.status,
+    data,
+    cause: error,
+  })
+})
