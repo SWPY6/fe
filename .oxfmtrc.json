@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "endOfLine": "lf",
+  "ignorePatterns": ["public/fonts/pretendard/v1.3.9/pretendardvariable-dynamic-subset.css"],
   "printWidth": 100,
   "semi": false,
   "singleQuote": false,
