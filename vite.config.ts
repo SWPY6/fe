@@ -14,6 +14,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     environment: "happy-dom",
     passWithNoTests: true,
