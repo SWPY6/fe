@@ -19,7 +19,7 @@
   "plugins": ["import", "jsx-a11y", "oxc", "react", "typescript", "unicorn", "vitest"],
   "overrides": [
     {
-      "files": ["src/routes/*.tsx", "src/routes/**/*.tsx"],
+      "files": ["src/routes/*.tsx", "src/routes/**/*.tsx", "src/components/ui/*.tsx"],
       "rules": {
         "react/only-export-components": "off"
       }
