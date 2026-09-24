@@ -13,15 +13,7 @@ ai-check:
 commit-msg:
   jobs:
     - name: reject-korean-message
-      run: |
-        node --input-type=module -e '
-          import fs from "node:fs"
-          const message = fs.readFileSync(process.argv[1], "utf8")
-          if (/\p{Script=Hangul}/u.test(message)) {
-            console.error("Commit messages must be written in English.")
-            process.exit(1)
-          }
-        ' "{1}"
+      run: node scripts/check-commit-message.mjs "{1}"
 
 pre-commit:
   jobs:

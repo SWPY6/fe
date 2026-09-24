@@ -4,7 +4,7 @@
     "target": "es2023",
     "lib": ["ES2023"],
     "module": "nodenext",
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "skipLibCheck": true,
     "strict": true,
 
@@ -18,5 +18,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", ".storybook/**/*.ts"]
 }
