@@ -1,34 +1,77 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f7fb;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #1677ff;
-  --primary-foreground: #ffffff;
-  --secondary: #eef3f9;
-  --secondary-foreground: #25344b;
-  --muted: #eef3f9;
-  --muted-foreground: #64748b;
-  --accent: #e8f1ff;
-  --accent-foreground: #125dc1;
-  --destructive: #ef4444;
-  --border: #dde5ef;
-  --input: #d8e1ec;
-  --ring: #1677ff;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --background: var(--color-slate-50);
+  --foreground: var(--color-slate-900);
+  --card: var(--color-white);
+  --card-foreground: var(--color-slate-900);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-slate-900);
+  --primary: #1767d1;
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-slate-100);
+  --secondary-foreground: var(--color-slate-800);
+  --muted: var(--color-slate-100);
+  --muted-foreground: var(--color-slate-600);
+  --accent: var(--color-slate-200);
+  --accent-foreground: var(--color-slate-800);
+  --destructive: var(--color-red-800);
+  --destructive-foreground: var(--color-white);
+  --border: var(--color-slate-200);
+  --input: var(--color-slate-300);
+  --ring: var(--primary);
 
-  --change-up: #df454b;
-  --change-down: #2875db;
+  /* Signed price movement. */
+  --positive: var(--color-red-700);
+  --positive-background: var(--color-red-100);
+  --negative: var(--color-blue-700);
+  --negative-background: var(--color-blue-100);
 
-  --radius: 0.85rem;
+  /* Product feedback, independent of price movement. */
+  --success: var(--color-emerald-700);
+  --warning: var(--color-amber-800);
+
+  /* Default typeface for all UI text. */
+  --font-ui:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* The primary heading of a page or view. */
+  --type-page-title-size: 1.5rem;
+  --type-page-title-leading: 2rem;
+  --type-page-title-weight: 700;
+  /* Headings that introduce a section or card. */
+  --type-section-title-size: 1.5rem;
+  --type-section-title-leading: 1.625rem;
+  --type-section-title-weight: 700;
+  /* Titles of individual items, such as a news story or list entry. */
+  --type-item-title-size: 1rem;
+  --type-item-title-leading: 1.5rem;
+  --type-item-title-weight: 600;
+  /* Paragraphs and explanatory copy. */
+  --type-body-size: 1rem;
+  --type-body-leading: 1.5rem;
+  --type-body-weight: 400;
+  /* Labels on interactive controls, including buttons, tabs, and form fields. */
+  --type-control-size: 0.875rem;
+  --type-control-leading: 1.25rem;
+  --type-control-weight: 600;
+  /* Repeated market data, such as stock names, prices, and price changes. */
+  --type-data-size: 0.875rem;
+  --type-data-leading: 1.25rem;
+  --type-data-weight: 600;
+  /* Secondary context, such as stock codes, timestamps, and badges. */
+  --type-meta-size: 0.8125rem;
+  --type-meta-leading: 1.25rem;
+  --type-meta-weight: 500;
+  /* Tick labels and values on chart axes. */
+  --type-axis-size: 0.75rem;
+  --type-axis-leading: 1rem;
+  --type-axis-weight: 500;
+
+  --radius: 0.5rem;
+  --surface-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06),
+    0 2px 4px rgb(15 23 42 / 0.04);
 }
 
 @theme inline {
@@ -47,35 +90,66 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-change-up: var(--change-up);
-  --color-change-down: var(--change-down);
 
+  --color-positive: var(--positive);
+  --color-positive-background: var(--positive-background);
+  --color-negative: var(--negative);
+  --color-negative-background: var(--negative-background);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --font-sans: var(--font-ui);
+
+  --text-page-title: var(--type-page-title-size);
+  --text-page-title--line-height: var(--type-page-title-leading);
+  --text-page-title--font-weight: var(--type-page-title-weight);
+  --text-section-title: var(--type-section-title-size);
+  --text-section-title--line-height: var(--type-section-title-leading);
+  --text-section-title--font-weight: var(--type-section-title-weight);
+  --text-item-title: var(--type-item-title-size);
+  --text-item-title--line-height: var(--type-item-title-leading);
+  --text-item-title--font-weight: var(--type-item-title-weight);
+  --text-body: var(--type-body-size);
+  --text-body--line-height: var(--type-body-leading);
+  --text-body--font-weight: var(--type-body-weight);
+  --text-control: var(--type-control-size);
+  --text-control--line-height: var(--type-control-leading);
+  --text-control--font-weight: var(--type-control-weight);
+  --text-data: var(--type-data-size);
+  --text-data--line-height: var(--type-data-leading);
+  --text-data--font-weight: var(--type-data-weight);
+  --text-meta: var(--type-meta-size);
+  --text-meta--line-height: var(--type-meta-leading);
+  --text-meta--font-weight: var(--type-meta-weight);
+  --text-axis: var(--type-axis-size);
+  --text-axis--line-height: var(--type-axis-leading);
+  --text-axis--font-weight: var(--type-axis-weight);
+
+  --radius-xs: calc(var(--radius) - 6px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --shadow-surface: var(--surface-shadow);
+}
 
-  --font-sans:
-    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+@media (min-width: 48rem) {
+  :root {
+    --type-page-title-size: 1.75rem;
+    --type-page-title-leading: 2.25rem;
+    --type-section-title-size: 1.5rem;
+    --type-section-title-leading: 1.75rem;
+  }
 }
 
 @layer base {
-  * {
-    border-color: var(--border);
-  }
-
   body {
+    @apply bg-background text-foreground font-sans text-body;
     margin: 0;
-    background: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-sans);
   }
 }
