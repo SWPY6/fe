@@ -1,0 +1,28 @@
+name: Install Playwright browsers
+description: Cache browser binaries for the installed Playwright version
+
+runs:
+  using: composite
+  steps:
+    - name: Get Playwright version
+      id: playwright-version
+      shell: bash
+      run: |
+        playwright_version="$(node -p 'require("playwright/package.json").version')"
+        echo "PLAYWRIGHT_VERSION=$playwright_version" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Playwright browsers
+      id: cache-browsers
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+
+    - name: Install browser system dependencies
+      shell: bash
+      run: pnpm exec playwright install-deps
+
+    - name: Install browsers
+      if: steps.cache-browsers.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm exec playwright install
