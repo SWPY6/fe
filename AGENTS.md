@@ -1,12 +1,5 @@
 # AGENTS.md
 
-## 프로젝트
-
-- Node.js 24.20.0
-- React 19, TanStack Router, Vite 8, TypeScript 7
-- Tailwind CSS 4
-- Vitest, Oxlint, Oxfmt, Lefthook
-
 ## GitHub 협업 전략
 
 모든 작업은 GitHub을 기반으로 진행한다.
@@ -15,13 +8,21 @@
   `docs/agents/issue-tracker.md`를 읽는다.
 - 공통 도메인 용어나 기존 설계 결정이 필요한 작업은 `docs/agents/domain.md`를 읽는다.
 
-## 구현 가이드
+## 폴더 컨벤션
 
-- 유틸리티 관련 함수를 자체적으로 만들기 전, `es-toolkit` 활용을 고려한다.
+- `src/` 바로 아래에 새 폴더가 필요해 보여도 곧바로 만들지 않는다. 필요성을 검토하고 합의한 뒤 아래 표에 배치 기준을 추가한다.
+- 관련 파일은 기능 단위의 폴더에 모은다.
 
-## 명령어
+| 경로                 | 배치 기준                                       |
+| -------------------- | ----------------------------------------------- |
+| `src/routes/`        | TanStack Router의 라우팅 컨벤션을 따른다.       |
+| `src/components/ui/` | 도메인 맥락이 없는 공통 UI 컴포넌트.            |
+| `src/api/`           | 서버 API 클라이언트, 요청 함수, 요청·응답 타입. |
+| `src/hooks/`         | 여러 화면에서 공유하는 React 훅.                |
+| `src/stories/`       | Storybook 스토리와 스토리 전용 fixture.         |
 
-- `pnpm dev`: 로컬 개발 서버 실행
-- `pnpm test`: 테스트를 감시 모드로 실행
-- `pnpm check`: 타입, 린트, 포맷과 테스트를 한 번에 검사
-- `pnpm build`: 타입 검사 후 프로덕션 빌드 생성
+## AI Review
+
+- 리뷰는 한국어로 작성한다.
+- PR 본문과 연결된 이슈를 읽고 변경 의도를 확인한다.
+- 변경이 그 의도를 충족하지 못하거나 프로덕션에서 실제 문제를 일으킬 수 있는 지점을 중점적으로 검토한다. 지적할 때는 발생 조건과 영향을 구체적으로 밝힌다
