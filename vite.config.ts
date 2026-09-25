@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
+import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
@@ -18,8 +19,12 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    environment: "happy-dom",
+    browser: {
+      enabled: true,
+      provider: playwright(),
+      instances: [{ browser: "chromium" }, { browser: "firefox" }, { browser: "webkit" }],
+      headless: true,
+    },
     passWithNoTests: true,
-    setupFiles: ["./src/test/setup.ts"],
   },
 })
