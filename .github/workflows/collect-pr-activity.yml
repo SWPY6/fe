@@ -52,14 +52,17 @@ jobs:
               });
 
               reference =
-                review.state.toLowerCase() === "pending"
-                  ? { version: 1, event: "ignored" }
-                  : {
+                payload.comment.in_reply_to_id &&
+                review.submitted_at &&
+                Date.parse(payload.comment.created_at) >
+                  Date.parse(review.submitted_at)
+                  ? {
                       version: 1,
                       event: context.eventName,
                       pullRequestNumber: payload.pull_request.number,
                       activityId: payload.comment.id,
-                    };
+                    }
+                  : { version: 1, event: "ignored" };
             } else if (
               payload.issue.pull_request &&
               payload.comment.user.login.toLowerCase() !==
