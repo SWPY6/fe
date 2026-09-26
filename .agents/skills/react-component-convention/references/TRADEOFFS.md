@@ -86,28 +86,18 @@ function ProductCard({ product }) {
 
 **상황**: 일관된 패턴을 따르면 관련 코드가 흩어진다.
 
-```tsx
+```text
 // 예측 가능성 우선: 타입별 분류
-;/hooks/Ueerssu.ts /
-  hooks /
-  useProduct.ts /
-  components /
-  UserCard.tsx /
-  components /
-  ProductCard.tsx /
-  // 응집도 우선: 기능별 분류
-  features /
-  user /
-  useUser.ts /
-  features /
-  user /
-  UserCard.tsx /
-  features /
-  product /
-  useProduct.ts /
-  features /
-  product /
-  ProductCard.tsx
+/hooks/useUser.ts
+/hooks/useProduct.ts
+/components/UserCard.tsx
+/components/ProductCard.tsx
+
+// 응집도 우선: 기능별 분류
+/features/user/useUser.ts
+/features/user/UserCard.tsx
+/features/product/useProduct.ts
+/features/product/ProductCard.tsx
 ```
 
 **판단 기준**: 팀 컨벤션에 따라. 단, 기능별 분류가 일반적으로 더 나은 경우가 많음.
