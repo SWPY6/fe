@@ -5,6 +5,8 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
   pull_request_review:
     types: [submitted]
+  pull_request_review_comment:
+    types: [created]
   issue_comment:
     types: [created]
 
@@ -42,6 +44,25 @@ jobs:
                 pullRequestNumber: payload.pull_request.number,
                 activityId: payload.review.id,
               };
+            } else if (context.eventName === "pull_request_review_comment") {
+              const { data: review } = await github.rest.pulls.getReview({
+                ...context.repo,
+                pull_number: payload.pull_request.number,
+                review_id: payload.comment.pull_request_review_id,
+              });
+
+              reference =
+                payload.comment.in_reply_to_id &&
+                review.submitted_at &&
+                Date.parse(payload.comment.created_at) >
+                  Date.parse(review.submitted_at)
+                  ? {
+                      version: 1,
+                      event: context.eventName,
+                      pullRequestNumber: payload.pull_request.number,
+                      activityId: payload.comment.id,
+                    }
+                  : { version: 1, event: "ignored" };
             } else if (
               payload.issue.pull_request &&
               payload.comment.user.login.toLowerCase() !==
