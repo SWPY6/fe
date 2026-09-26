@@ -5,7 +5,7 @@
     "perf": "warn",
     "suspicious": "warn"
   },
-  "ignorePatterns": ["dist", "coverage", ".agents", "src/routeTree.gen.ts"],
+  "ignorePatterns": ["dist", "coverage", ".agents", ".wrangler", "src/routeTree.gen.ts"],
   "jsPlugins": [
     "./lint/rules/require-named-effect.mjs",
     {

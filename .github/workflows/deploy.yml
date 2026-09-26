@@ -49,6 +49,12 @@ jobs:
           : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN secret is required}"
           : "${CLOUDFLARE_PAGES_PROJECT_NAME:?CLOUDFLARE_PAGES_PROJECT_NAME variable is required}"
 
+      - name: Apply Agentation database migrations
+        run: pnpm exec wrangler d1 migrations apply AGENTATION_DB --remote
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4.0.0
         with:
