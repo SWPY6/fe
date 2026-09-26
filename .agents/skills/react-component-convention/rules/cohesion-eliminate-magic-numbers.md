@@ -45,29 +45,31 @@ async function handleLike() {
 ### 여러 곳에서 사용하는 경우
 
 ```tsx
-// features/auth/constants.ts - 인증 관련 상수만
+// 같은 기능 폴더의 constants.ts - 인증 관련 상수만
 export const MIN_PASSWORD_LENGTH = 8
 export const MAX_LOGIN_ATTEMPTS = 5
 export const SESSION_TIMEOUT_MS = 30 * 60 * 1000
 
-// features/auth/components/PasswordInput.tsx
+// 같은 기능 폴더의 components/PasswordInput.tsx
 import { MIN_PASSWORD_LENGTH } from "../constants"
 ```
 
 ## 상수 배치 가이드
 
-| 사용 범위          | 배치 위치                          |
-| ------------------ | ---------------------------------- |
-| 단일 파일          | 해당 파일 상단                     |
-| 단일 기능(feature) | `features/xxx/constants.ts`        |
-| 앱 전체            | `shared/constants.ts` (최소한으로) |
+| 사용 범위 | 배치 위치                               |
+| --------- | --------------------------------------- |
+| 단일 파일 | 해당 파일 상단                          |
+| 단일 기능 | 기존 기능 폴더의 `constants.ts`         |
+| 앱 전체   | 사용처가 공유하는 기존 경로의 상수 파일 |
+
+새 `src/` 직하위 폴더가 필요하면 `AGENTS.md`에 따라 합의하고 배치 기준 표에 추가한다.
 
 ## 핵심 포인트
 
 - 상수는 사용하는 코드 가까이에 배치
 - 전역 constants 파일 비대화 방지
 - 기능별로 상수 파일 분리
-- 정말 전역적인 것만 공유 폴더에
+- 정말 전역적인 것만 공유 위치에
 
 ## 참고
 

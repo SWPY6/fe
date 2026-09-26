@@ -47,7 +47,7 @@ function SignupForm() {
 ## 좋은 예시
 
 ```tsx
-// features/signup/useSignupForm.ts
+// 가입 화면과 같은 기존 폴더의 useSignupForm.ts
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -71,7 +71,7 @@ export function useSignupForm() {
   return { form, onSubmit }
 }
 
-// features/signup/SignupForm.tsx
+// 가입 화면과 같은 기존 폴더의 SignupForm.tsx
 function SignupForm() {
   const { form, onSubmit } = useSignupForm()
 

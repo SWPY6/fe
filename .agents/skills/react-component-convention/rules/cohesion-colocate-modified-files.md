@@ -31,28 +31,22 @@ src/
 
 ## 좋은 예시
 
+기능 파일은 `AGENTS.md`의 배치 기준에 맞는 기존 경로 안에 모은다. 아래 `<기존 기능 경로>`는 실제 디렉토리명이 아니다. `src/` 바로 아래에 새 폴더가 필요하면 먼저 합의하고 배치 기준 표에 추가한다.
+
 ```
-src/
-├── features/
-│   ├── user/
-│   │   ├── components/
-│   │   │   ├── UserProfile.tsx
-│   │   │   └── UserAvatar.tsx
-│   │   ├── hooks/
-│   │   │   └── useUser.ts
-│   │   ├── types.ts
-│   │   ├── utils.ts
-│   │   └── index.ts
-│   └── product/
-│       ├── components/
-│       │   └── ProductCard.tsx
-│       ├── hooks/
-│       │   └── useProduct.ts
-│       ├── types.ts
-│       └── index.ts
-└── shared/
-    └── components/
-        └── Button.tsx
+<기존 기능 경로>/
+├── user/
+│   ├── UserProfile.tsx
+│   ├── UserAvatar.tsx
+│   ├── useUser.ts
+│   └── types.ts
+└── product/
+    ├── ProductCard.tsx
+    ├── useProduct.ts
+    └── types.ts
+
+src/components/ui/
+└── Button.tsx
 ```
 
 **개선점**: User 관련 파일이 한 곳에 모여 있어 수정 범위를 쉽게 파악할 수 있다.
@@ -72,18 +66,19 @@ src/
 // Good
 src/
 └── components/
-    └── Modal/
-        ├── Modal.tsx
-        ├── Modal.css
-        ├── Modal.test.tsx
-        └── index.ts
+    └── ui/
+        └── Modal/
+            ├── Modal.tsx
+            ├── Modal.css
+            ├── Modal.test.tsx
+            └── index.ts
 ```
 
 ## 핵심 포인트
 
-- 기능(Feature) 기반 디렉토리 구조 채택
+- `AGENTS.md`의 배치 기준 안에서 기능 단위로 파일 모으기
 - 함께 변경되는 파일은 가까이 배치
-- 공유되는 코드만 별도 `shared/` 디렉토리로 분리
+- 도메인 맥락이 없는 공통 UI는 `src/components/ui/`에 배치
 - 컴포넌트, 스타일, 테스트를 함께 배치
 
 ## 참고

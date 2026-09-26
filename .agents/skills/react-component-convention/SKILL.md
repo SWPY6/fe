@@ -1,6 +1,6 @@
 ---
 name: react-component-convention
-description: 이 프로젝트에서 React 코드를 작성하거나 수정할 때 따르는 컨벤션과 작성 패턴을 다룬다.
+description: 이 프로젝트의 React 코드를 작성·수정·리팩터링하거나 코드 리뷰할 때 적용하는 컨벤션과 작성 패턴.
 license: MIT
 metadata:
   version: "1.0"

@@ -93,14 +93,14 @@ function ProductCard({ product }) {
 /components/UserCard.tsx
 /components/ProductCard.tsx
 
-// 응집도 우선: 기능별 분류
-/features/user/useUser.ts
-/features/user/UserCard.tsx
-/features/product/useProduct.ts
-/features/product/ProductCard.tsx
+// 응집도 우선: 기능별 분류 (기존 배치 경로 안에서)
+<기존 기능 경로>/user/useUser.ts
+<기존 기능 경로>/user/UserCard.tsx
+<기존 기능 경로>/product/useProduct.ts
+<기존 기능 경로>/product/ProductCard.tsx
 ```
 
-**판단 기준**: 팀 컨벤션에 따라. 단, 기능별 분류가 일반적으로 더 나은 경우가 많음.
+**판단 기준**: 기능별로 모을 때도 `AGENTS.md`의 배치 기준을 따른다. 새 `src/` 직하위 폴더가 필요하면 합의하고 배치 기준 표에 추가한다.
 
 ## 판단 프레임워크
 
