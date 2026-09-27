@@ -56,18 +56,18 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }} --branch=${{ github.head_ref }} --commit-hash=${{ github.event.pull_request.head.sha }} --commit-dirty=false
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }} --branch=preview --commit-hash=${{ github.event.pull_request.head.sha }} --commit-dirty=false
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add preview URL to pull request
         uses: actions/github-script@v9.0.0
         env:
           PREVIEW_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
         with:
           script: |
             const marker = "<!-- cloudflare-pages-preview -->";
-            const previewUrl = process.env.PREVIEW_URL || process.env.DEPLOYMENT_URL;
+            const previewUrl = process.env.PREVIEW_URL;
+            if (!previewUrl) throw new Error("Cloudflare preview alias URL is missing");
             const body = `${marker}\nCloudflare preview: ${previewUrl}`;
             const comments = await github.paginate(github.rest.issues.listComments, {
               ...context.repo,
