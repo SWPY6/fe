@@ -14,7 +14,7 @@ function RootLayout() {
   return (
     <>
       <Outlet />
-      <AgentationReview key={pathname} />
+      {import.meta.env.MODE === "preview" && <AgentationReview key={pathname} />}
     </>
   )
 }
