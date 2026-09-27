@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router"
 import { Bell, ChartLine, ChevronRight, Landmark, Search, UserRound } from "lucide-react"
 import { useState } from "react"
 
@@ -147,7 +146,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-20 bg-card/95 shadow-xs backdrop-blur-sm">
       <div className="flex h-16 w-full items-center gap-5 px-5 sm:px-6 lg:px-8 2xl:px-12">
-        <a href="/" className="shrink-0 text-item-title text-primary" aria-label="PLOUTOS 홈">
+        <a href="/" className="text-item-title shrink-0 text-primary" aria-label="PLOUTOS 홈">
           PLOUTOS
         </a>
 
@@ -172,16 +171,16 @@ function Header() {
       <nav className="w-full overflow-x-auto px-5 sm:px-6 lg:px-8 2xl:px-12" aria-label="주요 메뉴">
         <Tabs.Root defaultValue="summary">
           <Tabs.List variant="line" className="h-11" aria-label="주요 메뉴">
-            <Tabs.Trigger value="summary" className="h-full rounded-none px-4 text-control">
+            <Tabs.Trigger value="summary" className="text-control h-full rounded-none px-4">
               시장 요약
             </Tabs.Trigger>
-            <Tabs.Trigger value="industry" className="h-full rounded-none px-4 text-control">
+            <Tabs.Trigger value="industry" className="text-control h-full rounded-none px-4">
               산업별 동향
             </Tabs.Trigger>
-            <Tabs.Trigger value="movers" className="h-full rounded-none px-4 text-control">
+            <Tabs.Trigger value="movers" className="text-control h-full rounded-none px-4">
               주요 변동 종목
             </Tabs.Trigger>
-            <Tabs.Trigger value="detail" className="h-full rounded-none px-4 text-control">
+            <Tabs.Trigger value="detail" className="text-control h-full rounded-none px-4">
               종목 상세
             </Tabs.Trigger>
           </Tabs.List>
@@ -196,8 +195,8 @@ function IndustryBrief() {
     <Card.Root>
       <Card.Content className="grid gap-7 py-1 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
-          <p className="mb-4 text-meta text-primary">오늘의 산업 흐름</p>
-          <p className="mb-2 text-meta text-muted-foreground">가장 강한 흐름을 보이는 산업</p>
+          <p className="text-meta mb-4 text-primary">오늘의 산업 흐름</p>
+          <p className="text-meta mb-2 text-muted-foreground">가장 강한 흐름을 보이는 산업</p>
           <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
             <h2 className="text-section-title">반도체</h2>
             <span className="text-item-title text-positive tabular-nums">평균 +2.84%</span>
@@ -208,7 +207,7 @@ function IndustryBrief() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-meta">
+        <div className="text-meta flex flex-wrap gap-x-4 gap-y-2">
           <span>
             SK하이닉스 <span className="text-positive tabular-nums">+4.31%</span>
           </span>
@@ -280,7 +279,7 @@ function MarketOverview({ market }: { market: Market }) {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-meta text-muted-foreground">{selected.name}</p>
-              <p className="mt-1 text-section-title tabular-nums">{selected.value}</p>
+              <p className="text-section-title mt-1 tabular-nums">{selected.value}</p>
             </div>
             <p className={`text-data tabular-nums ${directionTextClass[selectedDirection]}`}>
               {changeLabel(selected.change)}
@@ -331,7 +330,7 @@ function MarketNews() {
           >
             <div className="min-w-0 flex-1">
               <Badge tone={issue.direction}>{issue.sector}</Badge>
-              <h3 className="mt-3 text-item-title group-hover:text-primary">{issue.title}</h3>
+              <h3 className="text-item-title mt-3 group-hover:text-primary">{issue.title}</h3>
               <p className="mt-1 line-clamp-2 text-body text-muted-foreground">{issue.summary}</p>
             </div>
             <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -381,15 +380,15 @@ function MoversTable() {
                     <div className="text-data">{stock.name}</div>
                     <div className="text-meta text-muted-foreground tabular-nums">{stock.code}</div>
                   </Table.Cell>
-                  <Table.Cell className="text-right text-data tabular-nums">
+                  <Table.Cell className="text-data text-right tabular-nums">
                     {stock.price}
                   </Table.Cell>
                   <Table.Cell
-                    className={`text-right text-data tabular-nums ${directionTextClass[direction]}`}
+                    className={`text-data text-right tabular-nums ${directionTextClass[direction]}`}
                   >
                     {changeLabel(stock.change)}
                   </Table.Cell>
-                  <Table.Cell className="hidden text-right text-meta text-muted-foreground tabular-nums sm:table-cell">
+                  <Table.Cell className="text-meta hidden text-right text-muted-foreground tabular-nums sm:table-cell">
                     {stock.volume}
                   </Table.Cell>
                   <Table.Cell className="hidden lg:table-cell">
@@ -408,7 +407,7 @@ function MoversTable() {
   )
 }
 
-function IndexPage() {
+export function IndexPage() {
   const [market, setMarket] = useState<Market>("domestic")
 
   return (
@@ -417,7 +416,7 @@ function IndexPage() {
       <main className="w-full space-y-7 px-5 py-8 sm:px-6 lg:px-8 lg:py-10 2xl:px-12">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="mb-2 text-meta text-primary">MARKET BRIEFING</p>
+            <p className="text-meta mb-2 text-primary">MARKET BRIEFING</p>
             <h1 className="text-page-title">오늘 시장의 흐름을 읽다</h1>
             <p className="mt-2 text-body text-muted-foreground">
               핵심 지표와 산업 이슈를 한 화면에서 확인하세요.
@@ -447,5 +446,3 @@ function IndexPage() {
     </div>
   )
 }
-
-export const Route = createFileRoute("/demo")({ component: IndexPage })
