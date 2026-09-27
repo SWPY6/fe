@@ -1,75 +1,43 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@theme static {
+  --color-brand-600: #1767d1;
+}
+
 :root {
-  --background: var(--color-slate-50);
+  --background: var(--color-white);
   --foreground: var(--color-slate-900);
   --card: var(--color-white);
   --card-foreground: var(--color-slate-900);
   --popover: var(--color-white);
   --popover-foreground: var(--color-slate-900);
-  --primary: #1767d1;
+
+  --primary: var(--color-brand-600);
   --primary-foreground: var(--color-white);
   --secondary: var(--color-slate-100);
-  --secondary-foreground: var(--color-slate-800);
-  --muted: var(--color-slate-100);
-  --muted-foreground: var(--color-slate-600);
-  --accent: var(--color-slate-200);
-  --accent-foreground: var(--color-slate-800);
-  --destructive: var(--color-red-800);
+  --secondary-foreground: var(--color-slate-600);
+  --muted: var(--color-slate-50);
+  --muted-foreground: var(--color-slate-500);
+  --accent: var(--color-blue-50);
+  --accent-foreground: var(--color-brand-600);
+
+  --destructive: var(--color-red-700);
   --destructive-foreground: var(--color-white);
   --border: var(--color-slate-200);
   --input: var(--color-slate-300);
-  --ring: var(--primary);
+  --ring: var(--color-brand-600);
 
-  /* Signed price movement. */
-  --positive: var(--color-red-700);
-  --positive-background: var(--color-red-100);
-  --negative: var(--color-blue-700);
-  --negative-background: var(--color-blue-100);
+  --positive: var(--color-red-600);
+  --negative: var(--color-blue-600);
+  --neutral: var(--color-slate-500);
+  --positive-soft: var(--color-red-50);
+  --negative-soft: var(--color-blue-50);
+  --neutral-soft: var(--color-slate-100);
+  --positive-area: color-mix(in srgb, var(--color-red-600) 21.96078431372549%, transparent);
+  --positive-clear: color-mix(in srgb, var(--color-red-600) 0%, transparent);
 
-  /* Product feedback, independent of price movement. */
-  --success: var(--color-emerald-700);
-  --warning: var(--color-amber-800);
-
-  /* Default typeface for all UI text. */
-  --font-ui:
-    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-  /* The primary heading of a page or view. */
-  --type-page-title-size: 1.5rem;
-  --type-page-title-leading: 2rem;
-  --type-page-title-weight: 700;
-  /* Headings that introduce a section or card. */
-  --type-section-title-size: 1.5rem;
-  --type-section-title-leading: 1.625rem;
-  --type-section-title-weight: 700;
-  /* Titles of individual items, such as a news story or list entry. */
-  --type-item-title-size: 1rem;
-  --type-item-title-leading: 1.5rem;
-  --type-item-title-weight: 600;
-  /* Paragraphs and explanatory copy. */
-  --type-body-size: 1rem;
-  --type-body-leading: 1.5rem;
-  --type-body-weight: 400;
-  /* Labels on interactive controls, including buttons, tabs, and form fields. */
-  --type-control-size: 0.875rem;
-  --type-control-leading: 1.25rem;
-  --type-control-weight: 600;
-  /* Repeated market data, such as stock names, prices, and price changes. */
-  --type-data-size: 0.875rem;
-  --type-data-leading: 1.25rem;
-  --type-data-weight: 600;
-  /* Secondary context, such as stock codes, timestamps, and badges. */
-  --type-meta-size: 0.8125rem;
-  --type-meta-leading: 1.25rem;
-  --type-meta-weight: 500;
-  /* Tick labels and values on chart axes. */
-  --type-axis-size: 0.75rem;
-  --type-axis-leading: 1rem;
-  --type-axis-weight: 500;
-
-  --radius: 0.5rem;
+  --radius: 0.375rem;
   --surface-shadow:
     0 0 0 1px rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06),
     0 2px 4px rgb(15 23 42 / 0.04);
@@ -82,6 +50,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -97,60 +66,148 @@
   --color-ring: var(--ring);
 
   --color-positive: var(--positive);
-  --color-positive-background: var(--positive-background);
   --color-negative: var(--negative);
-  --color-negative-background: var(--negative-background);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
+  --color-neutral: var(--neutral);
+  --color-positive-soft: var(--positive-soft);
+  --color-negative-soft: var(--negative-soft);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-positive-area: var(--positive-area);
+  --color-positive-clear: var(--positive-clear);
 
-  --font-sans: var(--font-ui);
-
-  --text-page-title: var(--type-page-title-size);
-  --text-page-title--line-height: var(--type-page-title-leading);
-  --text-page-title--font-weight: var(--type-page-title-weight);
-  --text-section-title: var(--type-section-title-size);
-  --text-section-title--line-height: var(--type-section-title-leading);
-  --text-section-title--font-weight: var(--type-section-title-weight);
-  --text-item-title: var(--type-item-title-size);
-  --text-item-title--line-height: var(--type-item-title-leading);
-  --text-item-title--font-weight: var(--type-item-title-weight);
-  --text-body: var(--type-body-size);
-  --text-body--line-height: var(--type-body-leading);
-  --text-body--font-weight: var(--type-body-weight);
-  --text-control: var(--type-control-size);
-  --text-control--line-height: var(--type-control-leading);
-  --text-control--font-weight: var(--type-control-weight);
-  --text-data: var(--type-data-size);
-  --text-data--line-height: var(--type-data-leading);
-  --text-data--font-weight: var(--type-data-weight);
-  --text-meta: var(--type-meta-size);
-  --text-meta--line-height: var(--type-meta-leading);
-  --text-meta--font-weight: var(--type-meta-weight);
-  --text-axis: var(--type-axis-size);
-  --text-axis--line-height: var(--type-axis-leading);
-  --text-axis--font-weight: var(--type-axis-weight);
-
-  --radius-xs: calc(var(--radius) - 6px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-sm: calc(var(--radius) - 0.125rem);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 0.125rem);
+  --radius-xl: calc(var(--radius) + 0.375rem);
   --shadow-surface: var(--surface-shadow);
 }
 
-@media (min-width: 48rem) {
-  :root {
-    --type-page-title-size: 1.75rem;
-    --type-page-title-leading: 2.25rem;
-    --type-section-title-size: 1.5rem;
-    --type-section-title-leading: 1.75rem;
-  }
+@theme {
+  --font-sans: "Pretendard Variable";
+
+  --spacing: 0.25rem;
+  --container-7xl: 80rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --text-page-title: 2rem;
+  --text-page-title--line-height: 2.5rem;
+  --text-page-title--font-weight: 600;
+  --text-page-title--letter-spacing: -0.03125rem;
+
+  --text-section-heading: 1.5rem;
+  --text-section-heading--line-height: 2rem;
+  --text-section-heading--font-weight: 600;
+  --text-section-heading--letter-spacing: -0.03125rem;
+
+  --text-subheading: 1.25rem;
+  --text-subheading--line-height: 1.75rem;
+  --text-subheading--font-weight: 600;
+  --text-subheading--letter-spacing: 0em;
+
+  --text-heading-xs: 1.0625rem;
+  --text-heading-xs--line-height: 1.625rem;
+  --text-heading-xs--font-weight: 600;
+  --text-heading-xs--letter-spacing: 0em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-body--font-weight: 400;
+  --text-body--letter-spacing: 0em;
+
+  --text-body-sm: 0.9375rem;
+  --text-body-sm--line-height: 1.4375rem;
+  --text-body-sm--font-weight: 400;
+  --text-body-sm--letter-spacing: 0em;
+
+  --text-label: 0.9375rem;
+  --text-label--line-height: 1.375rem;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0em;
+
+  --text-label-sm: 0.875rem;
+  --text-label-sm--line-height: 1.3125rem;
+  --text-label-sm--font-weight: 500;
+  --text-label-sm--letter-spacing: 0em;
+
+  --text-label-xs: 0.8125rem;
+  --text-label-xs--line-height: 1.1875rem;
+  --text-label-xs--font-weight: 500;
+  --text-label-xs--letter-spacing: 0em;
+
+  --text-label-strong: 0.9375rem;
+  --text-label-strong--line-height: 1.375rem;
+  --text-label-strong--font-weight: 600;
+  --text-label-strong--letter-spacing: 0em;
+
+  --text-caption: 0.875rem;
+  --text-caption--line-height: 1.25rem;
+  --text-caption--font-weight: 400;
+  --text-caption--letter-spacing: 0em;
+
+  --text-helper: 0.8125rem;
+  --text-helper--line-height: 1.1875rem;
+  --text-helper--font-weight: 400;
+  --text-helper--letter-spacing: 0em;
+
+  --text-table-header: 0.8125rem;
+  --text-table-header--line-height: 1.25rem;
+  --text-table-header--font-weight: 500;
+  --text-table-header--letter-spacing: 0em;
+
+  --text-table-label: 0.9375rem;
+  --text-table-label--line-height: 1.375rem;
+  --text-table-label--font-weight: 600;
+  --text-table-label--letter-spacing: 0em;
+
+  --text-table-value: 0.9375rem;
+  --text-table-value--line-height: 1.375rem;
+  --text-table-value--font-weight: 400;
+  --text-table-value--letter-spacing: 0em;
+
+  --text-numeric-lg: 2.5rem;
+  --text-numeric-lg--line-height: 3rem;
+  --text-numeric-lg--font-weight: 500;
+  --text-numeric-lg--letter-spacing: 0em;
+
+  --text-numeric-md: 1.75rem;
+  --text-numeric-md--line-height: 2.25rem;
+  --text-numeric-md--font-weight: 600;
+  --text-numeric-md--letter-spacing: 0em;
+
+  --text-numeric-compact: 1.25rem;
+  --text-numeric-compact--line-height: 1.75rem;
+  --text-numeric-compact--font-weight: 600;
+  --text-numeric-compact--letter-spacing: 0em;
+
+  --text-numeric-sm: 1.0625rem;
+  --text-numeric-sm--line-height: 1.625rem;
+  --text-numeric-sm--font-weight: 500;
+  --text-numeric-sm--letter-spacing: 0em;
+
+  --text-wordmark: 2.25rem;
+  --text-wordmark--line-height: 3.375rem;
+  --text-wordmark--font-weight: 800;
+  --text-wordmark--letter-spacing: -0.1125rem;
+
+  --text-wordmark-sm: 1.5rem;
+  --text-wordmark-sm--line-height: 2.25rem;
+  --text-wordmark-sm--font-weight: 800;
+  --text-wordmark-sm--letter-spacing: -0.0625rem;
+}
+
+@utility typo-* {
+  font-size: --value(--text-*);
+  line-height: --value(--text-* --line-height);
+  font-weight: --value(--text-* --font-weight);
+  letter-spacing: --value(--text-* --letter-spacing);
 }
 
 @layer base {
   body {
-    @apply bg-background text-foreground font-sans text-body;
+    @apply bg-background text-foreground font-sans typo-body;
     margin: 0;
   }
 }
