@@ -12,6 +12,7 @@ storybook-static/
 
 # Tool state
 lefthook-local.yml
+.wrangler/
 
 # Editors and operating systems
 .DS_Store

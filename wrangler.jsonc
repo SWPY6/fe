@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ploutos",
+  "compatibility_date": "2026-09-07",
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "binding": "AGENTATION_DB",
+      "database_name": "swpy6-agentation",
+      "database_id": "c518d4bd-34e5-4989-b1d0-9658198ced80",
+      "migrations_dir": "migrations/agentation",
+    },
+  ],
+}
