@@ -83,23 +83,25 @@ function CarouselRoot({
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev()
+    api?.plugins().autoplay?.reset()
   }, [api])
 
   const scrollNext = React.useCallback(() => {
     api?.scrollNext()
+    api?.plugins().autoplay?.reset()
   }, [api])
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
-      if (event.key === "ArrowLeft") {
+      if (event.key === (orientation === "horizontal" ? "ArrowLeft" : "ArrowUp")) {
         event.preventDefault()
         scrollPrev()
-      } else if (event.key === "ArrowRight") {
+      } else if (event.key === (orientation === "horizontal" ? "ArrowRight" : "ArrowDown")) {
         event.preventDefault()
         scrollNext()
       }
     },
-    [scrollPrev, scrollNext],
+    [orientation, scrollPrev, scrollNext],
   )
 
   React.useEffect(
@@ -174,7 +176,7 @@ function CarouselPrevious({
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: Omit<React.ComponentProps<typeof Button>, "asChild">) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -191,7 +193,9 @@ function CarouselPrevious({
       )}
       disabled={!canScrollPrev}
       onClick={scrollPrev}
+      type="button"
       {...props}
+      asChild={false}
     >
       <ArrowLeft />
       <span className="sr-only">Previous slide</span>
@@ -204,7 +208,7 @@ function CarouselNext({
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: Omit<React.ComponentProps<typeof Button>, "asChild">) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
@@ -221,7 +225,9 @@ function CarouselNext({
       )}
       disabled={!canScrollNext}
       onClick={scrollNext}
+      type="button"
       {...props}
+      asChild={false}
     >
       <ArrowRight />
       <span className="sr-only">Next slide</span>

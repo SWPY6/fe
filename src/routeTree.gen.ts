@@ -10,43 +10,63 @@
 
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as rootIndexRouteImport } from "./routes/(root)/index"
-import { Route as DemoIndexRouteImport } from "./routes/demo/index"
+import { Route as IndustriesIndexRouteImport } from "./routes/industries/index"
+import { Route as MoversIndexRouteImport } from "./routes/movers/index"
+import { Route as StocksCodeIndexRouteImport } from "./routes/stocks/$code/index"
 
 const rootIndexRoute = rootIndexRouteImport.update({
   id: "/(root)/",
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoIndexRoute = DemoIndexRouteImport.update({
-  id: "/demo/",
-  path: "/demo/",
+const IndustriesIndexRoute = IndustriesIndexRouteImport.update({
+  id: "/industries/",
+  path: "/industries/",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoversIndexRoute = MoversIndexRouteImport.update({
+  id: "/movers/",
+  path: "/movers/",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StocksCodeIndexRoute = StocksCodeIndexRouteImport.update({
+  id: "/stocks/$code/",
+  path: "/stocks/$code/",
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof rootIndexRoute
-  "/demo/": typeof DemoIndexRoute
+  "/industries/": typeof IndustriesIndexRoute
+  "/movers/": typeof MoversIndexRoute
+  "/stocks/$code/": typeof StocksCodeIndexRoute
 }
 export interface FileRoutesByTo {
   "/": typeof rootIndexRoute
-  "/demo": typeof DemoIndexRoute
+  "/industries": typeof IndustriesIndexRoute
+  "/movers": typeof MoversIndexRoute
+  "/stocks/$code": typeof StocksCodeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/(root)/": typeof rootIndexRoute
-  "/demo/": typeof DemoIndexRoute
+  "/industries/": typeof IndustriesIndexRoute
+  "/movers/": typeof MoversIndexRoute
+  "/stocks/$code/": typeof StocksCodeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/demo/"
+  fullPaths: "/" | "/industries/" | "/movers/" | "/stocks/$code/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/demo"
-  id: "__root__" | "/(root)/" | "/demo/"
+  to: "/" | "/industries" | "/movers" | "/stocks/$code"
+  id: "__root__" | "/(root)/" | "/industries/" | "/movers/" | "/stocks/$code/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   rootIndexRoute: typeof rootIndexRoute
-  DemoIndexRoute: typeof DemoIndexRoute
+  IndustriesIndexRoute: typeof IndustriesIndexRoute
+  MoversIndexRoute: typeof MoversIndexRoute
+  StocksCodeIndexRoute: typeof StocksCodeIndexRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -58,11 +78,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof rootIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    "/demo/": {
-      id: "/demo/"
-      path: "/demo"
-      fullPath: "/demo/"
-      preLoaderRoute: typeof DemoIndexRouteImport
+    "/industries/": {
+      id: "/industries/"
+      path: "/industries"
+      fullPath: "/industries/"
+      preLoaderRoute: typeof IndustriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/movers/": {
+      id: "/movers/"
+      path: "/movers"
+      fullPath: "/movers/"
+      preLoaderRoute: typeof MoversIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/stocks/$code/": {
+      id: "/stocks/$code/"
+      path: "/stocks/$code"
+      fullPath: "/stocks/$code/"
+      preLoaderRoute: typeof StocksCodeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -70,7 +104,9 @@ declare module "@tanstack/react-router" {
 
 const rootRouteChildren: RootRouteChildren = {
   rootIndexRoute: rootIndexRoute,
-  DemoIndexRoute: DemoIndexRoute,
+  IndustriesIndexRoute: IndustriesIndexRoute,
+  MoversIndexRoute: MoversIndexRoute,
+  StocksCodeIndexRoute: StocksCodeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
