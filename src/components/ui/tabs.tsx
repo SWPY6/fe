@@ -20,26 +20,32 @@ function TabsRoot({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col data-[variant=line]:rounded-none",
+  "group/tabs-list inline-flex w-fit items-center justify-center text-muted-foreground group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col",
   {
     variants: {
       variant: {
-        default: "bg-muted group-data-[orientation=horizontal]/tabs:h-9",
-        line: "relative gap-1 bg-transparent p-0",
+        segmented: "gap-0.75 rounded-lg bg-secondary p-0.75",
+        underline: "relative rounded-none bg-transparent p-0",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "segmented",
     },
   },
 )
 
 function TabsList({
   className,
-  variant = "default",
+  variant: appearance = "segmented",
+  size = "default",
   ref,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+}: React.ComponentProps<typeof TabsPrimitive.List> & {
+  variant?: VariantProps<typeof tabsListVariants>["variant"] | "default" | "line"
+  size?: "default" | "compact"
+}) {
+  const variant =
+    appearance === "line" ? "underline" : appearance === "default" ? "segmented" : appearance
   const listRef = React.useRef<HTMLDivElement>(null)
   const [indicator, setIndicator] = React.useState<{
     offset: number
@@ -57,7 +63,7 @@ function TabsList({
   )
 
   React.useLayoutEffect(() => {
-    if (variant !== "line" || !listRef.current) return
+    if (variant !== "underline" || !listRef.current) return
 
     const list = listRef.current
     const updateIndicator = () => {
@@ -103,12 +109,13 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       data-variant={variant}
+      data-size={size}
       ref={setListRef}
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     >
       {props.children}
-      {variant === "line" && (
+      {variant === "underline" && (
         <span
           aria-hidden="true"
           className={cn(
@@ -134,10 +141,10 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent",
-        "data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground",
-        "group-data-[variant=line]/tabs-list:data-[state=active]:text-primary",
+        "relative inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 bg-transparent whitespace-nowrap text-muted-foreground transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group-data-[variant=underline]/tabs-list:h-11 group-data-[variant=underline]/tabs-list:rounded-none group-data-[variant=underline]/tabs-list:px-4 group-data-[variant=underline]/tabs-list:typo-label group-data-[variant=underline]/tabs-list:data-[state=active]:typo-label-strong group-data-[variant=underline]/tabs-list:data-[state=active]:text-primary",
+        "group-data-[variant=segmented]/tabs-list:h-9 group-data-[variant=segmented]/tabs-list:rounded-md group-data-[variant=segmented]/tabs-list:px-3 group-data-[variant=segmented]/tabs-list:typo-label-sm group-data-[variant=segmented]/tabs-list:data-[state=active]:bg-primary group-data-[variant=segmented]/tabs-list:data-[state=active]:text-primary-foreground",
+        "group-data-[variant=segmented]/tabs-list:group-data-[size=compact]/tabs-list:h-8 group-data-[variant=segmented]/tabs-list:group-data-[size=compact]/tabs-list:typo-label-xs",
         className,
       )}
       {...props}

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { Search } from "lucide-react"
 
 import { Input } from "../components/ui/input"
 
@@ -10,6 +11,21 @@ const meta = {
 
 export default meta
 type Story = StoryObj<typeof meta>
+
+export const Appearances: Story = {
+  name: "외형",
+  render: () => (
+    <div className="grid w-72 gap-4">
+      <Input aria-label="기본 입력" placeholder="텍스트 입력" />
+      <Input
+        aria-label="종목 검색"
+        variant="filled"
+        leadingIcon={<Search />}
+        placeholder="종목명 또는 종목코드 검색"
+      />
+    </div>
+  ),
+}
 
 export const States: Story = {
   name: "입력 상태",

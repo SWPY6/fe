@@ -15,7 +15,7 @@ export const Basic: Story = {
   name: "기본 탭",
   render: () => (
     <Tabs.Root defaultValue="domestic" className="w-80">
-      <Tabs.List>
+      <Tabs.List variant="segmented">
         <Tabs.Trigger value="domestic">국내</Tabs.Trigger>
         <Tabs.Trigger value="overseas">해외</Tabs.Trigger>
       </Tabs.List>
@@ -33,7 +33,7 @@ export const Line: Story = {
   name: "선형 탭",
   render: () => (
     <Tabs.Root defaultValue="overview" className="w-80">
-      <Tabs.List variant="line">
+      <Tabs.List variant="underline">
         <Tabs.Trigger value="overview">시장 요약</Tabs.Trigger>
         <Tabs.Trigger value="industries">산업별 동향</Tabs.Trigger>
         <Tabs.Trigger value="movers">주요 변동 종목</Tabs.Trigger>
@@ -47,6 +47,19 @@ export const Line: Story = {
       <Tabs.Content value="movers" className="pt-3 text-sm">
         주요 변동 종목 내용
       </Tabs.Content>
+    </Tabs.Root>
+  ),
+}
+
+export const Compact: Story = {
+  name: "작은 기간 선택",
+  render: () => (
+    <Tabs.Root defaultValue="week">
+      <Tabs.List variant="segmented" size="compact">
+        <Tabs.Trigger value="week">1주</Tabs.Trigger>
+        <Tabs.Trigger value="month">1개월</Tabs.Trigger>
+        <Tabs.Trigger value="year">1년</Tabs.Trigger>
+      </Tabs.List>
     </Tabs.Root>
   ),
 }
