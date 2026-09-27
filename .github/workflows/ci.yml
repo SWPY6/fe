@@ -38,7 +38,7 @@ jobs:
         run: pnpm check
 
       - name: Build application
-        run: pnpm build
+        run: pnpm build --mode preview
 
       - name: Validate Cloudflare configuration
         env:

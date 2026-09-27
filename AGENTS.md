@@ -16,6 +16,7 @@
 | 경로                 | 배치 기준                                       |
 | -------------------- | ----------------------------------------------- |
 | `src/routes/`        | TanStack Router의 라우팅 컨벤션을 따른다.       |
+| `src/agentation/`    | Agentation 피드백 UI와 세션 연결.               |
 | `src/components/ui/` | 도메인 맥락이 없는 공통 UI 컴포넌트.            |
 | `src/api/`           | 서버 API 클라이언트, 요청 함수, 요청·응답 타입. |
 | `src/hooks/`         | 여러 화면에서 공유하는 React 훅.                |
