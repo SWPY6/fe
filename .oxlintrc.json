@@ -8,6 +8,7 @@
   "ignorePatterns": ["dist", "coverage", ".agents", ".wrangler", "src/routeTree.gen.ts"],
   "jsPlugins": [
     "./lint/rules/require-named-effect.mjs",
+    "./lint/rules/route-page-convention.mjs",
     {
       "name": "better-tailwindcss",
       "specifier": "eslint-plugin-better-tailwindcss"
@@ -39,6 +40,7 @@
     "better-tailwindcss/no-unnecessary-whitespace": "warn",
     "import/no-unassigned-import": "off",
     "local/require-named-effect": "warn",
+    "route-page/convention": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     "react/react-in-jsx-scope": "off",
     "react/rules-of-hooks": "error"
