@@ -41,6 +41,7 @@
     "import/no-unassigned-import": "off",
     "local/require-named-effect": "warn",
     "route-page/convention": "error",
+    "no-void": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     "react/react-in-jsx-scope": "off",
     "react/rules-of-hooks": "error"
