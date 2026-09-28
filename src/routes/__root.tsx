@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query"
 import { Link, Outlet, createRootRouteWithContext, useRouterState } from "@tanstack/react-router"
 import { Search, Sun } from "lucide-react"
 import { createContext, useMemo, useState } from "react"
+import { Toaster } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -123,6 +124,7 @@ function RootLayout() {
           <Outlet />
         </div>
         {import.meta.env.MODE === "preview" && <AgentationReview key={pathname} />}
+        <Toaster />
       </div>
     </HeaderSearchContext.Provider>
   )
