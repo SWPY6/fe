@@ -3,16 +3,17 @@ import { ArrowUpRight } from "lucide-react"
 import { useContext, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Table } from "@/components/ui/table"
 import { Tabs } from "@/components/ui/tabs"
 import { HeaderSearchContext } from "@/routes/__root"
 
 const data = {
-  asOf: "예시 2026.09.04 · 15:30 KST · 직전 거래일 종가 대비",
+  asOf: "예시 데이터 · 2026.09.04 15:30 KST",
   lead: {
     sector: "반도체",
-    summary: "HBM 수요 전망과 외국인 매매 동향",
+    headline: "반도체가 이끄는 상승",
+    summary:
+      "HBM 수요 기대가 반도체주에 집중됩니다. 외국인 매매 동향과 주요 종목의 움직임을 함께 살펴보세요.",
     change: "+2.84%",
     relatedStocks: ["SK하이닉스  +4.31%", "한미반도체  +3.56%"],
   },
@@ -138,165 +139,153 @@ export function RootPage() {
               <p className="typo-caption text-muted-foreground">{data.asOf}</p>
             </div>
 
-            <section
-              aria-label="오늘의 산업 동향"
-              className="mt-8 grid gap-6 border-y border-border py-7 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,0.5fr)] md:items-center md:gap-8"
+            <div
+              aria-label="주요 시장 지표 선택"
+              className="mt-8 grid grid-cols-2 gap-y-5 border-y border-border py-5 sm:grid-cols-4 sm:gap-y-0"
             >
-              <div>
-                <p className="typo-caption text-muted-foreground">산업 동향</p>
-                <h2 className="mt-3 typo-subheading">{data.lead.sector}</h2>
-              </div>
-              <div>
-                <p className="typo-body-sm text-muted-foreground">{data.lead.summary}</p>
-                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 typo-label-sm text-positive">
+              {data.quotes.map((quote, index) => (
+                <Button
+                  key={quote.name}
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setSelectedQuoteIndex(index)}
+                  aria-pressed={selectedQuoteIndex === index}
+                  className="h-auto min-w-0 flex-col items-start gap-1.5 rounded-none border-l border-border py-0 pl-4 text-left text-foreground hover:bg-transparent hover:text-foreground aria-pressed:border-primary sm:pl-6"
+                >
+                  <span className="typo-helper text-muted-foreground">{quote.name}</span>
+                  <span className="typo-numeric-compact tabular-nums">{quote.value}</span>
+                  <span
+                    className={
+                      quote.change.startsWith("+")
+                        ? "typo-caption text-positive tabular-nums"
+                        : "typo-caption text-negative tabular-nums"
+                    }
+                  >
+                    {quote.change}
+                  </span>
+                </Button>
+              ))}
+            </div>
+
+            <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.375fr)_minmax(0,1fr)] lg:gap-10">
+              <section aria-labelledby="market-chart-title" className="min-w-0">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 id="market-chart-title" className="typo-section-heading">
+                    주요 시장 지표
+                  </h2>
+                  <span className="typo-label-xs text-muted-foreground">15분 지연</span>
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="typo-helper text-muted-foreground">{selectedQuote.name}</p>
+                    <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
+                      {selectedQuote.value}
+                    </p>
+                  </div>
+                  <p
+                    className={
+                      selectedQuote.change.startsWith("+")
+                        ? "pb-1 typo-numeric-sm text-positive tabular-nums"
+                        : "pb-1 typo-numeric-sm text-negative tabular-nums"
+                    }
+                  >
+                    {selectedQuote.change}
+                  </p>
+                </div>
+                <svg
+                  viewBox="0 0 700 200"
+                  preserveAspectRatio="none"
+                  className={
+                    selectedQuote.change.startsWith("+")
+                      ? "mt-5 h-44 w-full text-positive"
+                      : "mt-5 h-44 w-full text-negative"
+                  }
+                >
+                  <title>{selectedQuote.name} 일중 흐름</title>
+                  <defs>
+                    <linearGradient id="quote-area" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <polygon points={"0,200 " + chartPoints + " 700,200"} fill="url(#quote-area)" />
+                  <polyline
+                    points={chartPoints}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+                <div className="mt-5 flex items-center justify-between border-t border-border pt-2.5 typo-helper text-muted-foreground">
+                  <span>{selectedQuote.name} / 일중 흐름</span>
+                  <span
+                    className={
+                      selectedQuote.change.startsWith("+")
+                        ? "text-positive tabular-nums"
+                        : "text-negative tabular-nums"
+                    }
+                  >
+                    {selectedQuote.change.startsWith("+") ? "↑" : "↓"} {selectedQuote.change}
+                  </span>
+                </div>
+              </section>
+
+              <section
+                aria-labelledby="market-focus-title"
+                className="border-t border-border pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
+              >
+                <p className="typo-caption text-muted-foreground">오늘의 시장 포커스</p>
+                <h2 id="market-focus-title" className="mt-2.5 typo-section-heading">
+                  {data.lead.headline}
+                </h2>
+                <p className="mt-6 typo-body-sm text-muted-foreground">{data.lead.summary}</p>
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 typo-label-sm text-positive">
                   {data.lead.relatedStocks.map((stock) => (
                     <span key={stock}>{stock}</span>
                   ))}
                 </div>
                 <Link
                   to="/industries"
-                  className="mt-3 inline-flex items-center gap-1 typo-label-sm text-primary hover:underline"
+                  className="mt-4 inline-flex items-center gap-1 typo-label-sm text-primary hover:underline"
                 >
                   {data.lead.sector} 자세히 보기{" "}
                   <ArrowUpRight className="size-4" aria-hidden="true" />
                 </Link>
-              </div>
-              <div className="border-l border-border pl-6 md:pl-7">
-                <p className="typo-caption text-muted-foreground">
-                  {data.lead.sector} · 평균 등락률
-                </p>
-                <p className="mt-2 typo-numeric-md text-positive">{data.lead.change}</p>
-              </div>
-            </section>
-
-            <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:gap-10">
-              <Card.Root className="min-w-0 gap-0 rounded-lg bg-muted pt-7 pb-4 shadow-none">
-                <Card.Header className="grid-cols-[1fr_auto] items-center px-7">
-                  <Card.Title>
-                    <h2 className="typo-section-heading">주요 시장 지표</h2>
-                  </Card.Title>
-                  <Card.Action className="typo-caption text-muted-foreground">
-                    15분 지연
-                  </Card.Action>
-                </Card.Header>
-                <Card.Content className="mt-6 px-7">
-                  <div className="grid grid-cols-2 gap-4 border-b border-border pb-5 sm:grid-cols-4">
-                    {data.quotes.map((quote, index) => (
-                      <Button
-                        key={quote.name}
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setSelectedQuoteIndex(index)}
-                        aria-pressed={selectedQuoteIndex === index}
-                        className="h-auto min-w-0 flex-col items-start gap-1 rounded-sm p-0 text-left text-foreground hover:bg-transparent hover:text-foreground"
-                      >
-                        <span className="typo-helper text-muted-foreground">{quote.name}</span>
-                        <span className="typo-numeric-compact">{quote.value}</span>
-                        <span
-                          className={
-                            quote.change.startsWith("+")
-                              ? "typo-caption text-positive tabular-nums"
-                              : "typo-caption text-negative tabular-nums"
-                          }
-                        >
-                          {quote.change}
-                        </span>
-                      </Button>
-                    ))}
-                  </div>
-                  <div className="mt-7 flex items-end justify-between gap-4">
-                    <div>
-                      <p className="typo-helper text-muted-foreground">{selectedQuote.name}</p>
-                      <p className="mt-2 typo-numeric-lg max-sm:typo-numeric-md">
-                        {selectedQuote.value}
-                      </p>
-                    </div>
-                    <p
-                      className={
-                        selectedQuote.change.startsWith("+")
-                          ? "pb-1 typo-numeric-sm text-positive tabular-nums"
-                          : "pb-1 typo-numeric-sm text-negative tabular-nums"
-                      }
-                    >
-                      {selectedQuote.change}
-                    </p>
-                  </div>
-                  <svg
-                    viewBox="0 0 700 200"
-                    preserveAspectRatio="none"
-                    className={
-                      selectedQuote.change.startsWith("+")
-                        ? "mt-4 h-48 w-full text-positive"
-                        : "mt-4 h-48 w-full text-negative"
-                    }
-                  >
-                    <title>{selectedQuote.name} 일중 흐름</title>
-                    <defs>
-                      <linearGradient id="quote-area" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <polygon points={"0,200 " + chartPoints + " 700,200"} fill="url(#quote-area)" />
-                    <polyline
-                      points={chartPoints}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
-                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3 typo-helper text-muted-foreground">
-                    <span>{selectedQuote.name} / 일중 흐름</span>
-                    <span
-                      className={
-                        selectedQuote.change.startsWith("+")
-                          ? "text-positive tabular-nums"
-                          : "text-negative tabular-nums"
-                      }
-                    >
-                      {selectedQuote.change.startsWith("+") ? "↑" : "↓"} {selectedQuote.change}
-                    </span>
-                  </div>
-                </Card.Content>
-              </Card.Root>
-
-              <section
-                id="industry-issues"
-                aria-labelledby="industry-issues-title"
-                className="min-w-0"
-              >
-                <div className="flex items-center justify-between gap-4 border-b border-border pb-5">
-                  <h2 id="industry-issues-title" className="typo-section-heading">
-                    산업별 이슈
-                  </h2>
-                  <span className="typo-caption text-muted-foreground">산업별</span>
+                <div className="mt-6 border-t border-border pt-5">
+                  <p className="typo-caption text-muted-foreground">
+                    {data.lead.sector} · 평균 등락률
+                  </p>
+                  <p className="mt-1 typo-numeric-md text-positive">{data.lead.change}</p>
                 </div>
-                <ol>
-                  {data.news.map((story, index) => (
-                    <li
-                      key={story.title}
-                      className="grid grid-cols-[auto_1fr_auto] gap-4 border-b border-border py-5 last:border-b-0"
-                    >
-                      <span className="pt-0.5 typo-table-value text-muted-foreground tabular-nums">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="typo-label-xs text-primary">{story.sector}</p>
-                        <h3 className="mt-3 typo-subheading">{story.title}</h3>
-                        <p className="mt-3 typo-body-sm text-muted-foreground">{story.summary}</p>
-                      </div>
-                      <ArrowUpRight className="mt-0.5 size-4 text-primary" aria-hidden="true" />
-                    </li>
-                  ))}
-                </ol>
               </section>
             </div>
+
+            <section id="industry-issues" aria-labelledby="industry-issues-title" className="mt-8">
+              <h2 id="industry-issues-title" className="typo-subheading">
+                산업별 이슈
+              </h2>
+              <ol className="mt-4 grid gap-6 border-t border-border pt-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+                {data.news.map((story, index) => (
+                  <li key={story.title} className="flex min-w-0 gap-4">
+                    <span className="typo-table-value text-muted-foreground tabular-nums">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="typo-label-xs text-primary">{story.sector}</p>
+                      <h3 className="mt-2 typo-heading-xs">{story.title}</h3>
+                      <p className="mt-2 typo-body-sm text-muted-foreground">{story.summary}</p>
+                    </div>
+                    <ArrowUpRight className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  </li>
+                ))}
+              </ol>
+            </section>
 
             <section
               id="market-movers"
               aria-labelledby="market-movers-title"
-              className="mt-8 border-t border-foreground pt-8"
+              className="mt-8 border-t border-border pt-8"
             >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
