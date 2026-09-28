@@ -3,6 +3,36 @@
 
 @theme static {
   --color-brand-600: #1767d1;
+
+  --duration-stagger: 40ms;
+  --duration-micro: 80ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-slow: 400ms;
+  --duration-very-slow: 500ms;
+
+  --ease-motion-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-motion-in-out: ease-in-out;
+  --ease-motion-out: ease-out;
+  --ease-motion-linear: linear;
+  --ease-motion-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --ease-motion-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);
+
+  --spacing-motion-micro: 4px;
+  --spacing-motion-small: 6px;
+  --spacing-motion-base: 8px;
+  --spacing-motion-medium: 12px;
+  --spacing-motion-large: 30px;
+
+  --scale-motion-large: 0.96;
+  --scale-motion-medium: 0.97;
+  --scale-motion-small: 0.98;
+  --scale-motion-tiny: 0.99;
+
+  --blur-motion-small: 2px;
+  --blur-motion-medium: 3px;
+  --blur-motion-large: 8px;
 }
 
 :root {
@@ -196,6 +226,21 @@
   --text-wordmark-sm--line-height: 2.25rem;
   --text-wordmark-sm--font-weight: 800;
   --text-wordmark-sm--letter-spacing: -0.0625rem;
+}
+
+@utility duration-* {
+  --tw-duration: --value(--duration-*);
+  transition-duration: --value(--duration-*);
+}
+
+@utility delay-motion-* {
+  --tw-animation-delay: --value(--duration-*);
+  transition-delay: --value(--duration-*);
+  animation-delay: --value(--duration-*);
+}
+
+@utility scale-motion-* {
+  scale: --value(--scale-motion-*);
 }
 
 @utility typo-* {
