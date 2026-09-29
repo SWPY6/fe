@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "VITE_ENABLE_MSW=true vite",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build": "tsc -b && vite build",

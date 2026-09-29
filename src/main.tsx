@@ -8,6 +8,11 @@ import { routeTree } from "./routeTree.gen"
 
 import "./index.css"
 
+if (import.meta.env.VITE_ENABLE_MSW === "true") {
+  const { worker } = await import("./api/mocks/browser")
+  await worker.start({ onUnhandledRequest: "bypass" })
+}
+
 const router = createRouter({
   routeTree,
   context: { queryClient },
