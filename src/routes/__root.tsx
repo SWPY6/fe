@@ -7,7 +7,7 @@ import { Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-import { AgentationReview } from "../agentation/agentationReview"
+import { FeedbackReview } from "../../feedback/client/FeedbackReview"
 import { globalUrlStateRouteOptions } from "../hooks/useGlobalUrlState"
 
 interface RouterContext {
@@ -123,7 +123,7 @@ function RootLayout() {
         <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
           <Outlet />
         </div>
-        {import.meta.env.MODE === "preview" && <AgentationReview key={pathname} />}
+        {import.meta.env.MODE === "preview" && <FeedbackReview key={pathname} />}
         <Toaster />
       </div>
     </HeaderSearchContext.Provider>

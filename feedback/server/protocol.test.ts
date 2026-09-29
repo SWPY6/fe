@@ -3,7 +3,7 @@ import { describe, expect, expectTypeOf, it } from "vitest"
 
 import {
   addThreadMessageSchema,
-  agentationEventSchema,
+  feedbackEventSchema,
   annotationSchema,
   createAnnotationSchema,
   createSessionSchema,
@@ -31,7 +31,7 @@ const clientAnnotation = {
   },
 }
 
-describe("Agentation protocol", () => {
+describe("Feedback protocol", () => {
   it("accepts every declared Agentation selector context field", () => {
     const annotation = createAnnotationSchema.parse(clientAnnotation)
 
@@ -76,7 +76,7 @@ describe("Agentation protocol", () => {
     })
 
     expect(
-      agentationEventSchema.safeParse({
+      feedbackEventSchema.safeParse({
         type: "annotation.created",
         timestamp: "2026-09-18T00:00:00.000Z",
         sessionId: "ses_test",
@@ -85,7 +85,7 @@ describe("Agentation protocol", () => {
       }).success,
     ).toBe(true)
     expect(
-      agentationEventSchema.safeParse({
+      feedbackEventSchema.safeParse({
         type: "annotation.created",
         timestamp: "2026-09-18T00:00:00.000Z",
         sessionId: "ses_test",

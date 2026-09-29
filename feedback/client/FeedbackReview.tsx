@@ -3,14 +3,14 @@ import { Agentation } from "agentation"
 
 const endpoint = "/api/agentation"
 
-export function AgentationReview() {
+export function FeedbackReview() {
   const url = new URL(window.location.pathname, window.location.origin).toString()
   const {
     data: sessionId,
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["agentation-session", url],
+    queryKey: ["feedback-session", url],
     queryFn: async ({ signal }) => {
       // Joining the URL's existing session loads annotations from other browsers.
       const response = await fetch(`${endpoint}/sessions`, {
@@ -21,7 +21,7 @@ export function AgentationReview() {
       })
 
       if (!response.ok) {
-        throw new Error(`Agentation session failed with status ${response.status}`)
+        throw new Error(`Feedback session failed with status ${response.status}`)
       }
 
       const session: unknown = await response.json()
@@ -32,7 +32,7 @@ export function AgentationReview() {
         !("id" in session) ||
         typeof session.id !== "string"
       ) {
-        throw new Error("Agentation session response is invalid")
+        throw new Error("Feedback session response is invalid")
       }
 
       return session.id

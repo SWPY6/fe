@@ -16,11 +16,13 @@
 | 경로                 | 배치 기준                                       |
 | -------------------- | ----------------------------------------------- |
 | `src/routes/`        | TanStack Router의 라우팅 컨벤션을 따른다.       |
-| `src/agentation/`    | Agentation 피드백 UI와 세션 연결.               |
 | `src/components/ui/` | 도메인 맥락이 없는 공통 UI 컴포넌트.            |
 | `src/api/`           | 서버 API 클라이언트, 요청 함수, 요청·응답 타입. |
 | `src/hooks/`         | 여러 화면에서 공유하는 React 훅.                |
 | `src/stories/`       | Storybook 스토리와 스토리 전용 fixture.         |
+
+피드백 기능의 UI, 서버 구현, 마이그레이션은 저장소 루트의 `feedback/`에 모은다.
+`functions/api/agentation/`은 Cloudflare Pages의 라우트 진입점으로 사용한다.
 
 ## AI Review
 

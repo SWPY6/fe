@@ -1,5 +1,5 @@
 import { handle } from "hono/cloudflare-pages"
 
-import app from "../../../server/agentation/app"
+import app from "../../../feedback/server/app"
 
 export const onRequest = handle(app)

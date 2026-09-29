@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 
-import { createAgentationStore } from "./db/store"
+import { createFeedbackStore } from "./db/store"
 import { openEventStream } from "./events"
 import {
   actionRequestSchema,
@@ -13,16 +13,16 @@ import {
   updateAnnotationSchema,
 } from "./protocol"
 
-type AgentationEnv = {
+type FeedbackEnv = {
   Bindings: {
     AGENTATION_DB?: D1Database
   }
   Variables: {
-    store: ReturnType<typeof createAgentationStore>
+    store: ReturnType<typeof createFeedbackStore>
   }
 }
 
-const app = new Hono<AgentationEnv>().basePath("/api/agentation")
+const app = new Hono<FeedbackEnv>().basePath("/api/agentation")
 
 app.use(
   "*",
@@ -44,7 +44,7 @@ app.use("*", async (c, next) => {
     return c.json({ error: "AGENTATION_DB binding is not configured" }, 503)
   }
 
-  c.set("store", createAgentationStore(c.env.AGENTATION_DB))
+  c.set("store", createFeedbackStore(c.env.AGENTATION_DB))
   await next()
 })
 
@@ -137,7 +137,7 @@ app.get("/events", (c) => openEventStream(c, c.var.store))
 app.notFound((c) => c.json({ error: "Not found" }, 404))
 
 app.onError((reason, c) => {
-  console.error("Agentation endpoint failed", reason)
+  console.error("Feedback endpoint failed", reason)
   return c.json({ error: "Internal server error" }, 500)
 })
 
