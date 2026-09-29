@@ -148,7 +148,7 @@ export const actionRequestSchema = z
 
 export const requestActionSchema = actionRequestSchema.pick({ output: true }).strict()
 
-export const agentationEventTypeSchema = z.enum([
+export const feedbackEventTypeSchema = z.enum([
   "session.created",
   "annotation.created",
   "annotation.updated",
@@ -157,20 +157,20 @@ export const agentationEventTypeSchema = z.enum([
   "action.requested",
 ])
 
-export const agentationEventPayloadSchema = z.union([
+export const feedbackEventPayloadSchema = z.union([
   sessionSchema,
   annotationSchema,
   threadMessageSchema,
   actionRequestSchema,
 ])
 
-export const agentationEventSchema = z
+export const feedbackEventSchema = z
   .object({
-    type: agentationEventTypeSchema,
+    type: feedbackEventTypeSchema,
     timestamp: z.iso.datetime(),
     sessionId: z.string().min(1),
     sequence: z.number().int().nonnegative(),
-    payload: agentationEventPayloadSchema,
+    payload: feedbackEventPayloadSchema,
   })
   .strict()
 
@@ -185,6 +185,6 @@ export type Annotation = z.infer<typeof annotationSchema>
 export type UpdateAnnotation = z.infer<typeof updateAnnotationSchema>
 export type Session = z.infer<typeof sessionSchema>
 export type ActionRequest = z.infer<typeof actionRequestSchema>
-export type AgentationEventType = z.infer<typeof agentationEventTypeSchema>
-export type AgentationEventPayload = z.infer<typeof agentationEventPayloadSchema>
-export type AgentationEvent = z.infer<typeof agentationEventSchema>
+export type FeedbackEventType = z.infer<typeof feedbackEventTypeSchema>
+export type FeedbackEventPayload = z.infer<typeof feedbackEventPayloadSchema>
+export type FeedbackEvent = z.infer<typeof feedbackEventSchema>

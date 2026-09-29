@@ -3,13 +3,13 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
 
-import type { AgentationStore } from "./db/store"
+import type { FeedbackStore } from "./db/store"
 
 function hostMatches(url: string, domain?: string) {
   return !domain || new URL(url).host === domain
 }
 
-export function openEventStream(c: Context, store: AgentationStore, sessionId?: string) {
+export function openEventStream(c: Context, store: FeedbackStore, sessionId?: string) {
   const domain = sessionId ? undefined : c.req.query("domain")
   const isAgent = c.req.query("agent") === "true"
   const lastEventId = c.req.header("Last-Event-ID")

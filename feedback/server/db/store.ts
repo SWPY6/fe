@@ -2,8 +2,8 @@ import { and, asc, desc, eq, gt, lt } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/d1"
 
 import type {
-  AgentationEventPayload,
-  AgentationEventType,
+  FeedbackEventPayload,
+  FeedbackEventType,
   Annotation,
   CreateAnnotation,
   Session,
@@ -11,7 +11,7 @@ import type {
   UpdateAnnotation,
 } from "../protocol"
 import {
-  agentationEventSchema,
+  feedbackEventSchema,
   annotationSchema,
   sessionSchema,
   threadMessageSchema,
@@ -54,7 +54,7 @@ function toAnnotation(row: typeof annotations.$inferSelect): Annotation {
   })
 }
 
-export function createAgentationStore(binding: D1Database) {
+export function createFeedbackStore(binding: D1Database) {
   const db = drizzle(binding)
 
   const pruneExpiredEvents = () =>
@@ -63,9 +63,9 @@ export function createAgentationStore(binding: D1Database) {
       .where(lt(events.timestamp, new Date(Date.now() - 7 * 24 * 60 * 60 * 1_000).toISOString()))
 
   const emit = async (
-    type: AgentationEventType,
+    type: FeedbackEventType,
     sessionId: string,
-    payload: AgentationEventPayload,
+    payload: FeedbackEventPayload,
   ) => {
     const timestamp = new Date().toISOString()
     const [row] = await db
@@ -73,7 +73,7 @@ export function createAgentationStore(binding: D1Database) {
       .values({ type, timestamp, sessionId, payload })
       .returning({ sequence: events.sequence })
 
-    return agentationEventSchema.parse({
+    return feedbackEventSchema.parse({
       type,
       timestamp,
       sessionId,
@@ -289,7 +289,7 @@ export function createAgentationStore(binding: D1Database) {
         .limit(100)
 
       return rows.map(({ event, sessionUrl }) => ({
-        event: agentationEventSchema.parse({
+        event: feedbackEventSchema.parse({
           type: event.type,
           timestamp: event.timestamp,
           sessionId: event.sessionId,
@@ -316,4 +316,4 @@ export function createAgentationStore(binding: D1Database) {
   }
 }
 
-export type AgentationStore = ReturnType<typeof createAgentationStore>
+export type FeedbackStore = ReturnType<typeof createFeedbackStore>

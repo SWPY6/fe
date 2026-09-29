@@ -1,7 +1,7 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
 import type {
-  AgentationEvent,
+  FeedbackEvent,
   Annotation,
   AnnotationStatus,
   Session,
@@ -46,12 +46,12 @@ export const events = sqliteTable(
   "agentation_events",
   {
     sequence: integer().primaryKey({ autoIncrement: true }),
-    type: text().$type<AgentationEvent["type"]>().notNull(),
+    type: text().$type<FeedbackEvent["type"]>().notNull(),
     timestamp: text().notNull(),
     sessionId: text("session_id")
       .notNull()
       .references(() => sessions.id, { onDelete: "cascade" }),
-    payload: text({ mode: "json" }).$type<AgentationEvent["payload"]>().notNull(),
+    payload: text({ mode: "json" }).$type<FeedbackEvent["payload"]>().notNull(),
   },
   (table) => [index("agentation_events_session_sequence").on(table.sessionId, table.sequence)],
 )
