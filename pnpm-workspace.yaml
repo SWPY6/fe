@@ -1,6 +1,7 @@
 allowBuilds:
   esbuild: true
   lefthook: true
+  msw: true
   workerd: true
 minimumReleaseAgeExclude:
   - happy-dom@20.11.15

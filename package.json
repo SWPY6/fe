@@ -55,6 +55,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "lefthook": "^2.1.12",
+    "msw": "^2.15.0",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
     "playwright": "1.61.1",
@@ -77,5 +78,10 @@
     "node": ">=24.20.0 <25",
     "pnpm": "12.0.0"
   },
-  "packageManager": "pnpm@12.0.0"
+  "packageManager": "pnpm@12.0.0",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }
