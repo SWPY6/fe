@@ -5,6 +5,7 @@ import { createContext, useMemo, useState } from "react"
 import { Toaster } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { Header } from "@/components/ui/Header"
 import { Input } from "@/components/ui/input"
 
 import { FeedbackReview } from "../../feedback/client/FeedbackReview"
@@ -24,12 +25,14 @@ function RootLayout() {
   return (
     <HeaderSearchContext.Provider value={search}>
       <div className="min-h-screen min-w-0 bg-background text-foreground">
-        <header className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-4">
-          <div className="flex flex-wrap items-center gap-x-10 gap-y-3 py-5">
-            <Link to="/" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
-              ploutos.
-            </Link>
-            <div className="order-3 w-full min-w-0 sm:order-0 sm:max-w-md sm:flex-1">
+        <Header.Root>
+          <Header.Row>
+            <Header.Left>
+              <Link to="/" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
+                ploutos.
+              </Link>
+            </Header.Left>
+            <Header.Middle>
               <Input
                 type="search"
                 value={query}
@@ -40,8 +43,8 @@ function RootLayout() {
                 variant="filled"
                 className="h-10 bg-muted"
               />
-            </div>
-            <div className="ml-auto flex items-center gap-2">
+            </Header.Middle>
+            <Header.Right>
               <Button
                 variant="ghost"
                 size="icon"
@@ -57,12 +60,9 @@ function RootLayout() {
               <Button size="sm" disabled className="disabled:opacity-100">
                 회원가입
               </Button>
-            </div>
-          </div>
-          <nav
-            aria-label="주요 메뉴"
-            className="overflow-x-auto border-y border-muted-foreground/70"
-          >
+            </Header.Right>
+          </Header.Row>
+          <Header.Navigation aria-label="주요 메뉴">
             <ul className="flex w-max min-w-full items-center gap-6 typo-label-sm text-muted-foreground md:gap-10">
               <li>
                 <Link
@@ -118,8 +118,8 @@ function RootLayout() {
                 </Link>
               </li>
             </ul>
-          </nav>
-        </header>
+          </Header.Navigation>
+        </Header.Root>
         <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
           <Outlet />
         </div>
