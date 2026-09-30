@@ -2341,7 +2341,8 @@
           },
           "termsAccepted": {
             "type": "boolean",
-            "description": "필수 약관 동의 여부."
+            "const": true,
+            "description": "필수 약관에 동의한 경우에만 가입할 수 있다."
           }
         },
         "additionalProperties": false,

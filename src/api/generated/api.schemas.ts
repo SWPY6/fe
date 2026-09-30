@@ -507,8 +507,8 @@ export interface SignupRequest {
      * @minLength 1
      */
   password: string;
-  /** 필수 약관 동의 여부. */
-  termsAccepted: boolean;
+  /** 필수 약관에 동의한 경우에만 가입할 수 있다. */
+  termsAccepted: true;
 }
 
 /**

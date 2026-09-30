@@ -2,7 +2,7 @@ import { AxiosError } from "axios"
 import { afterEach, expect, expectTypeOf, test } from "vitest"
 
 import { getStockChart, logOut, signUp } from "../generated/api"
-import type { StockChart } from "../generated/api.schemas"
+import type { SignupRequest, StockChart } from "../generated/api.schemas"
 import { api } from "./client"
 import { ApiError } from "./error"
 import type { ErrorResponse } from "./response"
@@ -32,7 +32,11 @@ test("생성된 GET 함수가 경로와 쿼리를 보내고 성공 데이터를 
 })
 
 test("생성된 POST 함수가 요청 본문을 전송한다", async () => {
-  const body = { email: "test@example.com", password: "password", termsAccepted: true }
+  const body = {
+    email: "test@example.com",
+    password: "password",
+    termsAccepted: true,
+  } satisfies SignupRequest
   let sentBody: unknown
   api.defaults.adapter = async (config) => {
     sentBody = JSON.parse(config.data)
@@ -42,6 +46,7 @@ test("생성된 POST 함수가 요청 본문을 전송한다", async () => {
   await signUp(body)
 
   expect(sentBody).toEqual(body)
+  expectTypeOf<SignupRequest["termsAccepted"]>().toEqualTypeOf<true>()
 })
 
 test("HTTP 오류를 기존 ApiError로 던진다", async () => {
