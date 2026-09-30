@@ -1,0 +1,370 @@
+diff --git a/dist/index.d.mts b/dist/index.d.mts
+index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b3e8822d5 100644
+--- a/dist/index.d.mts
++++ b/dist/index.d.mts
+@@ -8,6 +8,7 @@ type Annotation = {
+     element: string;
+     elementPath: string;
+     timestamp: number;
++    buildVersion?: string;
+     selectedText?: string;
+     boundingBox?: {
+         x: number;
+@@ -112,6 +113,12 @@ type PageFeedbackToolbarCSSProps = {
+     enableDemoMode?: boolean;
+     /** Callback fired when an annotation is added. */
+     onAnnotationAdd?: (annotation: Annotation) => void;
++    /** Build version stamped once when feedback is created. */
++    buildVersion?: string;
++    /** Called with the saved server response after annotation sync. */
++    onAnnotationSync?: (annotation: Annotation) => void;
++    /** Resolve action; reject to keep the feedback open. */
++    onAnnotationResolve?: (annotation: Annotation) => Promise<void>;
+     /** Callback fired when an annotation is deleted. */
+     onAnnotationDelete?: (annotation: Annotation) => void;
+     /** Callback fired when an annotation comment is edited. */
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b3e8822d5 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -8,6 +8,7 @@ type Annotation = {
+     element: string;
+     elementPath: string;
+     timestamp: number;
++    buildVersion?: string;
+     selectedText?: string;
+     boundingBox?: {
+         x: number;
+@@ -112,6 +113,12 @@ type PageFeedbackToolbarCSSProps = {
+     enableDemoMode?: boolean;
+     /** Callback fired when an annotation is added. */
+     onAnnotationAdd?: (annotation: Annotation) => void;
++    /** Build version stamped once when feedback is created. */
++    buildVersion?: string;
++    /** Called with the saved server response after annotation sync. */
++    onAnnotationSync?: (annotation: Annotation) => void;
++    /** Resolve action; reject to keep the feedback open. */
++    onAnnotationResolve?: (annotation: Annotation) => Promise<void>;
+     /** Callback fired when an annotation is deleted. */
+     onAnnotationDelete?: (annotation: Annotation) => void;
+     /** Callback fired when an annotation comment is edited. */
+diff --git a/dist/index.js b/dist/index.js
+index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..76253ccd46bc103cca11339cc8dbb64a8806ba22 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1410,6 +1410,7 @@ var AnnotationEditor = (0, import_react7.forwardRef)(function AnnotationEditor2(
+   onSubmit,
+   onCancel,
+   onDelete,
++  onResolve,
+   onOpenSource,
+   allowEmpty = false,
+   accentColor = "#3c82f7",
+@@ -1421,6 +1422,7 @@ var AnnotationEditor = (0, import_react7.forwardRef)(function AnnotationEditor2(
+ }, ref) {
+   const isCard = variant === "card";
+   const [text, setText] = (0, import_react7.useState)(initialValue);
++  const [isResolving, setIsResolving] = (0, import_react7.useState)(false);
+   const [isFocused, setIsFocused] = (0, import_react7.useState)(false);
+   const [isStylesExpanded, setIsStylesExpanded] = (0, import_react7.useState)(false);
+   const textareaRef = (0, import_react7.useRef)(null);
+@@ -1655,17 +1657,36 @@ var AnnotationEditor = (0, import_react7.forwardRef)(function AnnotationEditor2(
+             className: isCard ? styles_module_default.sharedActions : void 0,
+             style: isCard ? void 0 : { display: "contents" },
+             children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: styles_module_default.actions, children: [
++              onResolve && (0, import_jsx_runtime2.jsx)("button", {
++                className: styles_module_default.cancel,
++                type: "button",
++                disabled: isResolving,
++                "aria-label": "Resolve annotation",
++                onClick: async () => {
++                  if (isResolving) return;
++                  setIsResolving(true);
++                  try {
++                    await onResolve();
++                  } catch (error) {
++                    console.warn("[Agentation] Failed to resolve annotation:", error);
++                  } finally {
++                    setIsResolving(false);
++                  }
++                },
++                children: isResolving ? "Resolving..." : "Resolve"
++              }),
+               onDelete && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: styles_module_default.deleteWrapper, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                 "button",
+                 {
+                   className: styles_module_default.deleteButton,
+                   onClick: onDelete,
++                  disabled: isResolving,
+                   type: "button",
+                   "aria-label": "Delete annotation",
+                   children: "Delete"
+                 }
+               ) }),
+-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: styles_module_default.cancel, onClick: onCancel, children: "Cancel" }),
++              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: styles_module_default.cancel, onClick: onCancel, disabled: isResolving, children: "Cancel" }),
+               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                 "button",
+                 {
+@@ -1675,7 +1696,7 @@ var AnnotationEditor = (0, import_react7.forwardRef)(function AnnotationEditor2(
+                     opacity: text.trim() || allowEmpty ? 1 : 0.4
+                   },
+                   onClick: handleSubmit,
+-                  disabled: disabled || !text.trim() && !allowEmpty,
++                  disabled: disabled || isResolving || !text.trim() && !allowEmpty,
+                   children: submitLabel
+                 }
+               )
+@@ -9700,6 +9721,9 @@ function PageFeedbackToolbarForRoute({
+   demoDelay = 1e3,
+   enableDemoMode = false,
+   onAnnotationAdd,
++  buildVersion,
++  onAnnotationSync,
++  onAnnotationResolve,
+   onAnnotationDelete,
+   onAnnotationUpdate,
+   onAnnotationsClear,
+@@ -9737,6 +9761,7 @@ function PageFeedbackToolbarForRoute({
+   const keepFeedback = (annotation) => isRenderableAnnotation(annotation) && !deletedIds.current.has(annotation.id);
+   const syncPageAnnotation = async (...args) => {
+     const saved = await syncAnnotation(...args);
++    onAnnotationSync?.(saved);
+     const sent = args[2];
+     const localId = sent.id;
+     if (localId) {
+@@ -10661,7 +10686,7 @@ function PageFeedbackToolbarForRoute({
+       const rect = freshRects[0];
+       const isFixed = isElementFixed(firstEl);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x: rect.left / window.innerWidth * 100,
+         y: isFixed ? rect.top : rect.top + window.scrollY,
+         clientY: rect.top,
+@@ -10708,7 +10733,7 @@ function PageFeedbackToolbarForRoute({
+       const lastCenterY = lastRect.top + lastRect.height / 2;
+       const lastIsFixed = isElementFixed(lastEl);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x: lastCenterX / window.innerWidth * 100,
+         y: lastIsFixed ? lastCenterY : lastCenterY + window.scrollY,
+         clientY: lastCenterY,
+@@ -11026,7 +11051,7 @@ function PageFeedbackToolbarForRoute({
+       const computedStylesStr = getForensicComputedStyles(elementUnder);
+       setPendingExiting(false);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x,
+         y,
+         clientY: e.clientY,
+@@ -11364,7 +11389,7 @@ function PageFeedbackToolbarForRoute({
+             const firstElementComputedStyles = getDetailedComputedStyles(firstElement);
+             const firstElementComputedStylesStr = getForensicComputedStyles(firstElement);
+             setPendingAnnotation({
+-              id: Date.now().toString(),
++              id: crypto.randomUUID(),
+               x,
+               y,
+               clientY: e.clientY,
+@@ -11396,7 +11421,7 @@ function PageFeedbackToolbarForRoute({
+           const height = Math.abs(bottom - top);
+           if (width > 20 && height > 20) {
+             setPendingAnnotation({
+-              id: Date.now().toString(),
++              id: crypto.randomUUID(),
+               x,
+               y,
+               clientY: e.clientY,
+@@ -11469,6 +11494,7 @@ function PageFeedbackToolbarForRoute({
+         element: pendingAnnotation.element,
+         elementPath: pendingAnnotation.elementPath,
+         timestamp: Date.now(),
++        buildVersion,
+         selectedText: pendingAnnotation.selectedText,
+         boundingBox: pendingAnnotation.boundingBox,
+         nearbyText: pendingAnnotation.nearbyText,
+@@ -11525,6 +11551,7 @@ function PageFeedbackToolbarForRoute({
+     },
+     [
+       pendingAnnotation,
++      buildVersion,
+       onAnnotationAdd,
+       fireWebhook,
+       endpoint,
+@@ -13191,6 +13218,13 @@ function PageFeedbackToolbarForRoute({
+             onSubmit: updateAnnotation2,
+             onCancel: cancelEditAnnotation,
+             onDelete: () => deleteAnnotation2(cardAnnotation.id),
++            onResolve: onAnnotationResolve ? async () => {
++              await onAnnotationResolve({ ...cardAnnotation, id: serverIds.current.get(cardAnnotation.id) ?? cardAnnotation.id });
++              setRestoreEditPreview(false);
++              setEditExiting(true);
++              setAnnotations((prev) => prev.map((annotation) => annotation.id === cardAnnotation.id ? { ...annotation, status: "resolved" } : annotation));
++              setExitingMarkers((prev) => new Set(prev).add(cardAnnotation.id));
++            } : void 0,
+             accentColor: cardAnnotation.isMultiSelect ? "var(--agentation-color-green)" : "var(--agentation-color-accent)"
+           } : void 0
+         }
+diff --git a/dist/index.mjs b/dist/index.mjs
+index f716ae8b6527d7c6476503c741cffb47e9d9a740..61cf01d680ee54d9a60284f2a43ef8be8117b988 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1337,6 +1337,7 @@ var AnnotationEditor = forwardRef(function AnnotationEditor2({
+   onSubmit,
+   onCancel,
+   onDelete,
++  onResolve,
+   onOpenSource,
+   allowEmpty = false,
+   accentColor = "#3c82f7",
+@@ -1348,6 +1349,7 @@ var AnnotationEditor = forwardRef(function AnnotationEditor2({
+ }, ref) {
+   const isCard = variant === "card";
+   const [text, setText] = useState3(initialValue);
++  const [isResolving, setIsResolving] = useState3(false);
+   const [isFocused, setIsFocused] = useState3(false);
+   const [isStylesExpanded, setIsStylesExpanded] = useState3(false);
+   const textareaRef = useRef3(null);
+@@ -1582,17 +1584,36 @@ var AnnotationEditor = forwardRef(function AnnotationEditor2({
+             className: isCard ? styles_module_default.sharedActions : void 0,
+             style: isCard ? void 0 : { display: "contents" },
+             children: /* @__PURE__ */ jsxs("div", { className: styles_module_default.actions, children: [
++              onResolve && jsx2("button", {
++                className: styles_module_default.cancel,
++                type: "button",
++                disabled: isResolving,
++                "aria-label": "Resolve annotation",
++                onClick: async () => {
++                  if (isResolving) return;
++                  setIsResolving(true);
++                  try {
++                    await onResolve();
++                  } catch (error) {
++                    console.warn("[Agentation] Failed to resolve annotation:", error);
++                  } finally {
++                    setIsResolving(false);
++                  }
++                },
++                children: isResolving ? "Resolving..." : "Resolve"
++              }),
+               onDelete && /* @__PURE__ */ jsx2("div", { className: styles_module_default.deleteWrapper, children: /* @__PURE__ */ jsx2(
+                 "button",
+                 {
+                   className: styles_module_default.deleteButton,
+                   onClick: onDelete,
++                  disabled: isResolving,
+                   type: "button",
+                   "aria-label": "Delete annotation",
+                   children: "Delete"
+                 }
+               ) }),
+-              /* @__PURE__ */ jsx2("button", { className: styles_module_default.cancel, onClick: onCancel, children: "Cancel" }),
++              /* @__PURE__ */ jsx2("button", { className: styles_module_default.cancel, onClick: onCancel, disabled: isResolving, children: "Cancel" }),
+               /* @__PURE__ */ jsx2(
+                 "button",
+                 {
+@@ -1602,7 +1623,7 @@ var AnnotationEditor = forwardRef(function AnnotationEditor2({
+                     opacity: text.trim() || allowEmpty ? 1 : 0.4
+                   },
+                   onClick: handleSubmit,
+-                  disabled: disabled || !text.trim() && !allowEmpty,
++                  disabled: disabled || isResolving || !text.trim() && !allowEmpty,
+                   children: submitLabel
+                 }
+               )
+@@ -9632,6 +9653,9 @@ function PageFeedbackToolbarForRoute({
+   demoDelay = 1e3,
+   enableDemoMode = false,
+   onAnnotationAdd,
++  buildVersion,
++  onAnnotationSync,
++  onAnnotationResolve,
+   onAnnotationDelete,
+   onAnnotationUpdate,
+   onAnnotationsClear,
+@@ -9669,6 +9693,7 @@ function PageFeedbackToolbarForRoute({
+   const keepFeedback = (annotation) => isRenderableAnnotation(annotation) && !deletedIds.current.has(annotation.id);
+   const syncPageAnnotation = async (...args) => {
+     const saved = await syncAnnotation(...args);
++    onAnnotationSync?.(saved);
+     const sent = args[2];
+     const localId = sent.id;
+     if (localId) {
+@@ -10593,7 +10618,7 @@ function PageFeedbackToolbarForRoute({
+       const rect = freshRects[0];
+       const isFixed = isElementFixed(firstEl);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x: rect.left / window.innerWidth * 100,
+         y: isFixed ? rect.top : rect.top + window.scrollY,
+         clientY: rect.top,
+@@ -10640,7 +10665,7 @@ function PageFeedbackToolbarForRoute({
+       const lastCenterY = lastRect.top + lastRect.height / 2;
+       const lastIsFixed = isElementFixed(lastEl);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x: lastCenterX / window.innerWidth * 100,
+         y: lastIsFixed ? lastCenterY : lastCenterY + window.scrollY,
+         clientY: lastCenterY,
+@@ -10958,7 +10983,7 @@ function PageFeedbackToolbarForRoute({
+       const computedStylesStr = getForensicComputedStyles(elementUnder);
+       setPendingExiting(false);
+       setPendingAnnotation({
+-        id: Date.now().toString(),
++        id: crypto.randomUUID(),
+         x,
+         y,
+         clientY: e.clientY,
+@@ -11296,7 +11321,7 @@ function PageFeedbackToolbarForRoute({
+             const firstElementComputedStyles = getDetailedComputedStyles(firstElement);
+             const firstElementComputedStylesStr = getForensicComputedStyles(firstElement);
+             setPendingAnnotation({
+-              id: Date.now().toString(),
++              id: crypto.randomUUID(),
+               x,
+               y,
+               clientY: e.clientY,
+@@ -11328,7 +11353,7 @@ function PageFeedbackToolbarForRoute({
+           const height = Math.abs(bottom - top);
+           if (width > 20 && height > 20) {
+             setPendingAnnotation({
+-              id: Date.now().toString(),
++              id: crypto.randomUUID(),
+               x,
+               y,
+               clientY: e.clientY,
+@@ -11401,6 +11426,7 @@ function PageFeedbackToolbarForRoute({
+         element: pendingAnnotation.element,
+         elementPath: pendingAnnotation.elementPath,
+         timestamp: Date.now(),
++        buildVersion,
+         selectedText: pendingAnnotation.selectedText,
+         boundingBox: pendingAnnotation.boundingBox,
+         nearbyText: pendingAnnotation.nearbyText,
+@@ -11457,6 +11483,7 @@ function PageFeedbackToolbarForRoute({
+     },
+     [
+       pendingAnnotation,
++      buildVersion,
+       onAnnotationAdd,
+       fireWebhook,
+       endpoint,
+@@ -13123,6 +13150,13 @@ function PageFeedbackToolbarForRoute({
+             onSubmit: updateAnnotation2,
+             onCancel: cancelEditAnnotation,
+             onDelete: () => deleteAnnotation2(cardAnnotation.id),
++            onResolve: onAnnotationResolve ? async () => {
++              await onAnnotationResolve({ ...cardAnnotation, id: serverIds.current.get(cardAnnotation.id) ?? cardAnnotation.id });
++              setRestoreEditPreview(false);
++              setEditExiting(true);
++              setAnnotations((prev) => prev.map((annotation) => annotation.id === cardAnnotation.id ? { ...annotation, status: "resolved" } : annotation));
++              setExitingMarkers((prev) => new Set(prev).add(cardAnnotation.id));
++            } : void 0,
+             accentColor: cardAnnotation.isMultiSelect ? "var(--agentation-color-green)" : "var(--agentation-color-accent)"
+           } : void 0
+         }
