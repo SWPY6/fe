@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { Search, Sun } from "lucide-react"
+import { Search } from "lucide-react"
 import { useState } from "react"
 
-import { Button } from "../components/ui/button"
 import { Header } from "../components/ui/Header"
 import { Input } from "../components/ui/input"
 
@@ -15,14 +14,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// 검색 상태와 메뉴 내용은 Header가 아닌 사용처에서 관리합니다.
-// 이 예시는 입력 상태와 배치만 보여줍니다. 메뉴는 해시 링크이며 첫 메뉴를 선택 표시합니다.
-// 실제 종목 필터와 라우트별 선택 표시는 앱의 __root.tsx에서 확인합니다.
 function HeaderExample() {
   const [query, setQuery] = useState("")
 
   return (
-    <Header.Root>
+    <Header.Root className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
       <Header.Row>
         <Header.Left>
           <a href="#overview" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
@@ -41,23 +37,6 @@ function HeaderExample() {
             className="h-10 bg-muted"
           />
         </Header.Middle>
-        <Header.Right>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="테마 전환 준비 중"
-            disabled
-            className="disabled:opacity-100"
-          >
-            <Sun />
-          </Button>
-          <Button variant="ghost" size="sm" disabled className="disabled:opacity-100">
-            로그인
-          </Button>
-          <Button size="sm" disabled className="disabled:opacity-100">
-            회원가입
-          </Button>
-        </Header.Right>
       </Header.Row>
       <Header.Navigation aria-label="주요 메뉴">
         <ul className="flex w-max min-w-full items-center gap-6 typo-label-sm text-muted-foreground md:gap-10">
@@ -99,7 +78,7 @@ export const Default: Story = {
 export const WithoutSearchOrNavigation: Story = {
   name: "검색과 메뉴 없이 조합",
   render: () => (
-    <Header.Root>
+    <Header.Root className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
       <Header.Row>
         <Header.Left>
           <span className="typo-wordmark text-primary">브랜드</span>
@@ -110,4 +89,10 @@ export const WithoutSearchOrNavigation: Story = {
       </Header.Row>
     </Header.Root>
   ),
+}
+
+export const Mobile: Story = {
+  name: "모바일 한 줄 배치",
+  globals: { viewport: { value: "mobile1", isRotated: false } },
+  render: () => <HeaderExample />,
 }

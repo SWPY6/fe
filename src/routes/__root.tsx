@@ -1,10 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { Link, Outlet, createRootRouteWithContext, useRouterState } from "@tanstack/react-router"
-import { Search, Sun } from "lucide-react"
+import { Search } from "lucide-react"
 import { createContext, useMemo, useState } from "react"
 import { Toaster } from "sonner"
 
-import { Button } from "@/components/ui/button"
 import { Header } from "@/components/ui/Header"
 import { Input } from "@/components/ui/input"
 
@@ -25,7 +24,7 @@ function RootLayout() {
   return (
     <HeaderSearchContext.Provider value={search}>
       <div className="min-h-screen min-w-0 bg-background text-foreground">
-        <Header.Root>
+        <Header.Root className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
           <Header.Row>
             <Header.Left>
               <Link to="/" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
@@ -44,23 +43,6 @@ function RootLayout() {
                 className="h-10 bg-muted"
               />
             </Header.Middle>
-            <Header.Right>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="테마 전환 준비 중"
-                disabled
-                className="disabled:opacity-100"
-              >
-                <Sun />
-              </Button>
-              <Button variant="ghost" size="sm" disabled className="disabled:opacity-100">
-                로그인
-              </Button>
-              <Button size="sm" disabled className="disabled:opacity-100">
-                회원가입
-              </Button>
-            </Header.Right>
           </Header.Row>
           <Header.Navigation aria-label="주요 메뉴">
             <ul className="flex w-max min-w-full items-center gap-6 typo-label-sm text-muted-foreground md:gap-10">
