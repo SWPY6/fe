@@ -1,10 +1,13 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Agentation, getStorageKey, loadAnnotations } from "agentation"
+import { toast, Toaster } from "sonner"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 import { cleanup, render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
 import { annotationSchema } from "../server/protocol"
 import { resolveFeedback } from "./api"
+import { FeedbackReview } from "./FeedbackReview"
 
 const testPath = "/feedback-build-test"
 let previousUrl: string
@@ -32,6 +35,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await cleanup()
+  toast.dismiss()
   vi.unstubAllGlobals()
   for (const key of Object.keys(localStorage)) {
     if (key.startsWith("feedback-") || key.startsWith("agentation-")) localStorage.removeItem(key)
@@ -139,4 +143,53 @@ test("offline feedback keeps its creation build when resynced by a later build",
     <Agentation endpoint="/api/agentation" sessionId="ses_test" buildVersion="preview-4.1" />,
   )
   await expect.poll(() => submittedBuilds).toEqual(["preview-2.1", "preview-2.1"])
+})
+
+test("reloading saved feedback restores the failed notification and its retry action", async () => {
+  const annotation = annotationSchema.parse({
+    id: "ann_failed_notification",
+    sessionId: "ses_test",
+    x: 30,
+    y: 120,
+    comment: "알림 전송에 실패한 피드백",
+    element: "button",
+    elementPath: "main > button",
+    timestamp: Date.now(),
+    createdAt: new Date().toISOString(),
+    status: "pending",
+    buildVersion: "preview-2.1",
+    githubNotification: { status: "failed", error: "GitHub unavailable" },
+  })
+  const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+    const url = String(input)
+    if (url.endsWith("/notification")) {
+      return Response.json({
+        status: "sent",
+        issueNumber: 80,
+        issueUrl: "https://github.com/SWPY6/fe/issues/80",
+      })
+    }
+    if (url.endsWith("/sessions")) return Response.json({ id: "ses_test" })
+    return Response.json({ id: "ses_test", url: window.location.href, annotations: [annotation] })
+  })
+  vi.stubGlobal("fetch", fetchMock)
+  const queryClient = new QueryClient()
+  await render(
+    <QueryClientProvider client={queryClient}>
+      <FeedbackReview />
+      <Toaster position="top-center" />
+    </QueryClientProvider>,
+  )
+
+  await expect
+    .element(page.getByText("피드백은 저장했지만 GitHub Issue를 생성하지 못했습니다."))
+    .toBeVisible()
+  await page.getByRole("button", { name: "Start feedback mode", exact: true }).click()
+  await page.getByRole("button", { name: "재시도", exact: true }).click()
+  await expect.element(page.getByText("GitHub Issue를 생성했습니다.")).toBeVisible()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "/api/agentation/annotations/ann_failed_notification/notification",
+    { method: "POST" },
+  )
+  queryClient.clear()
 })

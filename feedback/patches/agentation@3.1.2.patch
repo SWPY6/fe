@@ -1,5 +1,5 @@
 diff --git a/dist/index.d.mts b/dist/index.d.mts
-index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b3e8822d5 100644
+index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..08ed5882ecfc0184c51278613f52c7d2110fdbff 100644
 --- a/dist/index.d.mts
 +++ b/dist/index.d.mts
 @@ -8,6 +8,7 @@ type Annotation = {
@@ -16,7 +16,7 @@ index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b
      onAnnotationAdd?: (annotation: Annotation) => void;
 +    /** Build version stamped once when feedback is created. */
 +    buildVersion?: string;
-+    /** Called with the saved server response after annotation sync. */
++    /** Called with annotations synchronized from or saved to the server. */
 +    onAnnotationSync?: (annotation: Annotation) => void;
 +    /** Resolve action; reject to keep the feedback open. */
 +    onAnnotationResolve?: (annotation: Annotation) => Promise<void>;
@@ -24,7 +24,7 @@ index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b
      onAnnotationDelete?: (annotation: Annotation) => void;
      /** Callback fired when an annotation comment is edited. */
 diff --git a/dist/index.d.ts b/dist/index.d.ts
-index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b3e8822d5 100644
+index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..08ed5882ecfc0184c51278613f52c7d2110fdbff 100644
 --- a/dist/index.d.ts
 +++ b/dist/index.d.ts
 @@ -8,6 +8,7 @@ type Annotation = {
@@ -41,7 +41,7 @@ index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b
      onAnnotationAdd?: (annotation: Annotation) => void;
 +    /** Build version stamped once when feedback is created. */
 +    buildVersion?: string;
-+    /** Called with the saved server response after annotation sync. */
++    /** Called with annotations synchronized from or saved to the server. */
 +    onAnnotationSync?: (annotation: Annotation) => void;
 +    /** Resolve action; reject to keep the feedback open. */
 +    onAnnotationResolve?: (annotation: Annotation) => Promise<void>;
@@ -49,7 +49,7 @@ index d4953237a56ae05359c5ea8f6fd5d02f8aba8829..f4929cfbabe44a027855056356392d3b
      onAnnotationDelete?: (annotation: Annotation) => void;
      /** Callback fired when an annotation comment is edited. */
 diff --git a/dist/index.js b/dist/index.js
-index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e8f423534 100644
+index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..e04195236c4a80db4876f55bf6182df08d3ffbad 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -1410,6 +1410,7 @@ var AnnotationEditor = (0, import_react7.forwardRef)(function AnnotationEditor2(
@@ -136,7 +136,15 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
      const sent = args[2];
      const localId = sent.id;
      if (localId) {
-@@ -10661,7 +10687,7 @@ function PageFeedbackToolbarForRoute({
+@@ -9763,6 +9789,7 @@ function PageFeedbackToolbarForRoute({
+   const latestPathname = (0, import_react19.useRef)(pathname);
+   latestPathname.current = pathname;
+   const applySessionFeedback = (before, incoming, sessionId, pagePath2 = pathname) => {
++    incoming.forEach((annotation) => onAnnotationSync?.(annotation));
+     const merged = mergeSessionFeedback(before, loadAnnotations(pagePath2), incoming, serverIds.current).filter(keepFeedback);
+     if (pagePath2 === latestPathname.current && routeAlive.current) setAnnotations(merged);
+     saveAnnotationsWithSyncMarker(pagePath2, merged, sessionId);
+@@ -10661,7 +10688,7 @@ function PageFeedbackToolbarForRoute({
        const rect = freshRects[0];
        const isFixed = isElementFixed(firstEl);
        setPendingAnnotation({
@@ -145,7 +153,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
          x: rect.left / window.innerWidth * 100,
          y: isFixed ? rect.top : rect.top + window.scrollY,
          clientY: rect.top,
-@@ -10708,7 +10734,7 @@ function PageFeedbackToolbarForRoute({
+@@ -10708,7 +10735,7 @@ function PageFeedbackToolbarForRoute({
        const lastCenterY = lastRect.top + lastRect.height / 2;
        const lastIsFixed = isElementFixed(lastEl);
        setPendingAnnotation({
@@ -154,7 +162,15 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
          x: lastCenterX / window.innerWidth * 100,
          y: lastIsFixed ? lastCenterY : lastCenterY + window.scrollY,
          clientY: lastCenterY,
-@@ -11026,7 +11052,7 @@ function PageFeedbackToolbarForRoute({
+@@ -10945,6 +10972,7 @@ function PageFeedbackToolbarForRoute({
+         return;
+       }
+       const target = e.composedPath()[0] || e.target;
++      if (closestCrossingShadow(target, "[data-sonner-toaster]")) return;
+       if (closestCrossingShadow(target, "[data-feedback-toolbar]")) return;
+       if (closestCrossingShadow(target, "[data-annotation-popup]")) return;
+       if (closestCrossingShadow(target, "[data-annotation-marker]")) return;
+@@ -11026,7 +11054,7 @@ function PageFeedbackToolbarForRoute({
        const computedStylesStr = getForensicComputedStyles(elementUnder);
        setPendingExiting(false);
        setPendingAnnotation({
@@ -163,7 +179,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
          x,
          y,
          clientY: e.clientY,
-@@ -11364,7 +11390,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11364,7 +11392,7 @@ function PageFeedbackToolbarForRoute({
              const firstElementComputedStyles = getDetailedComputedStyles(firstElement);
              const firstElementComputedStylesStr = getForensicComputedStyles(firstElement);
              setPendingAnnotation({
@@ -172,7 +188,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
                x,
                y,
                clientY: e.clientY,
-@@ -11396,7 +11422,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11396,7 +11424,7 @@ function PageFeedbackToolbarForRoute({
            const height = Math.abs(bottom - top);
            if (width > 20 && height > 20) {
              setPendingAnnotation({
@@ -181,7 +197,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
                x,
                y,
                clientY: e.clientY,
-@@ -11469,6 +11495,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11469,6 +11497,7 @@ function PageFeedbackToolbarForRoute({
          element: pendingAnnotation.element,
          elementPath: pendingAnnotation.elementPath,
          timestamp: Date.now(),
@@ -189,7 +205,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
          selectedText: pendingAnnotation.selectedText,
          boundingBox: pendingAnnotation.boundingBox,
          nearbyText: pendingAnnotation.nearbyText,
-@@ -11525,6 +11552,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11525,6 +11554,7 @@ function PageFeedbackToolbarForRoute({
      },
      [
        pendingAnnotation,
@@ -197,7 +213,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
        onAnnotationAdd,
        fireWebhook,
        endpoint,
-@@ -13191,6 +13219,13 @@ function PageFeedbackToolbarForRoute({
+@@ -13191,6 +13221,13 @@ function PageFeedbackToolbarForRoute({
              onSubmit: updateAnnotation2,
              onCancel: cancelEditAnnotation,
              onDelete: () => deleteAnnotation2(cardAnnotation.id),
@@ -212,7 +228,7 @@ index 7082d5c43e122c12fce669b1c65b17f4156ef5a2..4fe17c405c3f9ffd42df350d3e15cb7e
            } : void 0
          }
 diff --git a/dist/index.mjs b/dist/index.mjs
-index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c64c63e99 100644
+index f716ae8b6527d7c6476503c741cffb47e9d9a740..dba5b492befb8db8cb588c938d8fb3b7491fd793 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
 @@ -1337,6 +1337,7 @@ var AnnotationEditor = forwardRef(function AnnotationEditor2({
@@ -299,7 +315,15 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
      const sent = args[2];
      const localId = sent.id;
      if (localId) {
-@@ -10593,7 +10619,7 @@ function PageFeedbackToolbarForRoute({
+@@ -9695,6 +9721,7 @@ function PageFeedbackToolbarForRoute({
+   const latestPathname = useRef14(pathname);
+   latestPathname.current = pathname;
+   const applySessionFeedback = (before, incoming, sessionId, pagePath2 = pathname) => {
++    incoming.forEach((annotation) => onAnnotationSync?.(annotation));
+     const merged = mergeSessionFeedback(before, loadAnnotations(pagePath2), incoming, serverIds.current).filter(keepFeedback);
+     if (pagePath2 === latestPathname.current && routeAlive.current) setAnnotations(merged);
+     saveAnnotationsWithSyncMarker(pagePath2, merged, sessionId);
+@@ -10593,7 +10620,7 @@ function PageFeedbackToolbarForRoute({
        const rect = freshRects[0];
        const isFixed = isElementFixed(firstEl);
        setPendingAnnotation({
@@ -308,7 +332,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
          x: rect.left / window.innerWidth * 100,
          y: isFixed ? rect.top : rect.top + window.scrollY,
          clientY: rect.top,
-@@ -10640,7 +10666,7 @@ function PageFeedbackToolbarForRoute({
+@@ -10640,7 +10667,7 @@ function PageFeedbackToolbarForRoute({
        const lastCenterY = lastRect.top + lastRect.height / 2;
        const lastIsFixed = isElementFixed(lastEl);
        setPendingAnnotation({
@@ -317,7 +341,15 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
          x: lastCenterX / window.innerWidth * 100,
          y: lastIsFixed ? lastCenterY : lastCenterY + window.scrollY,
          clientY: lastCenterY,
-@@ -10958,7 +10984,7 @@ function PageFeedbackToolbarForRoute({
+@@ -10877,6 +10904,7 @@ function PageFeedbackToolbarForRoute({
+         return;
+       }
+       const target = e.composedPath()[0] || e.target;
++      if (closestCrossingShadow(target, "[data-sonner-toaster]")) return;
+       if (closestCrossingShadow(target, "[data-feedback-toolbar]")) return;
+       if (closestCrossingShadow(target, "[data-annotation-popup]")) return;
+       if (closestCrossingShadow(target, "[data-annotation-marker]")) return;
+@@ -10958,7 +10986,7 @@ function PageFeedbackToolbarForRoute({
        const computedStylesStr = getForensicComputedStyles(elementUnder);
        setPendingExiting(false);
        setPendingAnnotation({
@@ -326,7 +358,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
          x,
          y,
          clientY: e.clientY,
-@@ -11296,7 +11322,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11296,7 +11324,7 @@ function PageFeedbackToolbarForRoute({
              const firstElementComputedStyles = getDetailedComputedStyles(firstElement);
              const firstElementComputedStylesStr = getForensicComputedStyles(firstElement);
              setPendingAnnotation({
@@ -335,7 +367,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
                x,
                y,
                clientY: e.clientY,
-@@ -11328,7 +11354,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11328,7 +11356,7 @@ function PageFeedbackToolbarForRoute({
            const height = Math.abs(bottom - top);
            if (width > 20 && height > 20) {
              setPendingAnnotation({
@@ -344,7 +376,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
                x,
                y,
                clientY: e.clientY,
-@@ -11401,6 +11427,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11401,6 +11429,7 @@ function PageFeedbackToolbarForRoute({
          element: pendingAnnotation.element,
          elementPath: pendingAnnotation.elementPath,
          timestamp: Date.now(),
@@ -352,7 +384,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
          selectedText: pendingAnnotation.selectedText,
          boundingBox: pendingAnnotation.boundingBox,
          nearbyText: pendingAnnotation.nearbyText,
-@@ -11457,6 +11484,7 @@ function PageFeedbackToolbarForRoute({
+@@ -11457,6 +11486,7 @@ function PageFeedbackToolbarForRoute({
      },
      [
        pendingAnnotation,
@@ -360,7 +392,7 @@ index f716ae8b6527d7c6476503c741cffb47e9d9a740..0aed9e68b8f69596426af8e15a93923c
        onAnnotationAdd,
        fireWebhook,
        endpoint,
-@@ -13123,6 +13151,13 @@ function PageFeedbackToolbarForRoute({
+@@ -13123,6 +13153,13 @@ function PageFeedbackToolbarForRoute({
              onSubmit: updateAnnotation2,
              onCancel: cancelEditAnnotation,
              onDelete: () => deleteAnnotation2(cardAnnotation.id),

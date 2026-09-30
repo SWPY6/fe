@@ -56,6 +56,15 @@ function toAnnotation(row: typeof annotations.$inferSelect): Annotation {
   })
 }
 
+function toGitHubNotification(row: typeof githubNotifications.$inferSelect) {
+  return githubNotificationSchema.parse({
+    status: row.status,
+    ...(row.issueNumber ? { issueNumber: row.issueNumber } : {}),
+    ...(row.issueUrl ? { issueUrl: row.issueUrl } : {}),
+    ...(row.error ? { error: row.error } : {}),
+  })
+}
+
 export function createFeedbackStore(binding: D1Database) {
   const db = drizzle(binding)
 
@@ -96,11 +105,16 @@ export function createFeedbackStore(binding: D1Database) {
 
   const listSessionAnnotations = async (sessionId: string) => {
     const rows = await db
-      .select()
+      .select({ annotation: annotations, notification: githubNotifications })
       .from(annotations)
+      .leftJoin(githubNotifications, eq(githubNotifications.annotationId, annotations.id))
       .where(eq(annotations.sessionId, sessionId))
       .orderBy(asc(annotations.timestamp))
-    return rows.map(toAnnotation)
+    return rows.map(({ annotation, notification }) => {
+      const value = toAnnotation(annotation)
+      if (notification) value.githubNotification = toGitHubNotification(notification)
+      return value
+    })
   }
 
   return {
@@ -197,14 +211,7 @@ export function createFeedbackStore(binding: D1Database) {
         .where(eq(githubNotifications.annotationId, annotationId))
         .limit(1)
 
-      return row
-        ? githubNotificationSchema.parse({
-            status: row.status,
-            ...(row.issueNumber ? { issueNumber: row.issueNumber } : {}),
-            ...(row.issueUrl ? { issueUrl: row.issueUrl } : {}),
-            ...(row.error ? { error: row.error } : {}),
-          })
-        : undefined
+      return row ? toGitHubNotification(row) : undefined
     },
 
     async claimGitHubNotification(annotationId: string) {
