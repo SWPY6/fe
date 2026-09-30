@@ -4,6 +4,7 @@ import { cors } from "hono/cors"
 
 import { createFeedbackStore } from "./db/store"
 import { openEventStream } from "./events"
+import { notifyFeedbackIssue } from "./github"
 import {
   actionRequestSchema,
   addThreadMessageSchema,
@@ -16,6 +17,7 @@ import {
 type FeedbackEnv = {
   Bindings: {
     AGENTATION_DB?: D1Database
+    GITHUB_API_TOKEN?: string
   }
   Variables: {
     store: ReturnType<typeof createFeedbackStore>
@@ -65,7 +67,22 @@ app.get("/sessions/:id", async (c) => {
 
 app.post("/sessions/:id/annotations", zValidator("json", createAnnotationSchema), async (c) => {
   const annotation = await c.var.store.addAnnotation(c.req.param("id"), c.req.valid("json"))
-  return annotation ? c.json(annotation, 201) : c.json({ error: "Session not found" }, 404)
+  if (!annotation) return c.json({ error: "Session not found" }, 404)
+
+  const githubNotification = await notifyFeedbackIssue(
+    c.var.store,
+    annotation,
+    c.env.GITHUB_API_TOKEN,
+  )
+  return c.json({ ...annotation, githubNotification }, 201)
+})
+
+app.post("/annotations/:id/notification", async (c) => {
+  const annotation = await c.var.store.getAnnotation(c.req.param("id"))
+  if (!annotation) return c.json({ error: "Annotation not found" }, 404)
+
+  const notification = await notifyFeedbackIssue(c.var.store, annotation, c.env.GITHUB_API_TOKEN)
+  return c.json(notification)
 })
 
 app.get("/sessions/:id/pending", async (c) => {

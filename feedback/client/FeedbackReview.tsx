@@ -2,12 +2,17 @@ import { Agentation } from "agentation"
 
 import { feedbackEndpoint } from "./api"
 import { buildVersion } from "./buildVersion"
-import { useFeedbackSession, useResolveFeedbackMutation } from "./useFeedback"
+import {
+  useFeedbackNotification,
+  useFeedbackSession,
+  useResolveFeedbackMutation,
+} from "./useFeedback"
 
 export function FeedbackReview() {
   const url = new URL(window.location.pathname, window.location.origin).toString()
   const { data: sessionId, isPending, isError } = useFeedbackSession(url)
   const resolve = useResolveFeedbackMutation()
+  const onAnnotationSync = useFeedbackNotification()
 
   if (isPending) return null
 
@@ -20,6 +25,7 @@ export function FeedbackReview() {
       endpoint={feedbackEndpoint}
       sessionId={sessionId}
       buildVersion={buildVersion}
+      onAnnotationSync={onAnnotationSync}
       onAnnotationResolve={async (annotation) => {
         await resolve.mutateAsync(annotation.id)
       }}

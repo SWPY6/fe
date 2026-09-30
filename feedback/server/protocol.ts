@@ -14,6 +14,13 @@ export const annotationSeveritySchema = z.enum(["blocking", "important", "sugges
 export const annotationStatusSchema = z.enum(["pending", "acknowledged", "resolved", "dismissed"])
 export const sessionStatusSchema = z.enum(["active", "approved", "closed"])
 
+export const githubNotificationSchema = z.object({
+  status: z.enum(["sending", "sent", "failed"]),
+  issueNumber: z.number().int().positive().optional(),
+  issueUrl: z.url().optional(),
+  error: z.string().optional(),
+})
+
 export const threadMessageSchema = z
   .object({
     id: z.string().min(1),
@@ -32,6 +39,7 @@ const annotationFields = {
   elementPath: z.string().min(1),
   timestamp: z.number(),
   buildVersion: z.string().min(1).optional(),
+  githubNotification: githubNotificationSchema.optional(),
   selectedText: z.string().optional(),
   boundingBox: rectangleSchema.optional(),
   nearbyText: z.string().optional(),
@@ -97,7 +105,10 @@ const annotationFields = {
   _syncedTo: z.string().optional(),
 }
 
-export const createAnnotationSchema = z.object(annotationFields).strict()
+export const createAnnotationSchema = z
+  .object(annotationFields)
+  .omit({ githubNotification: true })
+  .strict()
 
 export const annotationSchema = z
   .object({
@@ -189,3 +200,4 @@ export type ActionRequest = z.infer<typeof actionRequestSchema>
 export type FeedbackEventType = z.infer<typeof feedbackEventTypeSchema>
 export type FeedbackEventPayload = z.infer<typeof feedbackEventPayloadSchema>
 export type FeedbackEvent = z.infer<typeof feedbackEventSchema>
+export type GitHubNotification = z.infer<typeof githubNotificationSchema>

@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { annotationSchema } from "../server/protocol"
+import { annotationSchema, githubNotificationSchema } from "../server/protocol"
 
 export const feedbackEndpoint = "/api/agentation"
 const sessionResponseSchema = z.object({ id: z.string().min(1) })
@@ -24,4 +24,15 @@ export async function resolveFeedback(id: string) {
   })
   if (!response.ok) throw new Error(`Feedback resolve failed: HTTP ${response.status}`)
   return annotationSchema.parse(await response.json())
+}
+
+export async function retryFeedbackNotification(id: string) {
+  const response = await fetch(
+    `${feedbackEndpoint}/annotations/${encodeURIComponent(id)}/notification`,
+    { method: "POST" },
+  )
+  if (!response.ok) throw new Error(`Feedback notification failed: HTTP ${response.status}`)
+  const notification = githubNotificationSchema.parse(await response.json())
+  if (notification.status === "failed") throw new Error(notification.error)
+  return notification
 }

@@ -6,6 +6,7 @@ import type {
   AnnotationStatus,
   Session,
   SessionStatus,
+  GitHubNotification,
 } from "../protocol"
 
 export const sessions = sqliteTable(
@@ -55,3 +56,14 @@ export const events = sqliteTable(
   },
   (table) => [index("agentation_events_session_sequence").on(table.sessionId, table.sequence)],
 )
+
+export const githubNotifications = sqliteTable("feedback_github_notifications", {
+  annotationId: text("annotation_id")
+    .primaryKey()
+    .references(() => annotations.id, { onDelete: "cascade" }),
+  status: text().$type<GitHubNotification["status"]>().notNull(),
+  issueNumber: integer("issue_number"),
+  issueUrl: text("issue_url"),
+  error: text(),
+  updatedAt: text("updated_at").notNull(),
+})
