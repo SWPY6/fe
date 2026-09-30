@@ -107,5 +107,17 @@ describe("Feedback protocol", () => {
   it("does not allow immutable annotation fields to be overwritten", () => {
     expect(updateAnnotationSchema.safeParse({ id: "other-id" }).success).toBe(false)
     expect(updateAnnotationSchema.safeParse({ sessionId: "other-session" }).success).toBe(false)
+    expect(updateAnnotationSchema.safeParse({ buildVersion: "production-4.1" }).success).toBe(false)
+  })
+
+  it("stores the originating build without requiring a version on legacy feedback", () => {
+    expect(
+      createAnnotationSchema.parse({ ...clientAnnotation, buildVersion: "production-2.1" })
+        .buildVersion,
+    ).toBe("production-2.1")
+    expect(createAnnotationSchema.parse(clientAnnotation).buildVersion).toBeUndefined()
+    expect(
+      createAnnotationSchema.safeParse({ ...clientAnnotation, buildVersion: "" }).success,
+    ).toBe(false)
   })
 })

@@ -18,3 +18,5 @@ minimumReleaseAgeExclude:
   - lefthook@2.1.12
   - miniflare@5.20260831.0-alpha
   - wrangler@4.128.0
+patchedDependencies:
+  agentation@3.1.2: feedback/patches/agentation@3.1.2.patch

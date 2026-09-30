@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, lt } from "drizzle-orm"
+import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/d1"
 
 import type {
@@ -9,14 +9,16 @@ import type {
   Session,
   ThreadMessageInput,
   UpdateAnnotation,
+  GitHubNotification,
 } from "../protocol"
 import {
   feedbackEventSchema,
   annotationSchema,
   sessionSchema,
   threadMessageSchema,
+  githubNotificationSchema,
 } from "../protocol"
-import { annotations, events, sessions } from "./schema"
+import { annotations, events, githubNotifications, sessions } from "./schema"
 
 function normalizeUrl(value: string) {
   const url = new URL(value)
@@ -51,6 +53,15 @@ function toAnnotation(row: typeof annotations.$inferSelect): Annotation {
     timestamp: row.timestamp,
     createdAt: row.createdAt,
     ...(row.updatedAt ? { updatedAt: row.updatedAt } : {}),
+  })
+}
+
+function toGitHubNotification(row: typeof githubNotifications.$inferSelect) {
+  return githubNotificationSchema.parse({
+    status: row.status,
+    ...(row.issueNumber ? { issueNumber: row.issueNumber } : {}),
+    ...(row.issueUrl ? { issueUrl: row.issueUrl } : {}),
+    ...(row.error ? { error: row.error } : {}),
   })
 }
 
@@ -94,11 +105,16 @@ export function createFeedbackStore(binding: D1Database) {
 
   const listSessionAnnotations = async (sessionId: string) => {
     const rows = await db
-      .select()
+      .select({ annotation: annotations, notification: githubNotifications })
       .from(annotations)
+      .leftJoin(githubNotifications, eq(githubNotifications.annotationId, annotations.id))
       .where(eq(annotations.sessionId, sessionId))
       .orderBy(asc(annotations.timestamp))
-    return rows.map(toAnnotation)
+    return rows.map(({ annotation, notification }) => {
+      const value = toAnnotation(annotation)
+      if (notification) value.githubNotification = toGitHubNotification(notification)
+      return value
+    })
   }
 
   return {
@@ -151,7 +167,8 @@ export function createFeedbackStore(binding: D1Database) {
         return undefined
       }
 
-      const id = `ann_${crypto.randomUUID()}`
+      // Keep the client's ID so an offline resync or retried request is idempotent.
+      const id = input.id
       const createdAt = new Date().toISOString()
       const annotation = annotationSchema.parse({
         ...input,
@@ -162,20 +179,81 @@ export function createFeedbackStore(binding: D1Database) {
         createdAt,
       })
 
-      await db.insert(annotations).values({
-        id,
-        sessionId,
-        status: annotation.status,
-        timestamp: annotation.timestamp,
-        data: annotation,
-        createdAt,
-      })
+      const [created] = await db
+        .insert(annotations)
+        .values({
+          id,
+          sessionId,
+          status: annotation.status,
+          timestamp: annotation.timestamp,
+          data: annotation,
+          createdAt,
+        })
+        .onConflictDoNothing({ target: annotations.id })
+        .returning()
+
+      if (!created) {
+        const existing = await getAnnotation(id)
+        return existing?.sessionId === sessionId ? existing : undefined
+      }
+
       await emit("annotation.created", sessionId, annotation)
 
       return annotation
     },
 
     getAnnotation,
+
+    async getGitHubNotification(annotationId: string) {
+      const [row] = await db
+        .select()
+        .from(githubNotifications)
+        .where(eq(githubNotifications.annotationId, annotationId))
+        .limit(1)
+
+      return row ? toGitHubNotification(row) : undefined
+    },
+
+    async claimGitHubNotification(annotationId: string) {
+      const updatedAt = new Date().toISOString()
+      const [created] = await db
+        .insert(githubNotifications)
+        .values({ annotationId, status: "sending", updatedAt })
+        .onConflictDoNothing()
+        .returning()
+
+      if (created) return true
+
+      const [claimed] = await db
+        .update(githubNotifications)
+        .set({ status: "sending", error: null, updatedAt })
+        .where(
+          and(
+            eq(githubNotifications.annotationId, annotationId),
+            or(
+              eq(githubNotifications.status, "failed"),
+              and(
+                eq(githubNotifications.status, "sending"),
+                lt(githubNotifications.updatedAt, new Date(Date.now() - 120_000).toISOString()),
+              ),
+            ),
+          ),
+        )
+        .returning()
+
+      return !!claimed
+    },
+
+    async saveGitHubNotification(annotationId: string, notification: GitHubNotification) {
+      await db
+        .update(githubNotifications)
+        .set({
+          ...notification,
+          error: notification.error ?? null,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(githubNotifications.annotationId, annotationId))
+    },
 
     async updateAnnotation(id: string, input: UpdateAnnotation) {
       const existing = await getAnnotation(id)
