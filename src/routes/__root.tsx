@@ -2,12 +2,10 @@ import type { QueryClient } from "@tanstack/react-query"
 import { Link, Outlet, createRootRouteWithContext, useRouterState } from "@tanstack/react-router"
 import { Search, Sun } from "lucide-react"
 import { createContext, useMemo, useState } from "react"
-import { Toaster } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-import { FeedbackReview } from "../../feedback/client/FeedbackReview"
 import { globalUrlStateRouteOptions } from "../hooks/useGlobalUrlState"
 
 interface RouterContext {
@@ -123,8 +121,6 @@ function RootLayout() {
         <div className="mx-auto w-full max-w-7xl min-w-0 px-4 md:px-6 lg:px-4">
           <Outlet />
         </div>
-        {import.meta.env.MODE === "preview" && <FeedbackReview key={pathname} />}
-        <Toaster />
       </div>
     </HeaderSearchContext.Provider>
   )

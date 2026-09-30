@@ -1,0 +1,3503 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PLOUTOS API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "현재 origin의 API 경로."
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/api/v1/markets/{market}/summary": {
+      "get": {
+        "tags": ["Markets"],
+        "summary": "시장 요약 조회",
+        "operationId": "getMarketSummary",
+        "x-contract-source": "frontend-proposed",
+        "description": "선택한 시장의 주요 지표, 산업 동향, 핵심 상승·하락 산업의 관련 자료와 변동 종목 미리보기를 반환한다.",
+        "parameters": [
+          {
+            "name": "market",
+            "in": "path",
+            "required": true,
+            "description": "조회할 시장. domestic은 국내, overseas는 해외 시장이다.",
+            "schema": {
+              "$ref": "#/components/schemas/Market"
+            },
+            "example": "domestic"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "시장 요약을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MarketSummary"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "market": "domestic",
+                    "timezone": "Asia/Seoul",
+                    "currency": "KRW",
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "indicators": [
+                      {
+                        "indicatorId": "KOSPI",
+                        "name": "코스피",
+                        "value": 3200.5,
+                        "unit": "pt",
+                        "change": 12.5,
+                        "changeRate": 0.39,
+                        "previousClose": 3188,
+                        "asOf": "2026-08-12T14:31:05+09:00"
+                      }
+                    ],
+                    "industries": [
+                      {
+                        "industryId": 1,
+                        "name": "자동차",
+                        "averageChangeRate": 1.74,
+                        "displayChangeRate": 1.74,
+                        "rank": 1,
+                        "stockCount": 42,
+                        "tradingValueChangeRate": 8.5,
+                        "risingStockCount": 28,
+                        "fallingStockCount": 14,
+                        "topStocks": [
+                          {
+                            "stockId": 1,
+                            "market": "domestic",
+                            "ticker": "005380",
+                            "name": "현대차",
+                            "price": 248000,
+                            "currency": "KRW",
+                            "changeRate": 3.24
+                          }
+                        ]
+                      },
+                      {
+                        "industryId": 2,
+                        "name": "반도체",
+                        "averageChangeRate": -2.15,
+                        "displayChangeRate": -2.15,
+                        "rank": 8,
+                        "stockCount": 35,
+                        "tradingValueChangeRate": 12.3,
+                        "risingStockCount": 8,
+                        "fallingStockCount": 27,
+                        "topStocks": []
+                      }
+                    ],
+                    "highlights": [
+                      {
+                        "direction": "rise",
+                        "industryId": 1,
+                        "name": "자동차",
+                        "averageChangeRate": 1.74,
+                        "rank": 1,
+                        "risingStockCount": 28,
+                        "fallingStockCount": 14,
+                        "tradingValueChangeRate": 8.5,
+                        "selectionBasis": "산업 평균 등락률, 거래대금 변화율, 관련 자료를 기준으로 선정했습니다.",
+                        "materials": [
+                          {
+                            "materialId": "material-1",
+                            "type": "news",
+                            "title": "자동차 산업 관련 소식",
+                            "source": "예시 언론사",
+                            "publishedAt": "2026-08-12T11:00:00+09:00",
+                            "summary": "해당 산업과 관련된 발표 내용입니다.",
+                            "url": "https://example.com/news/1",
+                            "stockIds": [1],
+                            "industryIds": [1]
+                          }
+                        ]
+                      },
+                      {
+                        "direction": "fall",
+                        "industryId": 2,
+                        "name": "반도체",
+                        "averageChangeRate": -2.15,
+                        "rank": 8,
+                        "risingStockCount": 8,
+                        "fallingStockCount": 27,
+                        "tradingValueChangeRate": 12.3,
+                        "selectionBasis": "산업 평균 하락률, 거래대금 증가율, 관련 자료를 기준으로 선정했습니다.",
+                        "materials": [
+                          {
+                            "materialId": "material-2",
+                            "type": "news",
+                            "title": "반도체 산업 관련 소식",
+                            "source": "예시 언론사",
+                            "publishedAt": "2026-08-12T12:00:00+09:00",
+                            "summary": "해당 산업과 관련된 발표 내용입니다.",
+                            "url": "https://example.com/news/2",
+                            "stockIds": [],
+                            "industryIds": [2]
+                          }
+                        ]
+                      }
+                    ],
+                    "movers": [
+                      {
+                        "stockId": 1,
+                        "market": "domestic",
+                        "ticker": "005380",
+                        "name": "현대차",
+                        "industryId": 1,
+                        "industryName": "자동차",
+                        "currency": "KRW",
+                        "price": 248000,
+                        "changeRate": 3.24,
+                        "volume": 245000,
+                        "volumeRatio20d": 0.95,
+                        "marketCap": 86600000000000,
+                        "tradingValue": 60800000000,
+                        "caution": false,
+                        "contextSummary": "관련 공시와 거래량 변화를 함께 확인할 수 있습니다.",
+                        "contextMaterialIds": ["material-1"],
+                        "asOf": "2026-08-12T14:31:05+09:00",
+                        "rank": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/markets/{market}/industries": {
+      "get": {
+        "tags": ["Markets"],
+        "summary": "산업별 동향 조회",
+        "operationId": "getMarketIndustries",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "market",
+            "in": "path",
+            "required": true,
+            "description": "조회할 시장. domestic은 국내, overseas는 해외 시장이다.",
+            "schema": {
+              "$ref": "#/components/schemas/Market"
+            },
+            "example": "domestic"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "산업별 동향을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/IndustriesResult"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "market": "domestic",
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "industries": [
+                      {
+                        "industryId": 1,
+                        "name": "자동차",
+                        "averageChangeRate": 1.74,
+                        "displayChangeRate": 1.74,
+                        "rank": 1,
+                        "stockCount": 42,
+                        "tradingValueChangeRate": 8.5,
+                        "risingStockCount": 28,
+                        "fallingStockCount": 14,
+                        "topStocks": [
+                          {
+                            "stockId": 1,
+                            "market": "domestic",
+                            "ticker": "005380",
+                            "name": "현대차",
+                            "price": 248000,
+                            "currency": "KRW",
+                            "changeRate": 3.24
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        },
+        "description": "선택한 시장의 산업별 평균 등락률, 순위, 종목 수, 거래대금 변화율과 주요 종목을 반환한다."
+      }
+    },
+    "/api/v1/markets/{market}/indicators/{indicatorId}/history": {
+      "get": {
+        "tags": ["Markets"],
+        "summary": "시장 지표 차트 조회",
+        "operationId": "getIndicatorHistory",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "market",
+            "in": "path",
+            "required": true,
+            "description": "조회할 시장. domestic은 국내, overseas는 해외 시장이다.",
+            "schema": {
+              "$ref": "#/components/schemas/Market"
+            },
+            "example": "domestic"
+          },
+          {
+            "name": "indicatorId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 시장 지표의 ID.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "KOSPI"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "지표 차트 조회 기간.",
+            "schema": {
+              "$ref": "#/components/schemas/Period"
+            },
+            "example": "3M"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "지표의 거래일별 가격을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/IndicatorHistory"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "market": "domestic",
+                    "indicatorId": "KOSPI",
+                    "period": "3M",
+                    "unit": "pt",
+                    "currency": null,
+                    "previousClose": 3188,
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "candles": [
+                      {
+                        "tradeAt": "2026-08-11",
+                        "open": 3175,
+                        "high": 3190,
+                        "low": 3168,
+                        "close": 3188
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        },
+        "description": "선택한 지표의 조회 기간에 해당하는 거래일별 시가·고가·저가·종가와 직전 거래일 종가를 반환한다."
+      }
+    },
+    "/api/v1/stocks": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 검색 및 변동 목록 조회",
+        "operationId": "listStocks",
+        "x-contract-source": "frontend-proposed",
+        "description": "시장·검색어·산업·목록 조건을 적용한 종목을 페이지 단위로 반환한다. volume-spike는 직전 20거래일 평균 대비 당일 거래량이 2배 이상인 종목만 포함한다.",
+        "parameters": [
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "description": "결과를 제한할 시장. 생략하면 국내와 해외 시장을 모두 조회한다.",
+            "schema": {
+              "$ref": "#/components/schemas/Market"
+            },
+            "example": "domestic"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "종목명, 종목 코드 또는 티커에 적용할 검색어.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "현대차"
+          },
+          {
+            "name": "industryId",
+            "in": "query",
+            "required": false,
+            "description": "결과를 제한할 산업의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "description": "all은 전체, rising은 상승 TOP, falling은 하락 TOP, volume-spike는 거래량 급증 종목을 조회한다.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "rising", "falling", "volume-spike"],
+              "default": "all"
+            },
+            "example": "all"
+          },
+          {
+            "name": "excludeCaution",
+            "in": "query",
+            "required": false,
+            "description": "true이면 투자 유의 지정 종목을 결과에서 제외한다.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "example": false
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "현재가, 등락률, 거래량, 거래량 배수, 시가총액 또는 거래대금 중 정렬할 항목.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "price",
+                "changeRate",
+                "volume",
+                "volumeRatio20d",
+                "marketCap",
+                "tradingValue"
+              ]
+            },
+            "example": "changeRate"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "asc는 오름차순, desc는 내림차순이다.",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            },
+            "example": "desc"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "조회할 페이지 번호. 첫 페이지는 1이다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "한 페이지에 반환할 종목 수. 최대 100개다.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100
+            },
+            "example": 100
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 조건에 맞는 종목과 전체 결과 수를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockPage"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "page": 1,
+                    "size": 100,
+                    "total": 1,
+                    "items": [
+                      {
+                        "stockId": 1,
+                        "market": "domestic",
+                        "ticker": "005380",
+                        "name": "현대차",
+                        "industryId": 1,
+                        "industryName": "자동차",
+                        "currency": "KRW",
+                        "price": 248000,
+                        "changeRate": 3.24,
+                        "volume": 245000,
+                        "volumeRatio20d": 0.95,
+                        "marketCap": 86600000000000,
+                        "tradingValue": 60800000000,
+                        "caution": false,
+                        "contextSummary": "관련 공시와 거래량 변화를 함께 확인할 수 있습니다.",
+                        "contextMaterialIds": ["material-1"],
+                        "asOf": "2026-08-12T14:31:05+09:00",
+                        "rank": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/stocks/{stockId}": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 기본 정보 조회",
+        "operationId": "getStock",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 종목의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "종목의 기본 정보를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockIdentity"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "stockId": 1,
+                    "market": "domestic",
+                    "ticker": "005380",
+                    "name": "현대차",
+                    "industryId": 1,
+                    "industryName": "자동차",
+                    "caution": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "종목명, 코드, 시장, 산업 및 투자 유의 상태를 반환한다."
+      }
+    },
+    "/api/v1/stocks/{stockId}/quote": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 시세 조회",
+        "operationId": "getStockQuote",
+        "x-contract-source": "backend-spec",
+        "x-source-document": "docs/SPEC-stock-quote.md",
+        "description": "종목의 현재가, 직전 정규장 종가 대비 등락, 시세 기준 시각과 주요 지표를 반환한다. 장중 갱신 주기는 10초를 권장한다.",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 종목의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "종목의 시세와 주요 지표를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockQuote"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "stockId": 1,
+                    "ticker": "005380",
+                    "name": "현대차",
+                    "currency": "KRW",
+                    "price": 248000,
+                    "change": 7783,
+                    "changeRate": 3.24,
+                    "priceAt": "2026-08-12T14:31:05+09:00",
+                    "priceTiming": "REALTIME",
+                    "indicators": {
+                      "previousClose": 240217,
+                      "open": 244280,
+                      "high": 251224,
+                      "low": 241056,
+                      "volume": 245000,
+                      "volumeRatio20d": 0.95,
+                      "marketCap": 86600000000000,
+                      "tradingValue": 60800000000
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInput"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        },
+        "x-source-repository": "backend"
+      }
+    },
+    "/api/v1/stocks/{stockId}/chart": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 차트 조회",
+        "operationId": "getStockChart",
+        "x-contract-source": "backend-spec",
+        "x-source-document": "docs/SPEC-stock-chart.md",
+        "description": "선택한 기간의 거래일별 시가·고가·저가·종가와 거래량을 반환한다. 진행 중인 당일 봉은 closed가 false다. 거래량 평균 기준선은 averageVolume20d 한 값으로 제공한다.",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 종목의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "차트 조회 기간. 생략하면 1M을 적용한다.",
+            "schema": {
+              "type": "string",
+              "enum": ["1M", "3M", "6M", "1Y"],
+              "default": "1M"
+            },
+            "example": "3M"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "종목의 거래일별 가격과 거래량을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockChart"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "stockId": 1,
+                    "period": "3M",
+                    "currency": "KRW",
+                    "from": "2026-05-12",
+                    "to": "2026-08-12",
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "averageVolume20d": 84210,
+                    "candles": [
+                      {
+                        "tradeAt": "2026-05-12",
+                        "open": 244280,
+                        "high": 251224,
+                        "low": 241056,
+                        "close": 248000,
+                        "volume": 245000,
+                        "closed": true
+                      },
+                      {
+                        "tradeAt": "2026-05-13",
+                        "open": 248500,
+                        "high": 249900,
+                        "low": 246100,
+                        "close": 247300,
+                        "volume": 198000,
+                        "closed": true
+                      },
+                      {
+                        "tradeAt": "2026-08-12",
+                        "open": 244280,
+                        "high": 251224,
+                        "low": 241056,
+                        "close": 248000,
+                        "volume": 245000,
+                        "closed": false
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInput"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MarketDataUnavailable"
+          }
+        },
+        "x-source-repository": "backend"
+      }
+    },
+    "/api/v1/stocks/{stockId}/context": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 변동 배경 조회",
+        "operationId": "getStockContext",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 종목의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "종목의 변동 배경과 근거 자료 ID를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockContext"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "stockId": 1,
+                    "summary": "관련 공시와 거래량 변화를 함께 확인할 수 있습니다.",
+                    "materialIds": ["material-1"],
+                    "asOf": "2026-08-12T14:31:05+09:00"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "종목의 가격·거래량 움직임과 함께 확인된 자료의 요약 및 자료 ID를 반환한다. 확인된 자료가 없으면 summary는 null이고 materialIds는 빈 배열이다."
+      }
+    },
+    "/api/v1/stocks/{stockId}/materials": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "종목 관련 뉴스·공시 조회",
+        "operationId": "getStockMaterials",
+        "x-contract-source": "frontend-proposed",
+        "description": "직전 정규장 종가 산정 시점부터 응답 기준 시각까지 발표된 종목·산업 관련 뉴스와 종목 공시를 최신순으로 반환한다.",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "required": true,
+            "description": "조회할 종목의 ID.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "관련 뉴스·공시와 유형별 건수를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StockMaterials"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "stockId": 1,
+                    "asOf": "2026-08-12T14:31:05+09:00",
+                    "newsCount": 1,
+                    "disclosureCount": 0,
+                    "items": [
+                      {
+                        "materialId": "material-1",
+                        "type": "news",
+                        "title": "자동차 산업 관련 소식",
+                        "source": "예시 언론사",
+                        "publishedAt": "2026-08-12T11:00:00+09:00",
+                        "summary": "해당 산업과 관련된 발표 내용입니다.",
+                        "url": "https://example.com/news/1",
+                        "stockIds": [1],
+                        "industryIds": [1]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "회원가입",
+        "operationId": "signUp",
+        "x-contract-source": "frontend-proposed",
+        "description": "이메일, 비밀번호 및 필수 약관 동의를 받아 계정을 생성하고 사용자 정보를 반환한다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "password": "example-password",
+                "termsAccepted": true
+              }
+            }
+          },
+          "description": "가입할 계정의 이메일, 비밀번호 및 필수 약관 동의 여부."
+        },
+        "responses": {
+          "201": {
+            "description": "생성된 사용자 정보를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "userId": 1,
+                    "email": "user@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "409": {
+            "$ref": "#/components/responses/EmailAlreadyExists"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "로그인",
+        "operationId": "logIn",
+        "x-contract-source": "frontend-proposed",
+        "description": "이메일과 비밀번호를 확인하고 로그인한 사용자 정보를 반환한다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "password": "example-password"
+              }
+            }
+          },
+          "description": "로그인할 계정의 이메일과 비밀번호."
+        },
+        "responses": {
+          "200": {
+            "description": "로그인한 사용자 정보를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "userId": 1,
+                    "email": "user@example.com"
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "description": "로그인 세션 쿠키를 설정한다.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "JSESSIONID=opaque-session-id; HttpOnly; Secure; SameSite=Lax; Path=/"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCredentials"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "로그아웃",
+        "operationId": "logOut",
+        "x-contract-source": "frontend-proposed",
+        "responses": {
+          "204": {
+            "description": "로그아웃을 완료했다. 응답 본문은 없다.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "로그인 세션 쿠키를 만료시킨다.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "JSESSIONID=; Max-Age=0; HttpOnly; Secure; SameSite=Lax; Path=/"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "현재 로그인 상태를 해제한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "현재 사용자 조회",
+        "operationId": "getCurrentUser",
+        "x-contract-source": "frontend-proposed",
+        "responses": {
+          "200": {
+            "description": "현재 사용자 정보를 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "userId": 1,
+                    "email": "user@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "현재 로그인한 사용자의 식별값과 이메일을 반환한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/pinned-industries": {
+      "get": {
+        "tags": ["Personalization"],
+        "summary": "고정 산업 조회",
+        "operationId": "getPinnedIndustries",
+        "x-contract-source": "frontend-proposed",
+        "responses": {
+          "200": {
+            "description": "고정 산업 ID 목록을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PinnedIndustries"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "industryIds": [1]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "현재 사용자가 고정한 산업 ID를 저장 순서대로 반환한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "put": {
+        "tags": ["Personalization"],
+        "summary": "고정 산업 저장",
+        "operationId": "savePinnedIndustries",
+        "x-contract-source": "frontend-proposed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinnedIndustries"
+              },
+              "example": {
+                "industryIds": [1]
+              }
+            }
+          },
+          "description": "저장할 산업 ID를 원하는 표시 순서대로 나열한다."
+        },
+        "responses": {
+          "200": {
+            "description": "저장된 고정 산업 ID 목록을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PinnedIndustries"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "industryIds": [1]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "산업 ID 목록을 전달한 순서대로 저장한다. 최대 3개까지 저장할 수 있다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/price-alerts": {
+      "get": {
+        "tags": ["Personalization"],
+        "summary": "가격 알림 설정 조회",
+        "operationId": "listPriceAlerts",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "query",
+            "required": false,
+            "description": "조회할 가격 알림의 종목 ID. 생략하면 모든 종목의 설정을 반환한다.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "가격 알림 설정 목록을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PriceAlert"
+                      }
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": [
+                    {
+                      "alertId": "alert-1",
+                      "stockId": 1,
+                      "targetPrice": 250000,
+                      "currency": "KRW",
+                      "condition": "above",
+                      "active": true
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "현재 사용자의 가격 알림 설정을 반환한다. stockId를 전달하면 해당 종목의 설정만 조회한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Personalization"],
+        "summary": "가격 알림 설정 생성",
+        "operationId": "createPriceAlert",
+        "x-contract-source": "frontend-proposed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePriceAlert"
+              },
+              "example": {
+                "stockId": 1,
+                "targetPrice": 250000,
+                "condition": "above"
+              }
+            }
+          },
+          "description": "알림을 받을 종목, 목표 가격 및 도달 조건."
+        },
+        "responses": {
+          "201": {
+            "description": "생성된 가격 알림 설정을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PriceAlert"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "alertId": "alert-1",
+                    "stockId": 1,
+                    "targetPrice": 250000,
+                    "currency": "KRW",
+                    "condition": "above",
+                    "active": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "404": {
+            "$ref": "#/components/responses/StockNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "종목, 목표 가격 및 이상·이하 조건을 받아 가격 알림을 생성한다. 목표 가격은 0보다 커야 한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/price-alerts/{alertId}": {
+      "patch": {
+        "tags": ["Personalization"],
+        "summary": "가격 알림 설정 수정",
+        "operationId": "updatePriceAlert",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "alertId",
+            "in": "path",
+            "required": true,
+            "description": "변경하거나 삭제할 가격 알림 설정의 ID.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "alert-1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePriceAlert"
+              },
+              "example": {
+                "active": false
+              }
+            }
+          },
+          "description": "변경할 목표 가격, 도달 조건 또는 활성 상태."
+        },
+        "responses": {
+          "200": {
+            "description": "수정된 가격 알림 설정을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PriceAlert"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": {
+                    "alertId": "alert-1",
+                    "stockId": 1,
+                    "targetPrice": 250000,
+                    "currency": "KRW",
+                    "condition": "above",
+                    "active": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidInputOrFieldValidation"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/PriceAlertNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "지정한 가격 알림의 목표 가격, 도달 조건 또는 활성 상태를 수정한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Personalization"],
+        "summary": "가격 알림 설정 삭제",
+        "operationId": "deletePriceAlert",
+        "x-contract-source": "frontend-proposed",
+        "parameters": [
+          {
+            "name": "alertId",
+            "in": "path",
+            "required": true,
+            "description": "변경하거나 삭제할 가격 알림 설정의 ID.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "alert-1"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "가격 알림 설정을 삭제했다. 응답 본문은 없다."
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/PriceAlertNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "지정한 가격 알림 설정을 삭제한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/notifications": {
+      "get": {
+        "tags": ["Personalization"],
+        "summary": "도착한 가격 알림 조회",
+        "operationId": "listNotifications",
+        "x-contract-source": "frontend-proposed",
+        "responses": {
+          "200": {
+            "description": "도착한 가격 알림 목록을 반환한다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["data"]
+                },
+                "example": {
+                  "data": [
+                    {
+                      "notificationId": "notification-1",
+                      "alertId": "alert-1",
+                      "stockId": 1,
+                      "triggeredAt": "2026-08-12T14:40:00+09:00",
+                      "message": "현대차가 설정 가격에 도달했습니다.",
+                      "targetPrice": 250000,
+                      "condition": "above"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationRequired"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "description": "가격 알림 조건이 충족되어 도착한 알림을 반환한다.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID",
+        "description": "로그인 후 브라우저가 보관·전송하는 세션 쿠키.",
+        "x-contract-source": "frontend-proposed"
+      }
+    },
+    "schemas": {
+      "Market": {
+        "type": "string",
+        "enum": ["domestic", "overseas"],
+        "description": "시장 구분 값. domestic은 국내, overseas는 해외 시장이다.",
+        "x-contract-source": "frontend-proposed"
+      },
+      "Period": {
+        "type": "string",
+        "enum": ["1M", "3M", "6M", "1Y"],
+        "x-contract-source": "frontend-proposed",
+        "description": "차트 조회 기간. 1M·3M·6M·1Y는 각각 1개월·3개월·6개월·1년이다."
+      },
+      "Currency": {
+        "type": "string",
+        "enum": ["KRW", "USD"],
+        "x-contract-source": "frontend-proposed",
+        "description": "가격과 금액의 통화 코드."
+      },
+      "Material": {
+        "type": "object",
+        "properties": {
+          "materialId": {
+            "type": "string",
+            "description": "자료의 고유 ID."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["news", "disclosure"],
+            "description": "뉴스 또는 공시 구분."
+          },
+          "title": {
+            "type": "string",
+            "description": "자료 제목."
+          },
+          "source": {
+            "type": "string",
+            "description": "언론사 또는 공시 기관."
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "자료 발표 시각."
+          },
+          "summary": {
+            "type": ["string", "null"],
+            "description": "자료 요약. 요약이 없으면 null."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "원문 주소."
+          },
+          "stockIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "자료와 연결된 종목 ID."
+          },
+          "industryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "자료와 연결된 산업 ID."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "materialId",
+          "type",
+          "title",
+          "source",
+          "publishedAt",
+          "summary",
+          "url",
+          "stockIds",
+          "industryIds"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목 또는 산업과 연결된 뉴스·공시 자료."
+      },
+      "Industry": {
+        "type": "object",
+        "properties": {
+          "industryId": {
+            "type": "integer",
+            "description": "산업의 고유 ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "산업 표시명."
+          },
+          "averageChangeRate": {
+            "type": "number",
+            "description": "산업 소속 종목의 평균 등락률 원값(%)."
+          },
+          "displayChangeRate": {
+            "type": "number",
+            "description": "화면 표시용으로 반올림한 평균 등락률(%)."
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "평균 등락률 기준 순위."
+          },
+          "stockCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "평균 산정 대상 종목 수."
+          },
+          "tradingValueChangeRate": {
+            "type": ["number", "null"],
+            "description": "직전 20거래일 평균 대비 거래대금 변화율(%). 산정할 수 없으면 null."
+          },
+          "risingStockCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "등락률이 양수인 종목 수."
+          },
+          "fallingStockCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "등락률이 음수인 종목 수."
+          },
+          "topStocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndustryStock"
+            },
+            "description": "산업 카드에 표시할 주요 종목."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "industryId",
+          "name",
+          "averageChangeRate",
+          "displayChangeRate",
+          "rank",
+          "stockCount",
+          "tradingValueChangeRate",
+          "risingStockCount",
+          "fallingStockCount",
+          "topStocks"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "산업의 등락·순위·거래대금 정보와 주요 종목."
+      },
+      "IndustryStock": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "종목이 속한 시장."
+          },
+          "ticker": {
+            "type": "string",
+            "description": "종목 코드 또는 티커."
+          },
+          "name": {
+            "type": "string",
+            "description": "종목명."
+          },
+          "price": {
+            "type": ["number", "null"],
+            "description": "현재가. 제공되지 않으면 null."
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "description": "현재가 통화."
+          },
+          "changeRate": {
+            "type": ["number", "null"],
+            "description": "직전 거래일 종가 대비 등락률(%). 제공되지 않으면 null."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["stockId", "market", "ticker", "name", "price", "currency", "changeRate"],
+        "x-contract-source": "frontend-proposed",
+        "description": "산업 카드에 표시하는 주요 종목의 시세."
+      },
+      "Indicator": {
+        "type": "object",
+        "properties": {
+          "indicatorId": {
+            "type": "string",
+            "description": "시장 지표의 ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "시장 지표 표시명."
+          },
+          "value": {
+            "type": ["number", "null"],
+            "description": "현재 지표 값. 제공되지 않으면 null."
+          },
+          "unit": {
+            "type": "string",
+            "description": "지표 값의 표시 단위."
+          },
+          "change": {
+            "type": ["number", "null"],
+            "description": "직전 거래일 종가 대비 변동폭."
+          },
+          "changeRate": {
+            "type": ["number", "null"],
+            "description": "직전 거래일 종가 대비 등락률(%)."
+          },
+          "previousClose": {
+            "type": ["number", "null"],
+            "description": "직전 거래일 종가."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "지표 값의 기준 시각."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "indicatorId",
+          "name",
+          "value",
+          "unit",
+          "change",
+          "changeRate",
+          "previousClose",
+          "asOf"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "시장 지표의 최신 값과 직전 거래일 대비 변동."
+      },
+      "IndustryHighlight": {
+        "type": "object",
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": ["rise", "fall"],
+            "description": "상승 또는 하락 산업 구분."
+          },
+          "industryId": {
+            "type": "integer",
+            "description": "산업의 고유 ID."
+          },
+          "name": {
+            "type": "string",
+            "description": "산업 표시명."
+          },
+          "averageChangeRate": {
+            "type": "number",
+            "description": "산업 평균 등락률(%)."
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "산업 순위."
+          },
+          "risingStockCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "상승 종목 수."
+          },
+          "fallingStockCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "하락 종목 수."
+          },
+          "tradingValueChangeRate": {
+            "type": ["number", "null"],
+            "description": "직전 20거래일 평균 대비 거래대금 변화율(%)."
+          },
+          "selectionBasis": {
+            "type": "string",
+            "description": "핵심 산업 선정 근거를 설명하는 문장."
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Material"
+            },
+            "description": "해당 산업과 함께 확인된 자료."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "direction",
+          "industryId",
+          "name",
+          "averageChangeRate",
+          "rank",
+          "risingStockCount",
+          "fallingStockCount",
+          "tradingValueChangeRate",
+          "selectionBasis",
+          "materials"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "핵심 상승·하락 산업의 집계와 관련 자료."
+      },
+      "StockRow": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "description": "현재 조회 조건에서의 순위. 순위가 없으면 null."
+          },
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "종목이 속한 시장."
+          },
+          "ticker": {
+            "type": "string",
+            "description": "종목 코드 또는 티커."
+          },
+          "name": {
+            "type": "string",
+            "description": "종목명."
+          },
+          "industryId": {
+            "type": ["integer", "null"],
+            "description": "소속 산업 ID. 분류되지 않으면 null."
+          },
+          "industryName": {
+            "type": ["string", "null"],
+            "description": "소속 산업명. 분류되지 않으면 null."
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "description": "가격과 금액의 통화."
+          },
+          "price": {
+            "type": ["number", "null"],
+            "description": "현재가. 제공되지 않으면 null."
+          },
+          "changeRate": {
+            "type": ["number", "null"],
+            "description": "직전 거래일 종가 대비 등락률(%)."
+          },
+          "volume": {
+            "type": ["integer", "null"],
+            "description": "당일 누적 거래량(주)."
+          },
+          "volumeRatio20d": {
+            "type": ["number", "null"],
+            "description": "당일 거래량을 직전 20거래일 평균 거래량으로 나눈 값."
+          },
+          "marketCap": {
+            "type": ["number", "null"],
+            "description": "시가총액. currency 기본 단위."
+          },
+          "tradingValue": {
+            "type": ["number", "null"],
+            "description": "당일 누적 거래대금. currency 기본 단위."
+          },
+          "caution": {
+            "type": "boolean",
+            "description": "투자 유의 지정 여부."
+          },
+          "contextSummary": {
+            "type": ["string", "null"],
+            "description": "가격·거래량 움직임과 함께 확인된 자료의 요약."
+          },
+          "contextMaterialIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "변동 배경에 연결된 자료 ID."
+          },
+          "asOf": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "description": "종목 시세의 기준 시각."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "rank",
+          "stockId",
+          "market",
+          "ticker",
+          "name",
+          "industryId",
+          "industryName",
+          "currency",
+          "price",
+          "changeRate",
+          "volume",
+          "volumeRatio20d",
+          "marketCap",
+          "tradingValue",
+          "caution",
+          "contextSummary",
+          "contextMaterialIds",
+          "asOf"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목 목록의 한 행. 제공되지 않는 수치는 null로 반환한다."
+      },
+      "MarketSummary": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "조회한 시장."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "시장 기준 시간대의 IANA 이름."
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "description": "시장 가격과 금액의 통화."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "시장 요약 데이터의 기준 시각."
+          },
+          "indicators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Indicator"
+            },
+            "description": "지수·환율·유가 등의 주요 시장 지표."
+          },
+          "industries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Industry"
+            },
+            "description": "산업별 등락 흐름."
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndustryHighlight"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "contains": {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "const": "rise"
+                }
+              },
+              "required": ["direction"]
+            },
+            "minContains": 1,
+            "maxContains": 1,
+            "description": "핵심 상승·하락 산업을 각각 1개씩 제공한다. 순서는 제한하지 않는다."
+          },
+          "movers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockRow"
+            },
+            "maxItems": 4,
+            "description": "주요 변동 종목 미리보기. 최대 4개."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "market",
+          "timezone",
+          "currency",
+          "asOf",
+          "indicators",
+          "industries",
+          "highlights",
+          "movers"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "시장 요약에 필요한 지표, 산업, 핵심 소식 및 변동 종목."
+      },
+      "IndustriesResult": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "조회한 시장."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "산업 집계의 기준 시각."
+          },
+          "industries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Industry"
+            },
+            "description": "산업별 동향 목록."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["market", "asOf", "industries"],
+        "x-contract-source": "frontend-proposed",
+        "description": "선택 시장의 산업별 동향."
+      },
+      "IndicatorCandle": {
+        "type": "object",
+        "properties": {
+          "tradeAt": {
+            "type": "string",
+            "format": "date",
+            "description": "거래일."
+          },
+          "open": {
+            "type": "number",
+            "description": "해당 거래일의 시가."
+          },
+          "high": {
+            "type": "number",
+            "description": "해당 거래일의 고가."
+          },
+          "low": {
+            "type": "number",
+            "description": "해당 거래일의 저가."
+          },
+          "close": {
+            "type": "number",
+            "description": "해당 거래일의 종가."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["tradeAt", "open", "high", "low", "close"],
+        "x-contract-source": "frontend-proposed",
+        "description": "시장 지표의 한 거래일 가격."
+      },
+      "IndicatorHistory": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "조회한 시장."
+          },
+          "indicatorId": {
+            "type": "string",
+            "description": "조회한 시장 지표 ID."
+          },
+          "period": {
+            "$ref": "#/components/schemas/Period",
+            "description": "적용된 조회 기간."
+          },
+          "unit": {
+            "type": "string",
+            "description": "지표 값의 표시 단위."
+          },
+          "currency": {
+            "type": ["string", "null"],
+            "enum": ["KRW", "USD", null],
+            "description": "통화가 있는 지표의 통화 코드. 통화가 없으면 null."
+          },
+          "previousClose": {
+            "type": ["number", "null"],
+            "description": "차트 기준선에 사용할 직전 거래일 종가."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "차트 데이터 기준 시각."
+          },
+          "candles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorCandle"
+            },
+            "description": "거래일 오름차순 가격 이력."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "market",
+          "indicatorId",
+          "period",
+          "unit",
+          "currency",
+          "previousClose",
+          "asOf",
+          "candles"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "선택한 시장 지표의 기간별 가격 이력."
+      },
+      "StockPage": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "목록 시세의 기준 시각."
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "현재 페이지 번호."
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "페이지당 요청한 종목 수."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "조회 조건에 맞는 전체 종목 수."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockRow"
+            },
+            "description": "현재 페이지의 종목 목록."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["asOf", "page", "size", "total", "items"],
+        "x-contract-source": "frontend-proposed",
+        "description": "조회 조건에 맞는 종목의 페이지와 전체 결과 수."
+      },
+      "StockIdentity": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market",
+            "description": "종목이 속한 시장."
+          },
+          "ticker": {
+            "type": "string",
+            "description": "종목 코드 또는 티커."
+          },
+          "name": {
+            "type": "string",
+            "description": "종목명."
+          },
+          "industryId": {
+            "type": ["integer", "null"],
+            "description": "소속 산업 ID. 분류되지 않으면 null."
+          },
+          "industryName": {
+            "type": ["string", "null"],
+            "description": "소속 산업명. 분류되지 않으면 null."
+          },
+          "caution": {
+            "type": "boolean",
+            "description": "투자 유의 지정 여부."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "stockId",
+          "market",
+          "ticker",
+          "name",
+          "industryId",
+          "industryName",
+          "caution"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목 상세 진입에 필요한 식별 정보와 투자 유의 상태."
+      },
+      "StockContext": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "summary": {
+            "type": ["string", "null"],
+            "description": "가격·거래량 움직임과 함께 확인된 자료의 요약. 확인된 자료가 없으면 null."
+          },
+          "materialIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "요약의 근거로 연결된 자료 ID."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "요약 데이터의 기준 시각."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["stockId", "summary", "materialIds", "asOf"],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목 변동과 함께 확인된 자료의 요약 및 식별값."
+      },
+      "StockMaterials": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "description": "자료 조회의 기준 시각."
+          },
+          "newsCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "반환된 뉴스 건수."
+          },
+          "disclosureCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "반환된 공시 건수."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Material"
+            },
+            "description": "발표 시각 내림차순의 뉴스·공시 목록."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["stockId", "asOf", "newsCount", "disclosureCount", "items"],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목 관련 뉴스·공시와 유형별 건수."
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "사용자의 고유 ID."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "사용자의 이메일 주소."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["userId", "email"],
+        "x-contract-source": "frontend-proposed",
+        "description": "로그인한 사용자의 식별 정보."
+      },
+      "SignupRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "가입할 이메일 주소."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "description": "계정 비밀번호."
+          },
+          "termsAccepted": {
+            "type": "boolean",
+            "const": true,
+            "description": "필수 약관에 동의한 경우에만 가입할 수 있다."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["email", "password", "termsAccepted"],
+        "x-contract-source": "frontend-proposed",
+        "description": "계정 생성에 필요한 이메일, 비밀번호 및 약관 동의."
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "로그인할 이메일 주소."
+          },
+          "password": {
+            "type": "string",
+            "description": "계정 비밀번호."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["email", "password"],
+        "x-contract-source": "frontend-proposed",
+        "description": "로그인할 계정의 이메일과 비밀번호."
+      },
+      "PinnedIndustries": {
+        "type": "object",
+        "properties": {
+          "industryIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 3,
+            "uniqueItems": true,
+            "description": "고정한 산업 ID. 배열 순서가 표시 순서다. 최대 3개."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["industryIds"],
+        "x-contract-source": "frontend-proposed",
+        "description": "사용자가 고정한 산업 ID의 순서 있는 목록."
+      },
+      "PriceAlert": {
+        "type": "object",
+        "properties": {
+          "alertId": {
+            "type": "string",
+            "description": "가격 알림 설정의 고유 ID."
+          },
+          "stockId": {
+            "type": "integer",
+            "description": "알림 대상 종목 ID."
+          },
+          "targetPrice": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "목표 가격. 0보다 커야 한다."
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "description": "목표 가격의 통화."
+          },
+          "condition": {
+            "type": "string",
+            "enum": ["above", "below"],
+            "description": "above는 목표 가격 이상, below는 목표 가격 이하에 도달하면 알린다."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "알림 설정 활성화 여부."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["alertId", "stockId", "targetPrice", "currency", "condition", "active"],
+        "x-contract-source": "frontend-proposed",
+        "description": "종목별 목표 가격 알림 설정."
+      },
+      "CreatePriceAlert": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "알림 대상 종목 ID."
+          },
+          "targetPrice": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "목표 가격. 0보다 커야 한다."
+          },
+          "condition": {
+            "type": "string",
+            "enum": ["above", "below"],
+            "description": "above는 목표 가격 이상, below는 목표 가격 이하를 뜻한다."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["stockId", "targetPrice", "condition"],
+        "x-contract-source": "frontend-proposed",
+        "description": "새 가격 알림의 종목, 목표 가격 및 도달 조건."
+      },
+      "UpdatePriceAlert": {
+        "type": "object",
+        "properties": {
+          "targetPrice": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "변경할 목표 가격. 0보다 커야 한다."
+          },
+          "condition": {
+            "type": "string",
+            "enum": ["above", "below"],
+            "description": "변경할 이상·이하 조건."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "알림 설정 활성화 여부."
+          }
+        },
+        "additionalProperties": false,
+        "required": [],
+        "minProperties": 1,
+        "x-contract-source": "frontend-proposed",
+        "description": "변경할 가격 알림 설정의 속성. 적어도 한 필드를 전달한다."
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "notificationId": {
+            "type": "string",
+            "description": "도착한 알림의 고유 ID."
+          },
+          "alertId": {
+            "type": "string",
+            "description": "알림을 발생시킨 설정 ID."
+          },
+          "stockId": {
+            "type": "integer",
+            "description": "알림 대상 종목 ID."
+          },
+          "triggeredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "알림 조건이 충족된 시각."
+          },
+          "message": {
+            "type": "string",
+            "description": "사용자에게 표시할 알림 내용."
+          },
+          "targetPrice": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "알림 조건에 사용한 목표 가격."
+          },
+          "condition": {
+            "type": "string",
+            "enum": ["above", "below"],
+            "description": "알림 조건의 이상·이하 구분."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "notificationId",
+          "alertId",
+          "stockId",
+          "triggeredAt",
+          "message",
+          "targetPrice",
+          "condition"
+        ],
+        "x-contract-source": "frontend-proposed",
+        "description": "목표 가격 도달로 발생한 알림."
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "오류 이름."
+              },
+              "code": {
+                "type": "string",
+                "description": "오류 코드. 오류 종류는 각 operation의 응답에 정의한다."
+              },
+              "message": {
+                "type": "string",
+                "description": "오류 안내 메시지."
+              },
+              "errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "description": "검증에 실패한 필드 이름."
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["field"]
+                },
+                "description": "필드 검증 오류가 있을 때만 포함한다.",
+                "minItems": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": ["name", "code", "message"],
+            "description": "오류 정보."
+          }
+        },
+        "additionalProperties": false,
+        "required": ["error"],
+        "x-contract-source": "backend-spec",
+        "description": "오류 이름, 코드, 메시지와 선택적인 필드 검증 오류를 담는 응답.",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/response/ErrorResponse.java",
+        "x-source-repository": "backend"
+      },
+      "StockQuote": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "ticker": {
+            "type": "string",
+            "description": "종목 코드 또는 티커."
+          },
+          "name": {
+            "type": "string",
+            "description": "종목명."
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["KRW", "USD"],
+            "description": "아래 가격과 금액의 통화 코드."
+          },
+          "price": {
+            "type": "number",
+            "description": "현재가."
+          },
+          "change": {
+            "type": "number",
+            "description": "직전 정규장 종가 대비 등락폭. 음수 가능."
+          },
+          "changeRate": {
+            "type": "number",
+            "description": "직전 정규장 종가 대비 등락률(%)."
+          },
+          "priceAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "시세 제공자로부터 가격을 받은 시각."
+          },
+          "priceTiming": {
+            "type": "string",
+            "enum": ["REALTIME", "DELAYED"],
+            "description": "실시간 또는 지연 시세 구분."
+          },
+          "indicators": {
+            "type": "object",
+            "properties": {
+              "previousClose": {
+                "type": "number",
+                "description": "직전 정규장 종가."
+              },
+              "open": {
+                "type": "number",
+                "description": "당일 시가."
+              },
+              "high": {
+                "type": "number",
+                "description": "당일 고가."
+              },
+              "low": {
+                "type": "number",
+                "description": "당일 저가."
+              },
+              "volume": {
+                "type": "integer",
+                "description": "당일 누적 거래량(주)."
+              },
+              "volumeRatio20d": {
+                "type": ["number", "null"],
+                "description": "당일 거래량을 최근 20거래일 평균 거래량으로 나눈 값. 거래일이 20일 미만이면 null."
+              },
+              "marketCap": {
+                "type": "number",
+                "description": "시가총액. currency 기본 단위."
+              },
+              "tradingValue": {
+                "type": "number",
+                "description": "당일 누적 거래대금. currency 기본 단위."
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "previousClose",
+              "open",
+              "high",
+              "low",
+              "volume",
+              "volumeRatio20d",
+              "marketCap",
+              "tradingValue"
+            ],
+            "description": "현재 거래일의 주요 가격·거래 지표."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "stockId",
+          "ticker",
+          "name",
+          "currency",
+          "price",
+          "change",
+          "changeRate",
+          "priceAt",
+          "priceTiming",
+          "indicators"
+        ],
+        "x-contract-source": "backend-spec",
+        "description": "종목의 현재 시세와 거래 지표."
+      },
+      "StockChart": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockChartBase"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "to": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "asOf": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "candles": {
+                    "type": "array",
+                    "minItems": 1,
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "closed": {
+                          "const": false
+                        }
+                      },
+                      "required": ["closed"]
+                    },
+                    "maxContains": 1
+                  }
+                }
+              }
+            ],
+            "description": "진행 중인 당일 봉을 포함한다."
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockChartBase"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "to": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "asOf": {
+                    "type": "null"
+                  },
+                  "candles": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "tradeAt": {
+                          "type": "string",
+                          "format": "date",
+                          "description": "거래일."
+                        },
+                        "open": {
+                          "type": "number",
+                          "description": "시가."
+                        },
+                        "high": {
+                          "type": "number",
+                          "description": "고가."
+                        },
+                        "low": {
+                          "type": "number",
+                          "description": "저가."
+                        },
+                        "close": {
+                          "type": "number",
+                          "description": "종가. 당일 봉은 현재가."
+                        },
+                        "volume": {
+                          "type": "integer",
+                          "description": "거래량(주). 당일 봉은 누적 거래량."
+                        },
+                        "closed": {
+                          "type": "boolean",
+                          "const": true,
+                          "description": "확정 봉이다."
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["tradeAt", "open", "high", "low", "close", "volume", "closed"]
+                    }
+                  }
+                }
+              }
+            ],
+            "description": "당일 진행 중 봉이 없고 확정 봉만 포함한다."
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockChartBase"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "null"
+                  },
+                  "to": {
+                    "type": "null"
+                  },
+                  "asOf": {
+                    "type": "null"
+                  },
+                  "averageVolume20d": {
+                    "type": "null"
+                  },
+                  "candles": {
+                    "type": "array",
+                    "maxItems": 0
+                  }
+                }
+              }
+            ],
+            "description": "조회 기간에 봉이 없다."
+          }
+        ],
+        "description": "조회 기간의 가격·거래량. 장중 봉 포함 여부와 빈 결과를 구분한다.",
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "docs/SPEC-stock-chart.md"
+      },
+      "StockChartBase": {
+        "type": "object",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "description": "종목의 고유 ID."
+          },
+          "period": {
+            "type": "string",
+            "enum": ["1M", "3M", "6M", "1Y"],
+            "description": "적용된 조회 기간. 생략 요청이면 1M."
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["KRW", "USD"],
+            "description": "차트 가격의 통화 코드."
+          },
+          "from": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "첫 봉의 거래일. 봉이 없으면 null."
+          },
+          "to": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "마지막 봉의 거래일. 봉이 없으면 null."
+          },
+          "asOf": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "description": "진행 중인 당일 봉의 기준 시각. 당일 봉이 없으면 null."
+          },
+          "averageVolume20d": {
+            "type": ["integer", "null"],
+            "description": "최근 20거래일의 확정 봉 평균 거래량. 20일 미만이면 null."
+          },
+          "candles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tradeAt": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "거래일."
+                },
+                "open": {
+                  "type": "number",
+                  "description": "시가."
+                },
+                "high": {
+                  "type": "number",
+                  "description": "고가."
+                },
+                "low": {
+                  "type": "number",
+                  "description": "저가."
+                },
+                "close": {
+                  "type": "number",
+                  "description": "종가. 당일 봉은 현재가."
+                },
+                "volume": {
+                  "type": "integer",
+                  "description": "거래량(주). 당일 봉은 누적 거래량."
+                },
+                "closed": {
+                  "type": "boolean",
+                  "description": "true는 확정 봉, false는 당일 진행 중인 봉."
+                }
+              },
+              "additionalProperties": false,
+              "required": ["tradeAt", "open", "high", "low", "close", "volume", "closed"]
+            },
+            "description": "거래일 오름차순의 일별 가격·거래량. 거래일이 없으면 빈 배열."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "stockId",
+          "period",
+          "currency",
+          "from",
+          "to",
+          "asOf",
+          "averageVolume20d",
+          "candles"
+        ],
+        "x-contract-source": "backend-spec",
+        "description": "기간별 일봉과 당일 진행 중 봉, 최근 20거래일 평균 거래량의 공통 필드."
+      }
+    },
+    "responses": {
+      "InvalidInputOrFieldValidation": {
+        "description": "400 P001: 잘못된 입력값",
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": ["error"],
+                      "properties": {
+                        "error": {
+                          "type": "object",
+                          "required": ["name", "code", "message"],
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "const": "InvalidInputValueException"
+                            },
+                            "code": {
+                              "type": "string",
+                              "const": "P001"
+                            },
+                            "message": {
+                              "type": "string",
+                              "const": "잘못된 입력값입니다."
+                            },
+                            "errors": false
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": ["error"],
+                      "properties": {
+                        "error": {
+                          "type": "object",
+                          "required": ["name", "code", "message", "errors"],
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "const": "InvalidInputValueException"
+                            },
+                            "code": {
+                              "type": "string",
+                              "const": "P001"
+                            },
+                            "message": {
+                              "type": "string",
+                              "const": "잘못된 입력값입니다."
+                            },
+                            "errors": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "object",
+                                "required": ["field"],
+                                "properties": {
+                                  "field": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "MethodNotAllowed": {
+        "description": "405 P004: 지원하지 않는 HTTP 메서드",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "MethodNotAllowedException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P004"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "지원하지 않는 HTTP 메서드입니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "InternalServerError": {
+        "description": "500 P006: 서버 내부 오류",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "InternalServerErrorException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P006"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "서버 내부 오류가 발생했습니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "MarketDataUnavailable": {
+        "description": "502 P007: 시세 제공자 오류",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "MarketDataUnavailableException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P007"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "시세 정보를 불러올 수 없습니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "StockNotFound": {
+        "description": "404 P002: 종목을 찾을 수 없음",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "StockNotFoundException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P002"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "주식을 찾을 수 없습니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "InvalidInput": {
+        "description": "400 P001: 잘못된 입력값",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "InvalidInputValueException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P001"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "잘못된 입력값입니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "EmailAlreadyExists": {
+        "description": "409 EMAIL_ALREADY_EXISTS: 이미 사용 중인 이메일",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "EmailAlreadyExistsException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "EMAIL_ALREADY_EXISTS"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "이미 가입된 이메일입니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "frontend-proposed"
+      },
+      "UnsupportedMediaType": {
+        "description": "415 P005: 지원하지 않는 미디어 타입",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "UnsupportedMediaTypeException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "P005"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "지원하지 않는 미디어 타입입니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      },
+      "InvalidCredentials": {
+        "description": "401 INVALID_CREDENTIALS: 로그인 정보가 일치하지 않음",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "InvalidCredentialsException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "INVALID_CREDENTIALS"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "이메일 또는 비밀번호를 확인해 주세요."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "frontend-proposed"
+      },
+      "AuthenticationRequired": {
+        "description": "401 AUTH_REQUIRED: 로그인이 필요함",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "AuthenticationRequiredException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "AUTH_REQUIRED"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "로그인이 필요합니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "frontend-proposed"
+      },
+      "AccessDenied": {
+        "description": "403 ACCESS_DENIED: 접근 권한이 없음",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "AccessDeniedException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "ACCESS_DENIED"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "이 작업을 수행할 수 없습니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "frontend-proposed"
+      },
+      "PriceAlertNotFound": {
+        "description": "404 PRICE_ALERT_NOT_FOUND: 가격 알림을 찾을 수 없음",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                {
+                  "type": "object",
+                  "required": ["error"],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": ["name", "code", "message"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "const": "PriceAlertNotFoundException"
+                        },
+                        "code": {
+                          "type": "string",
+                          "const": "PRICE_ALERT_NOT_FOUND"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "가격 알림 설정을 찾을 수 없습니다."
+                        },
+                        "errors": false
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "x-contract-source": "backend-spec",
+        "x-source-repository": "backend",
+        "x-source-document": "src/main/java/com/swyp/ploutos/common/exception/ErrorCode.java"
+      }
+    }
+  }
+}

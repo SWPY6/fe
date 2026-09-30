@@ -1,4 +1,4 @@
-import { QueryClientProvider, useMutation, useQuery } from "@tanstack/react-query"
+import { QueryClientProvider, onlineManager, useMutation, useQuery } from "@tanstack/react-query"
 import { CatchBoundary } from "@tanstack/react-router"
 import { AxiosError } from "axios"
 import { Toaster, toast } from "sonner"
@@ -6,7 +6,7 @@ import { afterEach, describe, expect, test } from "vitest"
 import { cleanup, render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
-import { api, client } from "./client"
+import { api } from "../http/client"
 import { queryClient } from "./queryClient"
 
 const originalAdapter = api.defaults.adapter
@@ -14,7 +14,9 @@ const originalAdapter = api.defaults.adapter
 function RequestScreen() {
   const { data, isPending, isError } = useQuery({
     queryKey: ["request-policy"],
-    queryFn: () => client.get<string>("/test/request-policy"),
+    queryFn: () =>
+      api.get<{ data: string }>("/test/request-policy").then((response) => response.data.data),
+    throwOnError: false,
   })
 
   if (isPending) return <p>정보를 불러오는 중입니다.</p>
@@ -25,8 +27,9 @@ function RequestScreen() {
 function RequestScreenWithOwnMessage() {
   const { isPending, isError } = useQuery({
     queryKey: ["request-policy-own-message"],
-    queryFn: () => client.get<unknown>("/test/request-policy"),
+    queryFn: () => api.get<unknown>("/test/request-policy").then((response) => response.data),
     meta: { errorToastMessage: "잠시 후 이 화면을 다시 열어 주세요." },
+    throwOnError: false,
   })
 
   if (isPending) return <p>정보를 불러오는 중입니다.</p>
@@ -35,18 +38,20 @@ function RequestScreenWithOwnMessage() {
 }
 
 function RequestScreenWithBoundary() {
-  const { isPending } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["request-policy-boundary"],
-    queryFn: () => client.get<unknown>("/test/request-policy"),
-    throwOnError: true,
+    queryFn: () => api.get<unknown>("/test/request-policy").then((response) => response.data),
   })
 
-  return isPending ? <p>정보를 불러오는 중입니다.</p> : <p>정보를 불러왔습니다.</p>
+  if (isPending) return <p>정보를 불러오는 중입니다.</p>
+  if (data !== undefined) return <p>정보를 불러왔습니다.</p>
+  if (isError) return <p role="alert">비즈니스 오류입니다.</p>
+  return null
 }
 
 function SaveScreen() {
   const save = useMutation({
-    mutationFn: () => client.post<unknown>("/test/request-policy"),
+    mutationFn: () => api.post<unknown>("/test/request-policy"),
   })
 
   return (
@@ -63,11 +68,88 @@ function SaveScreen() {
 afterEach(async () => {
   await cleanup()
   queryClient.clear()
+  onlineManager.setOnline(true)
   toast.dismiss()
   api.defaults.adapter = originalAdapter
 })
 
 describe("정보를 불러오는 화면", () => {
+  test("오프라인에서도 조회를 시도하고 재시도 후 공통 오류를 안내한다", async () => {
+    onlineManager.setOnline(false)
+    let requestCount = 0
+    api.defaults.adapter = async (config) => {
+      requestCount += 1
+      throw new AxiosError("Network Error", AxiosError.ERR_NETWORK, config)
+    }
+
+    const screen = await render(
+      <QueryClientProvider client={queryClient}>
+        <CatchBoundary
+          getResetKey={() => "request-policy"}
+          errorComponent={() => <p role="alert">화면을 표시할 수 없습니다.</p>}
+        >
+          <RequestScreenWithBoundary />
+        </CatchBoundary>
+        <Toaster />
+      </QueryClientProvider>,
+    )
+
+    await expect.element(screen.getByRole("alert")).toHaveTextContent("화면을 표시할 수 없습니다.")
+    await expect
+      .element(
+        page
+          .getByRole("region", { name: /Notifications/ })
+          .getByRole("listitem")
+          .filter({ hasText: "서버에 연결할 수 없습니다. 연결 상태를 확인해 주세요." }),
+      )
+      .toBeVisible()
+    expect(requestCount).toBe(3)
+  }, 10000)
+
+  test("오프라인에서 갱신에 실패한 조회는 연결이 복구되면 다시 조회한다", async () => {
+    onlineManager.setOnline(false)
+    queryClient.setQueryData(["request-policy-boundary"], { data: "기존 정보" })
+    let requestCount = 0
+    api.defaults.adapter = async (config) => {
+      requestCount += 1
+      if (!onlineManager.isOnline()) {
+        throw new AxiosError("Network Error", AxiosError.ERR_NETWORK, config)
+      }
+      return {
+        data: { data: "갱신된 정보" },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config,
+      }
+    }
+
+    const screen = await render(
+      <QueryClientProvider client={queryClient}>
+        <RequestScreenWithBoundary />
+        <Toaster />
+      </QueryClientProvider>,
+    )
+
+    await expect
+      .element(
+        page
+          .getByRole("region", { name: /Notifications/ })
+          .getByRole("listitem")
+          .filter({ hasText: "서버에 연결할 수 없습니다. 연결 상태를 확인해 주세요." }),
+      )
+      .toBeVisible()
+    await expect.element(screen.getByText("정보를 불러왔습니다.")).toBeVisible()
+    expect(requestCount).toBe(3)
+
+    onlineManager.setOnline(true)
+
+    await expect
+      .poll(() => queryClient.getQueryData(["request-policy-boundary"]))
+      .toEqual({ data: "갱신된 정보" })
+    expect(requestCount).toBe(4)
+  }, 10000)
+
   test("서버 연결이 잠시 끊겨도 복구되면 정보가 표시된다", async () => {
     let failuresRemaining = 2
     api.defaults.adapter = async (config) => {
@@ -202,7 +284,7 @@ describe("정보를 불러오는 화면", () => {
       .toBeVisible()
   }, 10000)
 
-  test("서버가 오류를 보내면 실패를 표시하고 토스트는 띄우지 않는다", async () => {
+  test("서버가 500 오류를 보내면 공통 오류 화면과 토스트를 표시한다", async () => {
     api.defaults.adapter = async (config) => {
       throw new AxiosError("Request failed", AxiosError.ERR_BAD_RESPONSE, config, undefined, {
         data: {
@@ -217,17 +299,27 @@ describe("정보를 불러오는 화면", () => {
 
     const screen = await render(
       <QueryClientProvider client={queryClient}>
-        <RequestScreen />
+        <CatchBoundary
+          getResetKey={() => "request-policy"}
+          errorComponent={() => <p role="alert">화면을 표시할 수 없습니다.</p>}
+        >
+          <RequestScreenWithBoundary />
+        </CatchBoundary>
         <Toaster />
       </QueryClientProvider>,
     )
 
     await expect
-      .element(screen.getByRole("alert").filter({ hasText: "정보를 불러올 수 없습니다." }))
+      .element(screen.getByRole("alert").filter({ hasText: "화면을 표시할 수 없습니다." }))
       .toBeVisible()
     await expect
-      .element(page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"))
-      .not.toBeInTheDocument()
+      .element(
+        page
+          .getByRole("region", { name: /Notifications/ })
+          .getByRole("listitem")
+          .filter({ hasText: "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요." }),
+      )
+      .toBeVisible()
   })
 
   test("서버의 성공 응답에 필수 data가 없으면 응답 오류 토스트를 보여준다", async () => {
@@ -403,9 +495,120 @@ describe("정보를 불러오는 화면", () => {
       )
       .toBeVisible()
   })
+
+  test("HTTP 400은 공통 오류 화면으로 보내지 않는다", async () => {
+    api.defaults.adapter = async (config) => {
+      throw new AxiosError("Request failed", AxiosError.ERR_BAD_REQUEST, config, undefined, {
+        data: { error: { name: "InvalidInput", code: "P001", message: "잘못된 입력입니다." } },
+        status: 400,
+        statusText: "Bad Request",
+        headers: {},
+        config,
+      })
+    }
+
+    const screen = await render(
+      <QueryClientProvider client={queryClient}>
+        <CatchBoundary
+          getResetKey={() => "request-policy"}
+          errorComponent={() => <p role="alert">화면을 표시할 수 없습니다.</p>}
+        >
+          <RequestScreenWithBoundary />
+        </CatchBoundary>
+        <Toaster />
+      </QueryClientProvider>,
+    )
+
+    await expect.element(screen.getByText("비즈니스 오류입니다.")).toBeVisible()
+    await expect
+      .element(page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"))
+      .not.toBeInTheDocument()
+  })
+
+  test("기존 데이터 갱신 중 500 오류가 나면 데이터를 유지하고 토스트를 표시한다", async () => {
+    let requestCount = 0
+    api.defaults.adapter = async (config) => {
+      requestCount += 1
+      if (requestCount === 1) {
+        return {
+          data: { data: "정보를 불러왔습니다." },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+          config,
+        }
+      }
+      throw new AxiosError("Request failed", AxiosError.ERR_BAD_RESPONSE, config, undefined, {
+        data: {
+          error: { name: "ServerError", code: "SERVER_ERROR", message: "처리에 실패했습니다." },
+        },
+        status: 500,
+        statusText: "Internal Server Error",
+        headers: {},
+        config,
+      })
+    }
+
+    const screen = await render(
+      <QueryClientProvider client={queryClient}>
+        <CatchBoundary
+          getResetKey={() => "request-policy"}
+          errorComponent={() => <p role="alert">화면을 표시할 수 없습니다.</p>}
+        >
+          <RequestScreenWithBoundary />
+        </CatchBoundary>
+        <Toaster />
+      </QueryClientProvider>,
+    )
+
+    await expect.element(screen.getByText("정보를 불러왔습니다.")).toBeVisible()
+    await queryClient.invalidateQueries({ queryKey: ["request-policy-boundary"] })
+    await expect.element(screen.getByText("정보를 불러왔습니다.")).toBeVisible()
+    await expect
+      .element(
+        page
+          .getByRole("region", { name: /Notifications/ })
+          .getByRole("listitem")
+          .filter({ hasText: "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요." }),
+      )
+      .toBeVisible()
+  })
 })
 
 describe("정보를 저장하는 화면", () => {
+  test("오프라인 저장은 실패로 처리하고 연결 복구 시 자동 실행하지 않는다", async () => {
+    onlineManager.setOnline(false)
+    let requestCount = 0
+    api.defaults.adapter = async (config) => {
+      requestCount += 1
+      throw new AxiosError("Network Error", AxiosError.ERR_NETWORK, config)
+    }
+
+    const screen = await render(
+      <QueryClientProvider client={queryClient}>
+        <SaveScreen />
+        <Toaster />
+      </QueryClientProvider>,
+    )
+
+    await screen.getByRole("button", { name: "정보 저장" }).click()
+    await expect.element(screen.getByRole("alert")).toHaveTextContent("정보를 저장하지 못했습니다.")
+    await expect
+      .element(
+        page
+          .getByRole("region", { name: /Notifications/ })
+          .getByRole("listitem")
+          .filter({ hasText: "서버에 연결할 수 없습니다. 연결 상태를 확인해 주세요." }),
+      )
+      .toBeVisible()
+
+    onlineManager.setOnline(true)
+    await queryClient.resumePausedMutations()
+
+    expect(requestCount).toBe(1)
+    await expect.element(screen.getByRole("alert")).toHaveTextContent("정보를 저장하지 못했습니다.")
+  })
+
   test("저장이 완료되면 성공 상태가 표시되고 오류 토스트는 뜨지 않는다", async () => {
     api.defaults.adapter = async (config) => ({
       data: { data: null },

@@ -11,6 +11,7 @@ export function FeedbackReview() {
     isError,
   } = useQuery({
     queryKey: ["feedback-session", url],
+    throwOnError: false,
     queryFn: async ({ signal }) => {
       // Joining the URL's existing session loads annotations from other browsers.
       const response = await fetch(`${endpoint}/sessions`, {

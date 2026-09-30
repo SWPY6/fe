@@ -35,9 +35,12 @@ export const queryClient = new QueryClient({
   }),
   defaultOptions: {
     queries: {
-      networkMode: "online",
+      networkMode: "always",
+      refetchOnReconnect: true,
       retry: (failureCount, error) => failureCount < (getErrorPolicy(error)?.retries ?? 0),
+      throwOnError: (error, query) =>
+        getErrorPolicy(error).message !== null && query.state.data === undefined,
     },
-    mutations: { retry: false, networkMode: "online", throwOnError: false },
+    mutations: { retry: false, networkMode: "always", throwOnError: false },
   },
 })
