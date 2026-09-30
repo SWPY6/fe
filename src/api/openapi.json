@@ -86,6 +86,18 @@
                             "changeRate": 3.24
                           }
                         ]
+                      },
+                      {
+                        "industryId": 2,
+                        "name": "반도체",
+                        "averageChangeRate": -2.15,
+                        "displayChangeRate": -2.15,
+                        "rank": 8,
+                        "stockCount": 35,
+                        "tradingValueChangeRate": 12.3,
+                        "risingStockCount": 8,
+                        "fallingStockCount": 27,
+                        "topStocks": []
                       }
                     ],
                     "highlights": [
@@ -110,6 +122,30 @@
                             "url": "https://example.com/news/1",
                             "stockIds": [1],
                             "industryIds": [1]
+                          }
+                        ]
+                      },
+                      {
+                        "direction": "fall",
+                        "industryId": 2,
+                        "name": "반도체",
+                        "averageChangeRate": -2.15,
+                        "rank": 8,
+                        "risingStockCount": 8,
+                        "fallingStockCount": 27,
+                        "tradingValueChangeRate": 12.3,
+                        "selectionBasis": "산업 평균 하락률, 거래대금 증가율, 관련 자료를 기준으로 선정했습니다.",
+                        "materials": [
+                          {
+                            "materialId": "material-2",
+                            "type": "news",
+                            "title": "반도체 산업 관련 소식",
+                            "source": "예시 언론사",
+                            "publishedAt": "2026-08-12T12:00:00+09:00",
+                            "summary": "해당 산업과 관련된 발표 내용입니다.",
+                            "url": "https://example.com/news/2",
+                            "stockIds": [],
+                            "industryIds": [2]
                           }
                         ]
                       }
@@ -2028,7 +2064,20 @@
             "items": {
               "$ref": "#/components/schemas/IndustryHighlight"
             },
-            "description": "핵심 상승·하락 산업과 관련 자료."
+            "minItems": 2,
+            "maxItems": 2,
+            "contains": {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "const": "rise"
+                }
+              },
+              "required": ["direction"]
+            },
+            "minContains": 1,
+            "maxContains": 1,
+            "description": "핵심 상승·하락 산업을 각각 1개씩 제공한다. 순서는 제한하지 않는다."
           },
           "movers": {
             "type": "array",

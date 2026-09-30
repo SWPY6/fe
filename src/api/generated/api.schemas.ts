@@ -319,7 +319,11 @@ export interface MarketSummary {
   indicators: Indicator[];
   /** 산업별 등락 흐름. */
   industries: Industry[];
-  /** 핵심 상승·하락 산업과 관련 자료. */
+  /**
+     * 핵심 상승·하락 산업을 각각 1개씩 제공한다. 순서는 제한하지 않는다.
+     * @minItems 2
+     * @maxItems 2
+     */
   highlights: IndustryHighlight[];
   /**
      * 주요 변동 종목 미리보기. 최대 4개.
