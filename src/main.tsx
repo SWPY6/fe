@@ -1,8 +1,10 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { createRouter, RouterProvider } from "@tanstack/react-router"
+import { createRouter, RouterProvider, useRouterState } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { Toaster } from "sonner"
 
+import { FeedbackReview } from "../feedback/client/FeedbackReview"
 import { queryClient } from "./api/queryClient"
 import { routeTree } from "./routeTree.gen"
 
@@ -24,16 +26,22 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const rootElement = document.getElementById("root")
+export function App() {
+  const pathname = useRouterState({ router, select: (state) => state.location.pathname })
 
-if (!rootElement) {
-  throw new Error("Root element not found")
+  return (
+    <>
+      <RouterProvider router={router} />
+      {import.meta.env.MODE === "preview" && <FeedbackReview key={pathname} />}
+      <Toaster />
+    </>
+  )
 }
 
-createRoot(rootElement).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <App />
     </QueryClientProvider>
   </StrictMode>,
 )
