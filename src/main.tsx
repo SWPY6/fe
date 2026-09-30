@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client"
 import { Toaster } from "sonner"
 
 import { FeedbackReview } from "../feedback/client/FeedbackReview"
-import { queryClient } from "./api/queryClient"
+import { queryClient } from "./api/query/queryClient"
 import { routeTree } from "./routeTree.gen"
 
 import "./index.css"

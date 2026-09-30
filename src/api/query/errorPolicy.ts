@@ -1,5 +1,5 @@
-import { ApiError } from "./error"
-import type { ApiErrorKind } from "./error"
+import { ApiError } from "../http/error"
+import type { ApiErrorKind } from "../http/error"
 
 type ErrorPolicy = { retries: number; message: string | null }
 
@@ -12,9 +12,15 @@ const errorPolicies = {
   unknown: { retries: 0, message: "예상하지 못한 오류가 발생했습니다." },
 } satisfies Record<ApiErrorKind, ErrorPolicy>
 
-const unhandledErrorPolicy = { retries: 0, message: null } satisfies ErrorPolicy
+const unhandledErrorPolicy = {
+  retries: 0,
+  message: "예상하지 못한 오류가 발생했습니다.",
+} satisfies ErrorPolicy
 
 export function getErrorPolicy(error: unknown) {
   if (!(error instanceof ApiError)) return unhandledErrorPolicy
+  if (error.kind === "http" && error.status >= 500) {
+    return { retries: 0, message: "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요." }
+  }
   return errorPolicies[error.kind]
 }
