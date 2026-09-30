@@ -106,7 +106,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  agentation@3.1.2: 4dd6daa6685a92eff2b48ce1ba33683fbcf0714f17a1edfa3717061e81d6f803
+  agentation@3.1.2: 812dd9a0ac532056d21e667d31a727e431b9519f192b1f654d7fb44409fd6acd
 
 importers:
 
@@ -123,7 +123,7 @@ importers:
         version: 1.170.32(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       agentation:
         specifier: ^3.1.2
-        version: 3.1.2(patch_hash=4dd6daa6685a92eff2b48ce1ba33683fbcf0714f17a1edfa3717061e81d6f803)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 3.1.2(patch_hash=812dd9a0ac532056d21e667d31a727e431b9519f192b1f654d7fb44409fd6acd)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       axios:
         specifier: ^1.20.0
         version: 1.20.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
@@ -7703,7 +7703,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  agentation@3.1.2(patch_hash=4dd6daa6685a92eff2b48ce1ba33683fbcf0714f17a1edfa3717061e81d6f803)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  agentation@3.1.2(patch_hash=812dd9a0ac532056d21e667d31a727e431b9519f192b1f654d7fb44409fd6acd)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     optionalDependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)

@@ -82,6 +82,10 @@ test("build 4 shows build 2 feedback and Resolve persists status through PATCH",
   await page.getByRole("button", { name: "Start feedback mode", exact: true }).click()
   const marker = page.getByRole("button", { name: "Edit annotation 1: button", exact: true })
   await marker.click()
+  const resolveButton = page.getByRole("button", { name: "Resolve annotation" })
+  await expect.element(resolveButton).toBeVisible()
+  const actions = resolveButton.element().parentElement!
+  actions.style.width = "220px"
   await page.getByRole("button", { name: "Resolve annotation" }).click()
   await expect.element(marker).not.toBeInTheDocument()
   expect(annotation.status).toBe("resolved")
