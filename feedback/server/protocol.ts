@@ -31,6 +31,7 @@ const annotationFields = {
   element: z.string().min(1),
   elementPath: z.string().min(1),
   timestamp: z.number(),
+  buildVersion: z.string().min(1).optional(),
   selectedText: z.string().optional(),
   boundingBox: rectangleSchema.optional(),
   nearbyText: z.string().optional(),

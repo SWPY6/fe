@@ -5,6 +5,9 @@ import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
+  define: {
+    FEEDBACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION ?? `local-${Date.now()}`),
+  },
   plugins: [
     tanstackRouter({
       target: "react",

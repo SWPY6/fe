@@ -1,44 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
 import { Agentation } from "agentation"
 
-const endpoint = "/api/agentation"
+import { feedbackEndpoint } from "./api"
+import { buildVersion } from "./buildVersion"
+import { useFeedbackSession, useResolveFeedbackMutation } from "./useFeedback"
 
 export function FeedbackReview() {
   const url = new URL(window.location.pathname, window.location.origin).toString()
-  const {
-    data: sessionId,
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: ["feedback-session", url],
-    throwOnError: false,
-    queryFn: async ({ signal }) => {
-      // Joining the URL's existing session loads annotations from other browsers.
-      const response = await fetch(`${endpoint}/sessions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-        signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Feedback session failed with status ${response.status}`)
-      }
-
-      const session: unknown = await response.json()
-
-      if (
-        !session ||
-        typeof session !== "object" ||
-        !("id" in session) ||
-        typeof session.id !== "string"
-      ) {
-        throw new Error("Feedback session response is invalid")
-      }
-
-      return session.id
-    },
-  })
+  const { data: sessionId, isPending, isError } = useFeedbackSession(url)
+  const resolve = useResolveFeedbackMutation()
 
   if (isPending) return null
 
@@ -46,5 +15,14 @@ export function FeedbackReview() {
     return <div role="alert">화면 피드백을 불러올 수 없습니다.</div>
   }
 
-  return <Agentation endpoint={endpoint} sessionId={sessionId} />
+  return (
+    <Agentation
+      endpoint={feedbackEndpoint}
+      sessionId={sessionId}
+      buildVersion={buildVersion}
+      onAnnotationResolve={async (annotation) => {
+        await resolve.mutateAsync(annotation.id)
+      }}
+    />
+  )
 }

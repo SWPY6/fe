@@ -151,7 +151,8 @@ export function createFeedbackStore(binding: D1Database) {
         return undefined
       }
 
-      const id = `ann_${crypto.randomUUID()}`
+      // Keep the client's ID so an offline resync or retried request is idempotent.
+      const id = input.id
       const createdAt = new Date().toISOString()
       const annotation = annotationSchema.parse({
         ...input,
@@ -162,14 +163,24 @@ export function createFeedbackStore(binding: D1Database) {
         createdAt,
       })
 
-      await db.insert(annotations).values({
-        id,
-        sessionId,
-        status: annotation.status,
-        timestamp: annotation.timestamp,
-        data: annotation,
-        createdAt,
-      })
+      const [created] = await db
+        .insert(annotations)
+        .values({
+          id,
+          sessionId,
+          status: annotation.status,
+          timestamp: annotation.timestamp,
+          data: annotation,
+          createdAt,
+        })
+        .onConflictDoNothing({ target: annotations.id })
+        .returning()
+
+      if (!created) {
+        const existing = await getAnnotation(id)
+        return existing?.sessionId === sessionId ? existing : undefined
+      }
+
       await emit("annotation.created", sessionId, annotation)
 
       return annotation
