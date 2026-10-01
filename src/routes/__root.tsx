@@ -3,6 +3,7 @@ import { Link, Outlet, createRootRouteWithContext, useRouterState } from "@tanst
 import { Search } from "lucide-react"
 import { createContext, useMemo, useState } from "react"
 
+import { Button } from "@/components/ui/button"
 import { Header } from "@/components/ui/Header"
 import { Input } from "@/components/ui/input"
 
@@ -108,7 +109,25 @@ function RootLayout() {
   )
 }
 
+function NotFoundPage() {
+  return (
+    <main className="flex min-h-[60svh] flex-col items-center justify-center py-16 text-center">
+      <h1 className="flex flex-col gap-4 typo-section-heading text-balance sm:typo-page-title">
+        <span className="typo-numeric-lg text-primary">404</span>
+        페이지를 찾을 수 없어요
+      </h1>
+      <p className="mt-4 max-w-sm typo-body text-pretty text-muted-foreground">
+        입력한 주소를 확인하거나 첫 화면에서 다시 시작해 주세요.
+      </p>
+      <Button asChild className="mt-8 min-h-11 px-6">
+        <Link to="/">첫 화면으로 돌아가기</Link>
+      </Button>
+    </main>
+  )
+}
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   ...globalUrlStateRouteOptions,
   component: RootLayout,
+  notFoundComponent: NotFoundPage,
 })
