@@ -127,8 +127,8 @@
   --text-page-title--font-weight: 600;
   --text-page-title--letter-spacing: -0.03125rem;
 
-  --text-section-heading: 1.5rem;
-  --text-section-heading--line-height: 2rem;
+  --text-section-heading: 1.75rem;
+  --text-section-heading--line-height: 2.25rem;
   --text-section-heading--font-weight: 600;
   --text-section-heading--letter-spacing: -0.03125rem;
 
@@ -137,8 +137,8 @@
   --text-subheading--font-weight: 600;
   --text-subheading--letter-spacing: 0em;
 
-  --text-heading-xs: 1.0625rem;
-  --text-heading-xs--line-height: 1.625rem;
+  --text-heading-xs: 1.125rem;
+  --text-heading-xs--line-height: 1.75rem;
   --text-heading-xs--font-weight: 600;
   --text-heading-xs--letter-spacing: 0em;
 
@@ -252,7 +252,7 @@
 
 @layer base {
   body {
-    @apply bg-background text-foreground font-sans typo-body;
+    @apply min-h-screen bg-background text-foreground font-sans typo-body;
     margin: 0;
   }
 }

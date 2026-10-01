@@ -9,104 +9,154 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
-import { Route as rootIndexRouteImport } from "./routes/(root)/index"
-import { Route as IndustriesIndexRouteImport } from "./routes/industries/index"
-import { Route as MoversIndexRouteImport } from "./routes/movers/index"
-import { Route as StocksCodeIndexRouteImport } from "./routes/stocks/$code/index"
+import { Route as LayoutRouteRouteImport } from "./routes/_layout/route"
+import { Route as LayoutrootIndexRouteImport } from "./routes/_layout/(root)/index"
+import { Route as LayoutIndustriesIndexRouteImport } from "./routes/_layout/industries/index"
+import { Route as LayoutMoversIndexRouteImport } from "./routes/_layout/movers/index"
+import { Route as LayoutStocksIndexRouteImport } from "./routes/_layout/stocks/index"
+import { Route as LayoutStocksCodeIndexRouteImport } from "./routes/_layout/stocks/$code/index"
 
-const rootIndexRoute = rootIndexRouteImport.update({
+const LayoutRouteRoute = LayoutRouteRouteImport.update({
+  id: "/_layout",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutrootIndexRoute = LayoutrootIndexRouteImport.update({
   id: "/(root)/",
   path: "/",
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRouteRoute,
 } as any)
-const IndustriesIndexRoute = IndustriesIndexRouteImport.update({
+const LayoutIndustriesIndexRoute = LayoutIndustriesIndexRouteImport.update({
   id: "/industries/",
   path: "/industries/",
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRouteRoute,
 } as any)
-const MoversIndexRoute = MoversIndexRouteImport.update({
+const LayoutMoversIndexRoute = LayoutMoversIndexRouteImport.update({
   id: "/movers/",
   path: "/movers/",
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRouteRoute,
 } as any)
-const StocksCodeIndexRoute = StocksCodeIndexRouteImport.update({
+const LayoutStocksIndexRoute = LayoutStocksIndexRouteImport.update({
+  id: "/stocks/",
+  path: "/stocks/",
+  getParentRoute: () => LayoutRouteRoute,
+} as any)
+const LayoutStocksCodeIndexRoute = LayoutStocksCodeIndexRouteImport.update({
   id: "/stocks/$code/",
   path: "/stocks/$code/",
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof rootIndexRoute
-  "/industries/": typeof IndustriesIndexRoute
-  "/movers/": typeof MoversIndexRoute
-  "/stocks/$code/": typeof StocksCodeIndexRoute
+  "/": typeof LayoutrootIndexRoute
+  "/industries/": typeof LayoutIndustriesIndexRoute
+  "/movers/": typeof LayoutMoversIndexRoute
+  "/stocks/": typeof LayoutStocksIndexRoute
+  "/stocks/$code/": typeof LayoutStocksCodeIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof rootIndexRoute
-  "/industries": typeof IndustriesIndexRoute
-  "/movers": typeof MoversIndexRoute
-  "/stocks/$code": typeof StocksCodeIndexRoute
+  "/": typeof LayoutrootIndexRoute
+  "/industries": typeof LayoutIndustriesIndexRoute
+  "/movers": typeof LayoutMoversIndexRoute
+  "/stocks": typeof LayoutStocksIndexRoute
+  "/stocks/$code": typeof LayoutStocksCodeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  "/(root)/": typeof rootIndexRoute
-  "/industries/": typeof IndustriesIndexRoute
-  "/movers/": typeof MoversIndexRoute
-  "/stocks/$code/": typeof StocksCodeIndexRoute
+  "/_layout": typeof LayoutRouteRouteWithChildren
+  "/_layout/(root)/": typeof LayoutrootIndexRoute
+  "/_layout/industries/": typeof LayoutIndustriesIndexRoute
+  "/_layout/movers/": typeof LayoutMoversIndexRoute
+  "/_layout/stocks/": typeof LayoutStocksIndexRoute
+  "/_layout/stocks/$code/": typeof LayoutStocksCodeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/industries/" | "/movers/" | "/stocks/$code/"
+  fullPaths: "/" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$code/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/industries" | "/movers" | "/stocks/$code"
-  id: "__root__" | "/(root)/" | "/industries/" | "/movers/" | "/stocks/$code/"
+  to: "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$code"
+  id:
+    | "__root__"
+    | "/_layout"
+    | "/_layout/(root)/"
+    | "/_layout/industries/"
+    | "/_layout/movers/"
+    | "/_layout/stocks/"
+    | "/_layout/stocks/$code/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  rootIndexRoute: typeof rootIndexRoute
-  IndustriesIndexRoute: typeof IndustriesIndexRoute
-  MoversIndexRoute: typeof MoversIndexRoute
-  StocksCodeIndexRoute: typeof StocksCodeIndexRoute
+  LayoutRouteRoute: typeof LayoutRouteRouteWithChildren
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/(root)/": {
-      id: "/(root)/"
+    "/_layout": {
+      id: "/_layout"
+      path: ""
+      fullPath: "/"
+      preLoaderRoute: typeof LayoutRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/_layout/(root)/": {
+      id: "/_layout/(root)/"
       path: "/"
       fullPath: "/"
-      preLoaderRoute: typeof rootIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutrootIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
     }
-    "/industries/": {
-      id: "/industries/"
+    "/_layout/industries/": {
+      id: "/_layout/industries/"
       path: "/industries"
       fullPath: "/industries/"
-      preLoaderRoute: typeof IndustriesIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutIndustriesIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
     }
-    "/movers/": {
-      id: "/movers/"
+    "/_layout/movers/": {
+      id: "/_layout/movers/"
       path: "/movers"
       fullPath: "/movers/"
-      preLoaderRoute: typeof MoversIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutMoversIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
     }
-    "/stocks/$code/": {
-      id: "/stocks/$code/"
+    "/_layout/stocks/": {
+      id: "/_layout/stocks/"
+      path: "/stocks"
+      fullPath: "/stocks/"
+      preLoaderRoute: typeof LayoutStocksIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
+    }
+    "/_layout/stocks/$code/": {
+      id: "/_layout/stocks/$code/"
       path: "/stocks/$code"
       fullPath: "/stocks/$code/"
-      preLoaderRoute: typeof StocksCodeIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutStocksCodeIndexRouteImport
+      parentRoute: typeof LayoutRouteRoute
     }
   }
 }
 
+interface LayoutRouteRouteChildren {
+  LayoutrootIndexRoute: typeof LayoutrootIndexRoute
+  LayoutIndustriesIndexRoute: typeof LayoutIndustriesIndexRoute
+  LayoutMoversIndexRoute: typeof LayoutMoversIndexRoute
+  LayoutStocksIndexRoute: typeof LayoutStocksIndexRoute
+  LayoutStocksCodeIndexRoute: typeof LayoutStocksCodeIndexRoute
+}
+
+const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
+  LayoutrootIndexRoute: LayoutrootIndexRoute,
+  LayoutIndustriesIndexRoute: LayoutIndustriesIndexRoute,
+  LayoutMoversIndexRoute: LayoutMoversIndexRoute,
+  LayoutStocksIndexRoute: LayoutStocksIndexRoute,
+  LayoutStocksCodeIndexRoute: LayoutStocksCodeIndexRoute,
+}
+
+const LayoutRouteRouteWithChildren = LayoutRouteRoute._addFileChildren(
+  LayoutRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  rootIndexRoute: rootIndexRoute,
-  IndustriesIndexRoute: IndustriesIndexRoute,
-  MoversIndexRoute: MoversIndexRoute,
-  StocksCodeIndexRoute: StocksCodeIndexRoute,
+  LayoutRouteRoute: LayoutRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
