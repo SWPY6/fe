@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { RouterProvider, createRootRoute, createRoute, createRouter } from "@tanstack/react-router"
 import { Agentation, getStorageKey, loadAnnotations } from "agentation"
 import { toast, Toaster } from "sonner"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
@@ -174,9 +175,16 @@ test("reloading saved feedback restores the failed notification and its retry ac
   })
   vi.stubGlobal("fetch", fetchMock)
   const queryClient = new QueryClient()
+  const rootRoute = createRootRoute()
+  const feedbackRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: testPath,
+    component: FeedbackReview,
+  })
+  const router = createRouter({ routeTree: rootRoute.addChildren([feedbackRoute]) })
   await render(
     <QueryClientProvider client={queryClient}>
-      <FeedbackReview />
+      <RouterProvider router={router} />
       <Toaster position="top-center" />
     </QueryClientProvider>,
   )

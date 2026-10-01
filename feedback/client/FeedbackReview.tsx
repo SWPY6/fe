@@ -1,3 +1,4 @@
+import { useLocation } from "@tanstack/react-router"
 import { Agentation } from "agentation"
 
 import { feedbackEndpoint } from "./api"
@@ -9,7 +10,12 @@ import {
 } from "./useFeedback"
 
 export function FeedbackReview() {
-  const url = new URL(window.location.pathname, window.location.origin).toString()
+  const pathname = useLocation({ select: (location) => location.pathname })
+  return <FeedbackSession key={pathname} pathname={pathname} />
+}
+
+function FeedbackSession({ pathname }: { pathname: string }) {
+  const url = new URL(pathname, window.location.origin).toString()
   const { data: sessionId, isPending, isError } = useFeedbackSession(url)
   const resolve = useResolveFeedbackMutation()
   const onAnnotationSync = useFeedbackNotification()
