@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router"
 
+import { Button } from "@/components/ui/button"
+
 export function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -10,12 +12,9 @@ export function NotFoundPage() {
         페이지의 주소가 잘못되었거나, 변경 또는 삭제되어 접근할 수 없습니다.
       </p>
       <div className="mt-8">
-        <Link
-          to="/"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-        >
-          메인으로 이동
-        </Link>
+        <Button asChild size={"lg"}>
+          <Link to="/">메인으로 이동</Link>
+        </Button>
       </div>
     </div>
   )
