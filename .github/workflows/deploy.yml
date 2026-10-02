@@ -33,13 +33,13 @@ jobs:
       - name: Install browsers
         uses: ./.github/actions/playwright-install
 
-      - name: Run quality checks
-        run: pnpm check
-
       - name: Build application
         run: pnpm build
         env:
           BUILD_VERSION: production-${{ github.run_number }}.${{ github.run_attempt }}
+
+      - name: Run quality checks
+        run: pnpm check
 
       - name: Validate Cloudflare configuration
         env:
