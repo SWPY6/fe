@@ -483,6 +483,87 @@
         },
         "x-contract-source": "backend-spec"
       }
+    },
+    "/api/v1/stocks": {
+      "get": {
+        "x-contract-source": "frontend-proposed",
+        "operationId": "readStocks",
+        "summary": "종목 검색 및 주요 변동 종목 조회",
+        "description": "국가·산업·검색어로 필터링한 종목을 반환한다. UP은 양의 등락률 내림차순, DOWN은 음의 등락률 오름차순, VOLUME은 volumeRatio20d 내림차순, ALL은 등락률 내림차순이다. includeCaution이 false면 투자 유의 종목을 제외한다. page는 1부터 시작한다.",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["KR", "US"]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["ALL", "UP", "DOWN", "VOLUME"],
+              "default": "UP"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "includeCaution",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultStockListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -512,7 +593,7 @@
             }
           }
         },
-        "required": ["code"]
+        "required": ["code", "name", "message"]
       },
       "ErrorResponse": {
         "type": "object",
@@ -520,7 +601,8 @@
           "error": {
             "$ref": "#/components/schemas/ErrorDetail"
           }
-        }
+        },
+        "required": ["error"]
       },
       "FieldError": {
         "type": "object",
@@ -528,7 +610,8 @@
           "field": {
             "type": "string"
           }
-        }
+        },
+        "required": ["field"]
       },
       "ApiResultSummary": {
         "type": "object",
@@ -536,7 +619,8 @@
           "data": {
             "$ref": "#/components/schemas/Summary"
           }
-        }
+        },
+        "required": ["data"]
       },
       "Profile": {
         "type": "object",
@@ -598,7 +682,8 @@
           "data": {
             "$ref": "#/components/schemas/StockQuoteResponse"
           }
-        }
+        },
+        "required": ["data"]
       },
       "Indicators": {
         "type": "object",
@@ -712,7 +797,8 @@
           "data": {
             "$ref": "#/components/schemas/StockChartResponse"
           }
-        }
+        },
+        "required": ["data"]
       },
       "Candle": {
         "type": "object",
@@ -817,7 +903,8 @@
           "data": {
             "$ref": "#/components/schemas/MarketSummaryResponse"
           }
-        }
+        },
+        "required": ["data"]
       },
       "IndicatorCard": {
         "type": "object",
@@ -891,7 +978,8 @@
               "$ref": "#/components/schemas/IndustryTrendResponse"
             }
           }
-        }
+        },
+        "required": ["data"]
       },
       "IndustryTrendResponse": {
         "type": "object",
@@ -991,7 +1079,8 @@
               "$ref": "#/components/schemas/IndustryNewsResponse"
             }
           }
-        }
+        },
+        "required": ["data"]
       },
       "IndustryNewsResponse": {
         "type": "object",
@@ -1104,7 +1193,8 @@
               "$ref": "#/components/schemas/IndustryFlowResponse"
             }
           }
-        }
+        },
+        "required": ["data"]
       },
       "IndustryFlowResponse": {
         "type": "object",
@@ -1183,11 +1273,91 @@
             "example": 3.24
           }
         }
+      },
+      "StockListItem": {
+        "x-contract-source": "frontend-proposed",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StockQuoteResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "stockId",
+              "ticker",
+              "name",
+              "currency",
+              "price",
+              "changeRate",
+              "indicators",
+              "industryCode",
+              "industryName",
+              "caution",
+              "contextSummary"
+            ],
+            "properties": {
+              "industryCode": {
+                "type": "string",
+                "example": "AUTOMOBILE"
+              },
+              "industryName": {
+                "type": "string",
+                "example": "자동차"
+              },
+              "caution": {
+                "type": "boolean",
+                "example": false
+              },
+              "contextSummary": {
+                "type": ["string", "null"],
+                "description": "확인된 관련 맥락. 없으면 null이며 가격 변동의 원인으로 단정하지 않는다.",
+                "example": null
+              }
+            }
+          }
+        ]
+      },
+      "StockListResponse": {
+        "type": "object",
+        "required": ["items", "page", "size", "total"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockListItem"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 40
+          }
+        }
+      },
+      "ApiResultStockListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/StockListResponse"
+          }
+        },
+        "required": ["data"]
       }
     }
   },
   "x-source": {
     "url": "https://ploutosbe.duckdns.org/v3/api-docs",
     "fetchedAt": "2026-10-03T13:11:54.213Z"
-  }
+  },
+  "x-generated-at": "2026-10-03T14:14:58.018Z"
 }

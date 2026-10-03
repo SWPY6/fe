@@ -38,6 +38,8 @@ jobs:
         run: pnpm build --mode preview
         env:
           BUILD_VERSION: preview-${{ github.run_number }}.${{ github.run_attempt }}
+          VITE_ENABLE_MSW: "true"
+          VITE_API_BASE_URL: "/"
 
       - name: Run quality checks
         run: pnpm check

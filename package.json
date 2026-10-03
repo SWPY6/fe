@@ -8,7 +8,8 @@
     "dev:mock": "VITE_ENABLE_MSW=true vite",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "api:generate": "orval --config orval.config.ts",
+    "api:overlay": "openapi-format src/api/openapi.json --overlayFile src/api/openapi.overlay.yaml --no-sort --no-bundle -o src/api/openapi.generated.json",
+    "api:generate": "pnpm api:overlay && orval --config orval.config.ts",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
@@ -21,7 +22,10 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:run"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@hono/zod-validator": "^0.9.1",
+    "@suspensive/react": "^3.21.4",
+    "@suspensive/react-query": "npm:@suspensive/react-query-5",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-router": "^1.170.32",
     "agentation": "^3.1.2",
@@ -60,6 +64,7 @@
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "lefthook": "^2.1.12",
     "msw": "^2.15.0",
+    "openapi-format": "^1.33.7",
     "orval": "^8.38.0",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",

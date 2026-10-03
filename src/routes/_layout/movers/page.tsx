@@ -1,322 +1,82 @@
-import { Link } from "@tanstack/react-router"
-import { Shield } from "lucide-react"
-import { useState } from "react"
+import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { SuspenseQuery } from "@suspensive/react-query"
+import { Link, getRouteApi } from "@tanstack/react-router"
 
+import {
+  getReadFlowsSuspenseQueryOptions,
+  getReadStocksSuspenseQueryOptions,
+} from "@/api/generated/api"
+import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Pagination } from "@/components/ui/pagination"
 import { Select } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Table } from "@/components/ui/table"
 import { Tabs } from "@/components/ui/tabs"
+import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
-const data = {
-  stocks: [
-    {
-      name: "현대차",
-      code: "005380",
-      industry: "자동차",
-      price: "248,000",
-      change: "+3.24%",
-      volume: "245,000",
-      ratio: "0.95",
-      cap: "86.6",
-      trade: "608",
-    },
-    {
-      name: "한온시스템",
-      code: "018880",
-      industry: "자동차",
-      price: "4,320",
-      change: "+2.13%",
-      volume: "521,900",
-      ratio: "2.06",
-      cap: "1.5",
-      trade: "23",
-    },
-    {
-      name: "대한항공",
-      code: "003490",
-      industry: "운송",
-      price: "22,400",
-      change: "+1.92%",
-      volume: "1,056,500",
-      ratio: "2.10",
-      cap: "7.8",
-      trade: "237",
-    },
-    {
-      name: "기아",
-      code: "000270",
-      industry: "자동차",
-      price: "102,000",
-      change: "+1.85%",
-      volume: "337,300",
-      ratio: "1.32",
-      cap: "34.9",
-      trade: "344",
-    },
-    {
-      name: "현대건설",
-      code: "000720",
-      industry: "건설",
-      price: "32,100",
-      change: "+1.68%",
-      volume: "731,900",
-      ratio: "1.64",
-      cap: "11.0",
-      trade: "235",
-    },
-    {
-      name: "세아베스틸지주",
-      code: "001430",
-      industry: "철강",
-      price: "24,150",
-      change: "+1.26%",
-      volume: "591,900",
-      ratio: "1.92",
-      cap: "8.2",
-      trade: "143",
-    },
-    {
-      name: "신세계",
-      code: "004170",
-      industry: "유통",
-      price: "169,800",
-      change: "+1.20%",
-      volume: "1,078,800",
-      ratio: "2.61",
-      cap: "58.6",
-      trade: "1,832",
-    },
-    {
-      name: "팬오션",
-      code: "028670",
-      industry: "운송",
-      price: "5,230",
-      change: "+1.16%",
-      volume: "1,241,100",
-      ratio: "1.04",
-      cap: "1.9",
-      trade: "65",
-    },
-    {
-      name: "한화솔루션",
-      code: "009830",
-      industry: "화학",
-      price: "27,150",
-      change: "+1.14%",
-      volume: "754,200",
-      ratio: "2.15",
-      cap: "9.6",
-      trade: "205",
-    },
-    {
-      name: "SK이노베이션",
-      code: "096770",
-      industry: "에너지",
-      price: "108,000",
-      change: "+1.04%",
-      volume: "1,565,700",
-      ratio: "1.50",
-      cap: "39.1",
-      trade: "1,691",
-    },
-    {
-      name: "대한제강",
-      code: "084010",
-      industry: "철강",
-      price: "12,340",
-      change: "+0.98%",
-      volume: "684,200",
-      ratio: "2.29",
-      cap: "4.3",
-      trade: "84",
-    },
-    {
-      name: "농심",
-      code: "004370",
-      industry: "음식료",
-      price: "412,000",
-      change: "+0.91%",
-      volume: "1,543,400",
-      ratio: "0.99",
-      cap: "143.0",
-      trade: "6,359",
-    },
-    {
-      name: "DL이앤씨",
-      code: "375500",
-      industry: "건설",
-      price: "34,700",
-      change: "+0.86%",
-      volume: "1,008,800",
-      ratio: "0.95",
-      cap: "12.2",
-      trade: "350",
-    },
-    {
-      name: "이마트",
-      code: "139480",
-      industry: "유통",
-      price: "62,100",
-      change: "+0.74%",
-      volume: "894,200",
-      ratio: "1.87",
-      cap: "22.2",
-      trade: "555",
-    },
-    {
-      name: "금호석유",
-      code: "011780",
-      industry: "화학",
-      price: "138,000",
-      change: "+0.72%",
-      volume: "661,900",
-      ratio: "1.78",
-      cap: "48.3",
-      trade: "913",
-    },
-    {
-      name: "오뚜기",
-      code: "007310",
-      industry: "음식료",
-      price: "410,000",
-      change: "+0.62%",
-      volume: "1,635,700",
-      ratio: "1.36",
-      cap: "141.0",
-      trade: "6,706",
-    },
-    {
-      name: "대우건설",
-      code: "047040",
-      industry: "건설",
-      price: "4,120",
-      change: "+0.49%",
-      volume: "824,200",
-      ratio: "2.01",
-      cap: "1.4",
-      trade: "34",
-    },
-    {
-      name: "KT",
-      code: "030200",
-      industry: "통신",
-      price: "39,800",
-      change: "+0.48%",
-      volume: "1,218,800",
-      ratio: "2.33",
-      cap: "13.5",
-      trade: "485",
-    },
-    {
-      name: "SK텔레콤",
-      code: "017670",
-      industry: "통신",
-      price: "55,000",
-      change: "+0.36%",
-      volume: "1,311,100",
-      ratio: "2.70",
-      cap: "19.5",
-      trade: "721",
-    },
-    {
-      name: "오리온",
-      code: "271560",
-      industry: "음식료",
-      price: "92,000",
-      change: "+0.34%",
-      volume: "1,820,300",
-      ratio: "2.10",
-      cap: "32.6",
-      trade: "1,675",
-    },
-    {
-      name: "롯데케미칼",
-      code: "011170",
-      industry: "화학",
-      price: "92,300",
-      change: "-2.36%",
-      volume: "458,100",
-      ratio: "1.44",
-      cap: "8.4",
-      trade: "423",
-    },
-  ],
-}
+import { moversFilterSchema } from "./-schema"
+
+const route = getRouteApi("/_layout/movers/")
 
 export function MoversPage() {
-  const [query, setQuery] = useState("")
-  const [industry, setIndustry] = useState("all")
-  const [filter, setFilter] = useState("up")
-  const [showWarning, setShowWarning] = useState(false)
-  const [page, setPage] = useState(1)
-  const industries = [...new Set(data.stocks.map((stock) => stock.industry))].toSorted()
-  const filtered = data.stocks
-    .filter((stock) => industry === "all" || stock.industry === industry)
-    .filter((stock) =>
-      (stock.name + " " + stock.code)
-        .toLocaleLowerCase()
-        .includes(query.trim().toLocaleLowerCase()),
-    )
-    .filter(
-      (stock) =>
-        filter === "all" ||
-        filter === "volume" ||
-        (filter === "up" ? stock.change.startsWith("+") : stock.change.startsWith("-")),
-    )
-    .toSorted((a, b) =>
-      filter === "volume"
-        ? Number(b.volume.replaceAll(",", "")) - Number(a.volume.replaceAll(",", ""))
-        : filter === "down"
-          ? parseFloat(a.change) - parseFloat(b.change)
-          : parseFloat(b.change) - parseFloat(a.change),
-    )
-  const pageCount = Math.max(1, Math.ceil(filtered.length / 20))
-  const visible = filtered.slice(
-    (Math.min(page, pageCount) - 1) * 20,
-    Math.min(page, pageCount) * 20,
-  )
+  const [{ market }] = useGlobalUrlState()
+  const { q, industry, sort, page, includeCaution } = route.useSearch()
+  const navigate = route.useNavigate()
+  const stocksQueryOptions = getReadStocksSuspenseQueryOptions({
+    country: market === "domestic" ? "KR" : "US",
+    q,
+    industry,
+    sort,
+    page,
+    size: 20,
+    includeCaution,
+  })
 
   return (
     <main className="py-8">
-      <Tabs.Root defaultValue="domestic" className="gap-0">
-        <div className="flex flex-wrap items-center gap-4">
-          <Tabs.List variant="segmented" aria-label="시장 선택">
-            <Tabs.Trigger value="domestic">국내 시장</Tabs.Trigger>
-            <Tabs.Trigger value="overseas">해외 시장</Tabs.Trigger>
-          </Tabs.List>
-        </div>
-        <Tabs.Content value="domestic">
+      <Tabs.Root
+        value={market}
+        onValueChange={(value) => {
+          if (value === "domestic" || value === "overseas")
+            navigate({
+              search: (previous) => ({ ...previous, market: value, page: 1, industry: undefined }),
+              replace: true,
+            })
+        }}
+        className="gap-0"
+      >
+        <Tabs.List variant="segmented" aria-label="시장 선택">
+          <Tabs.Trigger value="domestic">국내 시장</Tabs.Trigger>
+          <Tabs.Trigger value="overseas">해외 시장</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content key={market} value={market}>
           <section className="mt-8" aria-labelledby="movers-title">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 id="movers-title" className="typo-section-heading">
-                  오늘 크게 움직인 종목
-                </h2>
-                <p className="mt-1 typo-body-sm text-muted-foreground">
-                  평소 거래량 대비: 직전 20거래일 평균 대비 배수 · 정규장 마감 기준
-                </p>
-              </div>
+              <h1 id="movers-title" className="typo-section-heading">
+                오늘 크게 움직인 종목
+              </h1>
               <fieldset className="inline-flex flex-wrap rounded-md bg-accent p-1">
                 <legend className="sr-only">변동 종목 필터</legend>
-                {[
-                  ["all", "전체 종목"],
-                  ["up", "상승 TOP"],
-                  ["down", "하락 TOP"],
-                  ["volume", "거래량 급증"],
-                ].map(([value, label]) => (
+                {moversFilterSchema.options.map((value) => (
                   <Button
                     key={value}
                     size="sm"
-                    variant={filter === value ? "default" : "ghost"}
-                    onClick={() => {
-                      setFilter(value)
-                      setPage(1)
-                    }}
+                    variant={sort === value ? "default" : "ghost"}
+                    onClick={() =>
+                      navigate({
+                        search: (previous) => ({ ...previous, sort: value, page: 1 }),
+                        replace: true,
+                      })
+                    }
                   >
-                    {label}
+                    {
+                      { ALL: "전체 종목", UP: "상승 TOP", DOWN: "하락 TOP", VOLUME: "거래량 급증" }[
+                        value
+                      ]
+                    }
                   </Button>
                 ))}
               </fieldset>
@@ -328,13 +88,17 @@ export function MoversPage() {
                 </label>
                 <Input
                   id="stock-search"
-                  value={query}
+                  name="q"
+                  value={q ?? ""}
                   onChange={(event) => {
-                    setQuery(event.target.value)
-                    setPage(1)
+                    const query = event.currentTarget.value
+                    navigate({
+                      search: (previous) => ({ ...previous, q: query, page: 1 }),
+                      replace: true,
+                    })
                   }}
                   placeholder="종목명 · 코드 · 티커"
-                  className="mt-2 bg-background"
+                  className="mt-2"
                 />
               </div>
               <div>
@@ -342,59 +106,85 @@ export function MoversPage() {
                   산업
                 </label>
                 <Select.Root
-                  value={industry}
-                  onValueChange={(value) => {
-                    setIndustry(value)
-                    setPage(1)
-                  }}
+                  value={industry ?? "all"}
+                  onValueChange={(value) =>
+                    navigate({
+                      search: (previous) => ({
+                        ...previous,
+                        industry: value === "all" ? undefined : value,
+                        page: 1,
+                      }),
+                      replace: true,
+                    })
+                  }
                 >
                   <Select.Trigger id="industry-filter" className="mt-2 w-full">
                     <Select.Value />
                   </Select.Trigger>
                   <Select.Content>
                     <Select.Item value="all">전체 산업</Select.Item>
-                    {industries.map((name) => (
-                      <Select.Item value={name} key={name}>
-                        {name}
-                      </Select.Item>
-                    ))}
+                    <ErrorBoundary fallback="오류가 발생했습니다">
+                      <Suspense fallback="로딩중">
+                        <SuspenseQuery
+                          {...getReadFlowsSuspenseQueryOptions({
+                            country: market === "domestic" ? "KR" : "US",
+                          })}
+                        >
+                          {({ data: response }) =>
+                            response.data
+                              .filter(
+                                (item, index, items) =>
+                                  item.code &&
+                                  items.findIndex((candidate) => candidate.code === item.code) ===
+                                    index,
+                              )
+                              .map(
+                                (item) =>
+                                  item.code && (
+                                    <Select.Item key={item.code} value={item.code}>
+                                      {item.displayName}
+                                    </Select.Item>
+                                  ),
+                              )
+                          }
+                        </SuspenseQuery>
+                      </Suspense>
+                    </ErrorBoundary>
                   </Select.Content>
                 </Select.Root>
               </div>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setQuery("")
-                  setIndustry("all")
-                  setPage(1)
-                }}
+                onClick={() =>
+                  navigate({
+                    search: (previous) => ({
+                      ...previous,
+                      q: undefined,
+                      industry: undefined,
+                      page: 1,
+                    }),
+                    replace: true,
+                  })
+                }
               >
                 검색·산업 초기화
               </Button>
             </div>
-            <div className="mt-7 flex items-center justify-between gap-4 border-b border-border pb-4 typo-body-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Shield className="size-4 text-border" aria-hidden="true" /> 투자 유의 종목 거래소
-                지정 상태를 함께 표시합니다.
-              </span>
+            <div className="mt-7 flex items-center justify-between gap-4 pb-4 typo-body-sm text-muted-foreground">
+              <span>투자 유의 종목 포함</span>
               <Switch
-                checked={showWarning}
-                onCheckedChange={setShowWarning}
-                aria-label="투자 유의 종목 표시"
+                checked={includeCaution}
+                onCheckedChange={(value) =>
+                  navigate({
+                    search: (previous) => ({ ...previous, includeCaution: value, page: 1 }),
+                    replace: true,
+                  })
+                }
+                aria-label="투자 유의 종목 포함"
               />
             </div>
-            <p className="my-4 typo-caption text-muted-foreground">
-              {industry === "all" ? "전체 산업" : industry} ·{" "}
-              {filter === "up"
-                ? "상승 TOP"
-                : filter === "down"
-                  ? "하락 TOP"
-                  : filter === "volume"
-                    ? "거래량 급증"
-                    : "전체 종목"}{" "}
-              <strong className="text-foreground">{filtered.length}개</strong>
-            </p>
-            <Table.Root className="min-w-6xl">
+            <Separator />
+            <Table.Root className="min-w-6xl" aria-labelledby="movers-title">
               <Table.Header>
                 <Table.Row>
                   <Table.Head>순위</Table.Head>
@@ -405,87 +195,178 @@ export function MoversPage() {
                   <Table.Head className="text-right">평소 거래량 대비</Table.Head>
                   <Table.Head className="text-right">시가총액</Table.Head>
                   <Table.Head className="text-right">거래대금</Table.Head>
-                  <Table.Head>변동 이유</Table.Head>
+                  <Table.Head>관련 맥락</Table.Head>
                 </Table.Row>
               </Table.Header>
-              <Table.Body>
-                {visible.map((stock, index) => (
-                  <Table.Row key={stock.code} className="h-17">
-                    <Table.Cell className="text-muted-foreground">
-                      {(page - 1) * 20 + index + 1}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent typo-label text-primary">
-                          {stock.name.slice(0, 1)}
-                        </span>
-                        <span>
-                          <span className="block typo-table-label">
-                            {stock.code === "005380" ? (
-                              <Link
-                                to="/stocks/$code"
-                                params={{ code: stock.code }}
-                                className="hover:text-primary hover:underline"
+              <ErrorBoundary
+                fallback={
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell colSpan={9} className="py-4 typo-body-sm">
+                        오류가 발생했습니다
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                }
+              >
+                <Suspense
+                  fallback={
+                    <Table.Body>
+                      <Table.Row>
+                        <Table.Cell colSpan={9} className="py-4 typo-body-sm">
+                          로딩중
+                        </Table.Cell>
+                      </Table.Row>
+                    </Table.Body>
+                  }
+                >
+                  <SuspenseQuery {...stocksQueryOptions}>
+                    {({ data: response }) => (
+                      <>
+                        <Table.Body>
+                          {response.data.items.map((stock, index) => (
+                            <Table.Row key={stock.stockId} className="h-17">
+                              <Table.Cell>
+                                {(response.data.page - 1) * response.data.size + index + 1}
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Link
+                                  to="/stocks/$stockId"
+                                  params={{ stockId: String(stock.stockId) }}
+                                  className="block typo-table-label hover:text-primary hover:underline"
+                                >
+                                  {stock.name}
+                                </Link>
+                                <span className="block typo-caption text-muted-foreground">
+                                  {stock.ticker} · {stock.industryName}
+                                  {stock.caution ? " · 투자 유의" : ""}
+                                </span>
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                <>
+                                  <PriceNumber
+                                    value={stock.price}
+                                    className="text-foreground"
+                                    format={{ maximumFractionDigits: 2 }}
+                                  />{" "}
+                                  {stock.currency}
+                                </>
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                <PriceNumber
+                                  value={stock.changeRate}
+                                  format={{
+                                    style: "unit",
+                                    unit: "percent",
+                                    signDisplay: "exceptZero",
+                                  }}
+                                />
+                              </Table.Cell>
+                              <Table.Cell className="text-right tabular-nums">
+                                {stock.indicators.volume?.toLocaleString("ko-KR") ?? "—"}
+                              </Table.Cell>
+                              <Table.Cell className="text-right tabular-nums">
+                                {stock.indicators.volumeRatio20d == null
+                                  ? "—"
+                                  : `${stock.indicators.volumeRatio20d}배`}
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                {stock.indicators.marketCap == null ? (
+                                  "—"
+                                ) : (
+                                  <>
+                                    <PriceNumber
+                                      value={stock.indicators.marketCap}
+                                      className="text-foreground"
+                                      format={{
+                                        notation: "compact",
+                                      }}
+                                    />{" "}
+                                    {stock.currency}
+                                  </>
+                                )}
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                {stock.indicators.tradingValue == null ? (
+                                  "—"
+                                ) : (
+                                  <>
+                                    <PriceNumber
+                                      value={stock.indicators.tradingValue}
+                                      className="text-foreground"
+                                      format={{
+                                        notation: "compact",
+                                      }}
+                                    />{" "}
+                                    {stock.currency}
+                                  </>
+                                )}
+                              </Table.Cell>
+                              <Table.Cell className="text-muted-foreground">
+                                {stock.contextSummary ?? "—"}
+                              </Table.Cell>
+                            </Table.Row>
+                          ))}
+
+                          {response.data.items.length === 0 && (
+                            <Table.Row>
+                              <Table.Cell
+                                colSpan={9}
+                                className="py-12 text-center text-muted-foreground"
                               >
-                                {stock.name}
-                              </Link>
-                            ) : (
-                              stock.name
-                            )}
-                          </span>
-                          <span className="block typo-caption text-muted-foreground">
-                            {stock.code} · {stock.industry}
-                          </span>
-                        </span>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell className="text-right tabular-nums">{stock.price}원</Table.Cell>
-                    <Table.Cell
-                      className={
-                        stock.change.startsWith("+")
-                          ? "text-right text-positive tabular-nums"
-                          : "text-right text-negative tabular-nums"
-                      }
-                    >
-                      {stock.change}
-                    </Table.Cell>
-                    <Table.Cell className="text-right tabular-nums">{stock.volume}주</Table.Cell>
-                    <Table.Cell className="text-right">
-                      <span className="bg-accent px-2 py-1 text-primary tabular-nums">
-                        {stock.ratio}배
-                      </span>
-                    </Table.Cell>
-                    <Table.Cell className="text-right tabular-nums">{stock.cap}조원</Table.Cell>
-                    <Table.Cell className="text-right tabular-nums">{stock.trade}억원</Table.Cell>
-                    <Table.Cell className="text-muted-foreground">
-                      수요 및 실적 개선 기대
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-                {visible.length === 0 && (
-                  <Table.Row>
-                    <Table.Cell colSpan={9} className="py-12 text-center text-muted-foreground">
-                      검색 결과가 없습니다.
-                    </Table.Cell>
-                  </Table.Row>
-                )}
-              </Table.Body>
+                                검색 결과가 없습니다.
+                              </Table.Cell>
+                            </Table.Row>
+                          )}
+                        </Table.Body>
+                        <Table.Footer className="border-0 bg-transparent">
+                          <Table.Row>
+                            <Table.Cell colSpan={9}>
+                              <p className="my-4 typo-caption text-muted-foreground">
+                                총 {response.data.total}개 종목
+                              </p>
+                              <Pagination.Root className="mt-6">
+                                <Pagination.Content>
+                                  <Pagination.Item>
+                                    <Pagination.Previous
+                                      disabled={page <= 1}
+                                      onClick={() =>
+                                        navigate({
+                                          search: (previous) => ({ ...previous, page: page - 1 }),
+                                        })
+                                      }
+                                    />
+                                  </Pagination.Item>
+                                  <Pagination.Item>
+                                    <Pagination.Status>
+                                      {response.data.page} /{" "}
+                                      {Math.max(
+                                        1,
+                                        Math.ceil(response.data.total / response.data.size),
+                                      )}
+                                    </Pagination.Status>
+                                  </Pagination.Item>
+                                  <Pagination.Item>
+                                    <Pagination.Next
+                                      disabled={page * response.data.size >= response.data.total}
+                                      onClick={() =>
+                                        navigate({
+                                          search: (previous) => ({ ...previous, page: page + 1 }),
+                                        })
+                                      }
+                                    />
+                                  </Pagination.Item>
+                                </Pagination.Content>
+                              </Pagination.Root>
+                            </Table.Cell>
+                          </Table.Row>
+                        </Table.Footer>
+                      </>
+                    )}
+                  </SuspenseQuery>
+                </Suspense>
+              </ErrorBoundary>
             </Table.Root>
-            <Pagination.Root className="mt-6">
-              <Pagination.Content>
-                <Pagination.Item>
-                  <Pagination.Previous disabled={page <= 1} onClick={() => setPage(page - 1)} />
-                </Pagination.Item>
-                <Pagination.Item>
-                  <Pagination.Status>
-                    {Math.min(page, pageCount)} / {pageCount}
-                  </Pagination.Status>
-                </Pagination.Item>
-                <Pagination.Item>
-                  <Pagination.Next disabled={page >= pageCount} onClick={() => setPage(page + 1)} />
-                </Pagination.Item>
-              </Pagination.Content>
-            </Pagination.Root>
           </section>
         </Tabs.Content>
       </Tabs.Root>
