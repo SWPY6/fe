@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as LayoutRouteRouteImport } from "./routes/_layout/route"
+import { Route as LayoutnotFoundSplatRouteRouteImport } from "./routes/_layout/(not-found)/$/route"
 import { Route as LayoutrootIndexRouteImport } from "./routes/_layout/(root)/index"
 import { Route as LayoutIndustriesIndexRouteImport } from "./routes/_layout/industries/index"
 import { Route as LayoutMoversIndexRouteImport } from "./routes/_layout/movers/index"
@@ -20,6 +21,12 @@ const LayoutRouteRoute = LayoutRouteRouteImport.update({
   id: "/_layout",
   getParentRoute: () => rootRouteImport,
 } as any)
+const LayoutnotFoundSplatRouteRoute =
+  LayoutnotFoundSplatRouteRouteImport.update({
+    id: "/(not-found)/$",
+    path: "/$",
+    getParentRoute: () => LayoutRouteRoute,
+  } as any)
 const LayoutrootIndexRoute = LayoutrootIndexRouteImport.update({
   id: "/(root)/",
   path: "/",
@@ -49,12 +56,14 @@ const LayoutStocksStockIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   "/": typeof LayoutrootIndexRoute
+  "/$": typeof LayoutnotFoundSplatRouteRoute
   "/industries/": typeof LayoutIndustriesIndexRoute
   "/movers/": typeof LayoutMoversIndexRoute
   "/stocks/": typeof LayoutStocksIndexRoute
   "/stocks/$stockId/": typeof LayoutStocksStockIdIndexRoute
 }
 export interface FileRoutesByTo {
+  "/$": typeof LayoutnotFoundSplatRouteRoute
   "/": typeof LayoutrootIndexRoute
   "/industries": typeof LayoutIndustriesIndexRoute
   "/movers": typeof LayoutMoversIndexRoute
@@ -64,6 +73,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/_layout": typeof LayoutRouteRouteWithChildren
+  "/_layout/(not-found)/$": typeof LayoutnotFoundSplatRouteRoute
   "/_layout/(root)/": typeof LayoutrootIndexRoute
   "/_layout/industries/": typeof LayoutIndustriesIndexRoute
   "/_layout/movers/": typeof LayoutMoversIndexRoute
@@ -73,12 +83,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    "/" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$stockId/"
+    "/" | "/$" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$stockId/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$stockId"
+  to: "/$" | "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$stockId"
   id:
     | "__root__"
     | "/_layout"
+    | "/_layout/(not-found)/$"
     | "/_layout/(root)/"
     | "/_layout/industries/"
     | "/_layout/movers/"
@@ -98,6 +109,13 @@ declare module "@tanstack/react-router" {
       fullPath: "/"
       preLoaderRoute: typeof LayoutRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    "/_layout/(not-found)/$": {
+      id: "/_layout/(not-found)/$"
+      path: "/$"
+      fullPath: "/$"
+      preLoaderRoute: typeof LayoutnotFoundSplatRouteRouteImport
+      parentRoute: typeof LayoutRouteRoute
     }
     "/_layout/(root)/": {
       id: "/_layout/(root)/"
@@ -138,6 +156,7 @@ declare module "@tanstack/react-router" {
 }
 
 interface LayoutRouteRouteChildren {
+  LayoutnotFoundSplatRouteRoute: typeof LayoutnotFoundSplatRouteRoute
   LayoutrootIndexRoute: typeof LayoutrootIndexRoute
   LayoutIndustriesIndexRoute: typeof LayoutIndustriesIndexRoute
   LayoutMoversIndexRoute: typeof LayoutMoversIndexRoute
@@ -146,6 +165,7 @@ interface LayoutRouteRouteChildren {
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
+  LayoutnotFoundSplatRouteRoute: LayoutnotFoundSplatRouteRoute,
   LayoutrootIndexRoute: LayoutrootIndexRoute,
   LayoutIndustriesIndexRoute: LayoutIndustriesIndexRoute,
   LayoutMoversIndexRoute: LayoutMoversIndexRoute,
