@@ -1,0 +1,83 @@
+overlay: 1.1.0
+info:
+  title: Frontend API contract adjustments
+  version: 1.0.0
+actions:
+  - target: $.paths
+    description: 화면 구현에 필요한 목록 조회 계약. 백엔드 구현 확인 전까지 frontend-proposed로 구분한다.
+    update:
+      /api/v1/stocks:
+        get:
+          x-contract-source: frontend-proposed
+          operationId: readStocks
+          summary: 종목 검색 및 주요 변동 종목 조회
+          description: 국가·산업·검색어로 필터링한 종목을 반환한다. UP은 양의 등락률 내림차순, DOWN은 음의 등락률 오름차순, VOLUME은 volumeRatio20d 내림차순, ALL은 등락률 내림차순이다. includeCaution이 false면 투자 유의 종목을 제외한다. page는 1부터 시작한다.
+          parameters:
+            - { name: country, in: query, required: true, schema: { type: string, enum: [KR, US] } }
+            - { name: q, in: query, schema: { type: string } }
+            - { name: industry, in: query, schema: { type: string } }
+            - {
+                name: sort,
+                in: query,
+                schema: { type: string, enum: [ALL, UP, DOWN, VOLUME], default: UP },
+              }
+            - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+            - {
+                name: size,
+                in: query,
+                schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+              }
+            - { name: includeCaution, in: query, schema: { type: boolean, default: false } }
+          responses:
+            "200":
+              description: 성공
+              content:
+                application/json:
+                  schema: { $ref: "#/components/schemas/ApiResultStockListResponse" }
+  - target: $.components.schemas
+    description: 현재 종목 시세·산업 흐름 스키마를 기반으로 목록에 필요한 필드만 제안한다.
+    update:
+      StockListItem:
+        x-contract-source: frontend-proposed
+        allOf:
+          - $ref: "#/components/schemas/StockQuoteResponse"
+          - type: object
+            required:
+              [
+                stockId,
+                ticker,
+                name,
+                currency,
+                price,
+                changeRate,
+                indicators,
+                industryCode,
+                industryName,
+                caution,
+                contextSummary,
+              ]
+            properties:
+              industryCode: { type: string, example: AUTOMOBILE }
+              industryName: { type: string, example: 자동차 }
+              caution: { type: boolean, example: false }
+              contextSummary:
+                type: [string, "null"]
+                description: 확인된 관련 맥락. 없으면 null이며 가격 변동의 원인으로 단정하지 않는다.
+                example: null
+      StockListResponse:
+        type: object
+        required: [items, page, size, total]
+        properties:
+          items: { type: array, items: { $ref: "#/components/schemas/StockListItem" } }
+          page: { type: integer, minimum: 1, example: 1 }
+          size: { type: integer, minimum: 1, example: 20 }
+          total: { type: integer, minimum: 0, example: 40 }
+      ApiResultStockListResponse:
+        type: object
+        properties:
+          data: { $ref: "#/components/schemas/StockListResponse" }
+  - target: "$..[?(@.properties.data && !(@.required[?(@ == 'data')]))]"
+    description: data 속성이 있는 모든 스키마에서 data를 필수로 지정한다.
+    update:
+      required:
+        - data
