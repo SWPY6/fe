@@ -1,13 +1,11 @@
-/* oxlint-disable route-page/convention -- 화면 없이 기본 종목 상세로 이동하는 진입 라우트 */
+/* oxlint-disable route-page/convention -- 종목 선택 화면으로 이동하는 진입 라우트 */
 import { createFileRoute, redirect } from "@tanstack/react-router"
-
-import { defaultStockCode } from "./$code/-defaults"
 
 export const Route = createFileRoute("/_layout/stocks/")({
   beforeLoad: () => {
     throw redirect({
-      to: "/stocks/$code",
-      params: { code: defaultStockCode },
+      to: "/movers",
+      search: (previous) => ({ market: previous.market, sort: "ALL" }),
       replace: true,
     })
   },

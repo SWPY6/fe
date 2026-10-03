@@ -15,7 +15,7 @@ import { Route as LayoutrootIndexRouteImport } from "./routes/_layout/(root)/ind
 import { Route as LayoutIndustriesIndexRouteImport } from "./routes/_layout/industries/index"
 import { Route as LayoutMoversIndexRouteImport } from "./routes/_layout/movers/index"
 import { Route as LayoutStocksIndexRouteImport } from "./routes/_layout/stocks/index"
-import { Route as LayoutStocksCodeIndexRouteImport } from "./routes/_layout/stocks/$code/index"
+import { Route as LayoutStocksStockIdIndexRouteImport } from "./routes/_layout/stocks/$stockId/index"
 
 const LayoutRouteRoute = LayoutRouteRouteImport.update({
   id: "/_layout",
@@ -47,11 +47,12 @@ const LayoutStocksIndexRoute = LayoutStocksIndexRouteImport.update({
   path: "/stocks/",
   getParentRoute: () => LayoutRouteRoute,
 } as any)
-const LayoutStocksCodeIndexRoute = LayoutStocksCodeIndexRouteImport.update({
-  id: "/stocks/$code/",
-  path: "/stocks/$code/",
-  getParentRoute: () => LayoutRouteRoute,
-} as any)
+const LayoutStocksStockIdIndexRoute =
+  LayoutStocksStockIdIndexRouteImport.update({
+    id: "/stocks/$stockId/",
+    path: "/stocks/$stockId/",
+    getParentRoute: () => LayoutRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof LayoutrootIndexRoute
@@ -59,7 +60,7 @@ export interface FileRoutesByFullPath {
   "/industries/": typeof LayoutIndustriesIndexRoute
   "/movers/": typeof LayoutMoversIndexRoute
   "/stocks/": typeof LayoutStocksIndexRoute
-  "/stocks/$code/": typeof LayoutStocksCodeIndexRoute
+  "/stocks/$stockId/": typeof LayoutStocksStockIdIndexRoute
 }
 export interface FileRoutesByTo {
   "/$": typeof LayoutnotFoundSplatRouteRoute
@@ -67,7 +68,7 @@ export interface FileRoutesByTo {
   "/industries": typeof LayoutIndustriesIndexRoute
   "/movers": typeof LayoutMoversIndexRoute
   "/stocks": typeof LayoutStocksIndexRoute
-  "/stocks/$code": typeof LayoutStocksCodeIndexRoute
+  "/stocks/$stockId": typeof LayoutStocksStockIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,14 +78,14 @@ export interface FileRoutesById {
   "/_layout/industries/": typeof LayoutIndustriesIndexRoute
   "/_layout/movers/": typeof LayoutMoversIndexRoute
   "/_layout/stocks/": typeof LayoutStocksIndexRoute
-  "/_layout/stocks/$code/": typeof LayoutStocksCodeIndexRoute
+  "/_layout/stocks/$stockId/": typeof LayoutStocksStockIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    "/" | "/$" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$code/"
+    "/" | "/$" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$stockId/"
   fileRoutesByTo: FileRoutesByTo
-  to: "/$" | "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$code"
+  to: "/$" | "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$stockId"
   id:
     | "__root__"
     | "/_layout"
@@ -93,7 +94,7 @@ export interface FileRouteTypes {
     | "/_layout/industries/"
     | "/_layout/movers/"
     | "/_layout/stocks/"
-    | "/_layout/stocks/$code/"
+    | "/_layout/stocks/$stockId/"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,11 +145,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof LayoutStocksIndexRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
-    "/_layout/stocks/$code/": {
-      id: "/_layout/stocks/$code/"
-      path: "/stocks/$code"
-      fullPath: "/stocks/$code/"
-      preLoaderRoute: typeof LayoutStocksCodeIndexRouteImport
+    "/_layout/stocks/$stockId/": {
+      id: "/_layout/stocks/$stockId/"
+      path: "/stocks/$stockId"
+      fullPath: "/stocks/$stockId/"
+      preLoaderRoute: typeof LayoutStocksStockIdIndexRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
   }
@@ -160,7 +161,7 @@ interface LayoutRouteRouteChildren {
   LayoutIndustriesIndexRoute: typeof LayoutIndustriesIndexRoute
   LayoutMoversIndexRoute: typeof LayoutMoversIndexRoute
   LayoutStocksIndexRoute: typeof LayoutStocksIndexRoute
-  LayoutStocksCodeIndexRoute: typeof LayoutStocksCodeIndexRoute
+  LayoutStocksStockIdIndexRoute: typeof LayoutStocksStockIdIndexRoute
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
@@ -169,7 +170,7 @@ const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   LayoutIndustriesIndexRoute: LayoutIndustriesIndexRoute,
   LayoutMoversIndexRoute: LayoutMoversIndexRoute,
   LayoutStocksIndexRoute: LayoutStocksIndexRoute,
-  LayoutStocksCodeIndexRoute: LayoutStocksCodeIndexRoute,
+  LayoutStocksStockIdIndexRoute: LayoutStocksStockIdIndexRoute,
 }
 
 const LayoutRouteRouteWithChildren = LayoutRouteRoute._addFileChildren(
