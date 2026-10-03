@@ -5,21 +5,21 @@
  * OpenAPI spec version: v0
  */
 export interface FieldError {
-  field?: string;
+  field: string;
 }
 
 export interface ErrorDetail {
   /** 오류 이름 */
-  name?: string;
+  name: string;
   /** 필수 오류 코드 */
   code: string;
   /** 오류 메시지 */
-  message?: string;
+  message: string;
   errors?: FieldError[];
 }
 
 export interface ErrorResponse {
-  error?: ErrorDetail;
+  error: ErrorDetail;
 }
 
 /**

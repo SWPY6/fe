@@ -593,7 +593,7 @@
             }
           }
         },
-        "required": ["code"]
+        "required": ["code", "name", "message"]
       },
       "ErrorResponse": {
         "type": "object",
@@ -601,7 +601,8 @@
           "error": {
             "$ref": "#/components/schemas/ErrorDetail"
           }
-        }
+        },
+        "required": ["error"]
       },
       "FieldError": {
         "type": "object",
@@ -609,7 +610,8 @@
           "field": {
             "type": "string"
           }
-        }
+        },
+        "required": ["field"]
       },
       "ApiResultSummary": {
         "type": "object",
@@ -1357,5 +1359,5 @@
     "url": "https://ploutosbe.duckdns.org/v3/api-docs",
     "fetchedAt": "2026-10-03T13:11:54.213Z"
   },
-  "x-generated-at": "2026-10-03T13:40:44.474Z"
+  "x-generated-at": "2026-10-03T14:14:58.018Z"
 }
