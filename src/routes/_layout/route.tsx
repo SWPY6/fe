@@ -1,6 +1,7 @@
 import { Link, Outlet, createFileRoute, linkOptions } from "@tanstack/react-router"
 
 import { Header } from "@/components/ui/Header"
+import { Separator } from "@/components/ui/separator"
 
 const navigation = [
   linkOptions({ to: "/", label: "시장 요약" }),
@@ -31,11 +32,12 @@ function Layout() {
                 <Link
                   {...options}
                   activeOptions={{ exact: options.to !== "/stocks", includeSearch: false }}
-                  activeProps={{ className: "border-primary text-primary", "aria-current": "page" }}
-                  inactiveProps={{ className: "border-transparent hover:text-primary" }}
-                  className="block border-b-2 px-3 py-2.5"
+                  activeProps={{ className: "text-primary", "aria-current": "page" }}
+                  inactiveProps={{ className: "hover:text-primary" }}
+                  className="group relative block px-3 py-2.5"
                 >
                   {label}
+                  <Separator className="absolute bottom-0 left-0 bg-transparent group-aria-[current=page]:bg-primary" />
                 </Link>
               </li>
             ))}
@@ -44,7 +46,8 @@ function Layout() {
       </Header.Root>
       <Outlet />
       <footer className="pb-8">
-        <div className="border-t border-border pt-7">
+        <Separator className="mb-7" />
+        <div>
           <p className="typo-wordmark-sm text-primary">ploutos.</p>
           <p className="mt-2 typo-caption text-muted-foreground">
             제공되는 정보는 투자 판단을 위한 참고 자료이며, 특정 종목의 매수·매도를 권유하지
