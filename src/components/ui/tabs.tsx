@@ -38,11 +38,13 @@ function TabsList({
   className,
   variant: appearance = "segmented",
   size = "default",
+  showIndicator = true,
   ref,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> & {
   variant?: VariantProps<typeof tabsListVariants>["variant"] | "default" | "line"
   size?: "default" | "compact"
+  showIndicator?: boolean
 }) {
   const variant =
     appearance === "line" ? "underline" : appearance === "default" ? "segmented" : appearance
@@ -63,7 +65,7 @@ function TabsList({
   )
 
   React.useLayoutEffect(() => {
-    if (variant !== "underline" || !listRef.current) return
+    if (!showIndicator || variant !== "underline" || !listRef.current) return
 
     const list = listRef.current
     const updateIndicator = () => {
@@ -103,7 +105,7 @@ function TabsList({
       mutationObserver.disconnect()
       resizeObserver.disconnect()
     }
-  }, [variant])
+  }, [variant, showIndicator])
 
   return (
     <TabsPrimitive.List
@@ -115,7 +117,7 @@ function TabsList({
       {...props}
     >
       {props.children}
-      {variant === "underline" && (
+      {showIndicator && variant === "underline" && (
         <span
           aria-hidden="true"
           className={cn(
