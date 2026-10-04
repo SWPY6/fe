@@ -15,6 +15,7 @@ import { Route as LayoutrootIndexRouteImport } from "./routes/_layout/(root)/ind
 import { Route as LayoutIndustriesIndexRouteImport } from "./routes/_layout/industries/index"
 import { Route as LayoutMoversIndexRouteImport } from "./routes/_layout/movers/index"
 import { Route as LayoutStocksIndexRouteImport } from "./routes/_layout/stocks/index"
+import { Route as LayoutStocksStockIdRouteRouteImport } from "./routes/_layout/stocks/$stockId/route"
 import { Route as LayoutStocksStockIdIndexRouteImport } from "./routes/_layout/stocks/$stockId/index"
 
 const LayoutRouteRoute = LayoutRouteRouteImport.update({
@@ -47,16 +48,23 @@ const LayoutStocksIndexRoute = LayoutStocksIndexRouteImport.update({
   path: "/stocks/",
   getParentRoute: () => LayoutRouteRoute,
 } as any)
+const LayoutStocksStockIdRouteRoute =
+  LayoutStocksStockIdRouteRouteImport.update({
+    id: "/stocks/$stockId",
+    path: "/stocks/$stockId",
+    getParentRoute: () => LayoutRouteRoute,
+  } as any)
 const LayoutStocksStockIdIndexRoute =
   LayoutStocksStockIdIndexRouteImport.update({
-    id: "/stocks/$stockId/",
-    path: "/stocks/$stockId/",
-    getParentRoute: () => LayoutRouteRoute,
+    id: "/",
+    path: "/",
+    getParentRoute: () => LayoutStocksStockIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof LayoutrootIndexRoute
   "/$": typeof LayoutnotFoundSplatRouteRoute
+  "/stocks/$stockId": typeof LayoutStocksStockIdRouteRouteWithChildren
   "/industries/": typeof LayoutIndustriesIndexRoute
   "/movers/": typeof LayoutMoversIndexRoute
   "/stocks/": typeof LayoutStocksIndexRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/_layout": typeof LayoutRouteRouteWithChildren
   "/_layout/(not-found)/$": typeof LayoutnotFoundSplatRouteRoute
+  "/_layout/stocks/$stockId": typeof LayoutStocksStockIdRouteRouteWithChildren
   "/_layout/(root)/": typeof LayoutrootIndexRoute
   "/_layout/industries/": typeof LayoutIndustriesIndexRoute
   "/_layout/movers/": typeof LayoutMoversIndexRoute
@@ -83,13 +92,20 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    "/" | "/$" | "/industries/" | "/movers/" | "/stocks/" | "/stocks/$stockId/"
+    | "/"
+    | "/$"
+    | "/stocks/$stockId"
+    | "/industries/"
+    | "/movers/"
+    | "/stocks/"
+    | "/stocks/$stockId/"
   fileRoutesByTo: FileRoutesByTo
   to: "/$" | "/" | "/industries" | "/movers" | "/stocks" | "/stocks/$stockId"
   id:
     | "__root__"
     | "/_layout"
     | "/_layout/(not-found)/$"
+    | "/_layout/stocks/$stockId"
     | "/_layout/(root)/"
     | "/_layout/industries/"
     | "/_layout/movers/"
@@ -145,32 +161,53 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof LayoutStocksIndexRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
+    "/_layout/stocks/$stockId": {
+      id: "/_layout/stocks/$stockId"
+      path: "/stocks/$stockId"
+      fullPath: "/stocks/$stockId"
+      preLoaderRoute: typeof LayoutStocksStockIdRouteRouteImport
+      parentRoute: typeof LayoutRouteRoute
+    }
     "/_layout/stocks/$stockId/": {
       id: "/_layout/stocks/$stockId/"
-      path: "/stocks/$stockId"
+      path: "/"
       fullPath: "/stocks/$stockId/"
       preLoaderRoute: typeof LayoutStocksStockIdIndexRouteImport
-      parentRoute: typeof LayoutRouteRoute
+      parentRoute: typeof LayoutStocksStockIdRouteRoute
     }
   }
 }
 
+interface LayoutStocksStockIdRouteRouteChildren {
+  LayoutStocksStockIdIndexRoute: typeof LayoutStocksStockIdIndexRoute
+}
+
+const LayoutStocksStockIdRouteRouteChildren: LayoutStocksStockIdRouteRouteChildren =
+  {
+    LayoutStocksStockIdIndexRoute: LayoutStocksStockIdIndexRoute,
+  }
+
+const LayoutStocksStockIdRouteRouteWithChildren =
+  LayoutStocksStockIdRouteRoute._addFileChildren(
+    LayoutStocksStockIdRouteRouteChildren,
+  )
+
 interface LayoutRouteRouteChildren {
   LayoutnotFoundSplatRouteRoute: typeof LayoutnotFoundSplatRouteRoute
+  LayoutStocksStockIdRouteRoute: typeof LayoutStocksStockIdRouteRouteWithChildren
   LayoutrootIndexRoute: typeof LayoutrootIndexRoute
   LayoutIndustriesIndexRoute: typeof LayoutIndustriesIndexRoute
   LayoutMoversIndexRoute: typeof LayoutMoversIndexRoute
   LayoutStocksIndexRoute: typeof LayoutStocksIndexRoute
-  LayoutStocksStockIdIndexRoute: typeof LayoutStocksStockIdIndexRoute
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   LayoutnotFoundSplatRouteRoute: LayoutnotFoundSplatRouteRoute,
+  LayoutStocksStockIdRouteRoute: LayoutStocksStockIdRouteRouteWithChildren,
   LayoutrootIndexRoute: LayoutrootIndexRoute,
   LayoutIndustriesIndexRoute: LayoutIndustriesIndexRoute,
   LayoutMoversIndexRoute: LayoutMoversIndexRoute,
   LayoutStocksIndexRoute: LayoutStocksIndexRoute,
-  LayoutStocksStockIdIndexRoute: LayoutStocksStockIdIndexRoute,
 }
 
 const LayoutRouteRouteWithChildren = LayoutRouteRoute._addFileChildren(

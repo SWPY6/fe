@@ -3,6 +3,21 @@ info:
   title: Frontend API contract adjustments
   version: 1.0.0
 actions:
+  - target: $.components.schemas.Item
+    description: 실제 뉴스 응답에 항상 포함되는 항목 필드. 요약·언론사명은 필수 키지만 null일 수 있다.
+    update:
+      required:
+        [
+          documentId,
+          title,
+          summary,
+          source,
+          publisherName,
+          publishedAt,
+          timestampBasis,
+          url,
+          linkKind,
+        ]
   - target: $.components.schemas.StockNewsResponse
     description: 뉴스 응답의 조회 조건·건수·목록을 필수로 지정한다.
     update:
@@ -50,6 +65,26 @@ actions:
     update:
       StockDisclosureItem:
         type: object
+        required:
+          [
+            provider,
+            providerDocumentId,
+            type,
+            title,
+            formType,
+            formLabel,
+            issuerName,
+            filerName,
+            remark,
+            filedDate,
+            publishedAt,
+            datePrecision,
+            timeBasis,
+            summary,
+            summaryStatus,
+            url,
+            linkKind,
+          ]
         properties:
           provider: { type: string, enum: [DART, SEC] }
           providerDocumentId: { type: string }

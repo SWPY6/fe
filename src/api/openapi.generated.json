@@ -1137,7 +1137,18 @@
             "enum": ["ORIGINAL", "NAVER"],
             "example": "ORIGINAL"
           }
-        }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "summary",
+          "source",
+          "publisherName",
+          "publishedAt",
+          "timestampBasis",
+          "url",
+          "linkKind"
+        ]
       },
       "StockNewsResponse": {
         "type": "object",
@@ -1818,6 +1829,25 @@
       },
       "StockDisclosureItem": {
         "type": "object",
+        "required": [
+          "provider",
+          "providerDocumentId",
+          "type",
+          "title",
+          "formType",
+          "formLabel",
+          "issuerName",
+          "filerName",
+          "remark",
+          "filedDate",
+          "publishedAt",
+          "datePrecision",
+          "timeBasis",
+          "summary",
+          "summaryStatus",
+          "url",
+          "linkKind"
+        ],
         "properties": {
           "provider": {
             "type": "string",

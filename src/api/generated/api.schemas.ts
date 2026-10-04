@@ -223,29 +223,29 @@ export const ItemLinkKind = {
  */
 export interface Item {
   /** 원문 URL 기반 문서 ID. 같은 원문이면 같은 값 */
-  documentId?: string;
+  documentId: string;
   /** 기사 제목(HTML 제거된 일반 텍스트) */
-  title?: string;
+  title: string;
   /**
      * 네이버 검색 요약(일반 텍스트). 기사 전체 요약이 아니다. 없으면 null
      * @nullable
      */
-  summary?: string | null;
+  summary: string | null;
   /** 표시용 출처. 원문 호스트 */
-  source?: string;
+  source: string;
   /**
      * 언론사명. 서버 사전에 없는 도메인이면 null
      * @nullable
      */
-  publisherName?: string | null;
+  publisherName: string | null;
   /** 네이버가 제공한 기사 시각. 원문 최초 발표 시각이라고 단정하지 않는다 */
-  publishedAt?: string;
+  publishedAt: string;
   /** publishedAt의 의미. 항상 NAVER_PROVIDED */
-  timestampBasis?: string;
+  timestampBasis: string;
   /** 기사 링크 */
-  url?: string;
+  url: string;
   /** ORIGINAL: 언론사 원문, NAVER: 원문이 없어 대신 준 네이버 뉴스 링크 */
-  linkKind?: ItemLinkKind;
+  linkKind: ItemLinkKind;
 }
 
 /**
@@ -345,32 +345,32 @@ export const StockDisclosureItemSummaryStatus = {
 } as const;
 
 export interface StockDisclosureItem {
-  provider?: StockDisclosureItemProvider;
-  providerDocumentId?: string;
-  type?: StockDisclosureItemType;
-  title?: string;
+  provider: StockDisclosureItemProvider;
+  providerDocumentId: string;
+  type: StockDisclosureItemType;
+  title: string;
   /** @nullable */
-  formType?: string | null;
+  formType: string | null;
   /** @nullable */
-  formLabel?: string | null;
-  issuerName?: string;
+  formLabel: string | null;
+  issuerName: string;
   /** @nullable */
-  filerName?: string | null;
+  filerName: string | null;
   /** @nullable */
-  remark?: string | null;
-  filedDate?: string;
+  remark: string | null;
+  filedDate: string;
   /** @nullable */
-  publishedAt?: string | null;
-  datePrecision?: string;
-  timeBasis?: string;
+  publishedAt: string | null;
+  datePrecision: string;
+  timeBasis: string;
   /**
      * 현재 요약은 제공하지 않으며 summaryStatus=UNAVAILABLE일 때 null이다.
      * @nullable
      */
-  summary?: string | null;
-  summaryStatus?: StockDisclosureItemSummaryStatus;
-  url?: string;
-  linkKind?: string;
+  summary: string | null;
+  summaryStatus: StockDisclosureItemSummaryStatus;
+  url: string;
+  linkKind: string;
 }
 
 /**
