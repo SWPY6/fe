@@ -156,7 +156,17 @@ export function IndustriesPage() {
                                     <Table.Row key={stock.ticker} className="h-17">
                                       <Table.Cell>
                                         <span className="block truncate typo-table-label">
-                                          {stock.name}
+                                          {stock.stockId == null ? (
+                                            stock.name
+                                          ) : (
+                                            <Link
+                                              to="/stocks/$stockId"
+                                              params={{ stockId: String(stock.stockId) }}
+                                              className="hover:text-primary hover:underline"
+                                            >
+                                              {stock.name}
+                                            </Link>
+                                          )}
                                         </span>
                                         <span className="typo-caption text-muted-foreground">
                                           {stock.ticker}

@@ -2,11 +2,11 @@
 import { ErrorBoundary, Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { Link } from "@tanstack/react-router"
-import { useState } from "react"
 
 import {
   getSummary1SuspenseQueryOptions,
   getReadNewsSuspenseQueryOptions,
+  getReadStocksSuspenseQueryOptions,
 } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
@@ -16,55 +16,10 @@ import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
-
-const data = {
-  movers: [
-    {
-      name: "SK하이닉스",
-      code: "000660",
-      price: "198,400",
-      change: 4.31,
-      volume: "4,821,903",
-      trend: [19, 37, 28, 51, 42, 71, 82, 77, 100],
-    },
-    {
-      name: "한미반도체",
-      code: "042700",
-      price: "112,900",
-      change: 3.56,
-      volume: "2,107,486",
-      trend: [16, 33, 25, 49, 42, 67, 81, 76, 97],
-    },
-    {
-      name: "HD한국조선해양",
-      code: "009540",
-      price: "193,200",
-      change: 2.84,
-      volume: "611,704",
-      trend: [21, 39, 32, 54, 45, 69, 78, 74, 96],
-    },
-    {
-      name: "LG에너지솔루션",
-      code: "373220",
-      price: "402,500",
-      change: -2.17,
-      volume: "438,911",
-      trend: [91, 74, 82, 57, 64, 39, 48, 26, 15],
-    },
-    {
-      name: "에코프로비엠",
-      code: "247540",
-      price: "171,300",
-      change: -3.08,
-      volume: "892,327",
-      trend: [94, 78, 85, 60, 67, 43, 52, 28, 16],
-    },
-  ],
-}
+import { StockSparkline } from "./-components/StockSparkline"
 
 export function RootPage() {
   const [{ market }, setGlobalUrlState] = useGlobalUrlState()
-  const [selectedQuoteIndex, setSelectedQuoteIndex] = useState(0)
   const region = market === "domestic" ? "DOMESTIC" : "OVERSEAS"
 
   return (
@@ -73,7 +28,6 @@ export function RootPage() {
         value={market}
         onValueChange={(value) => {
           if (value === "domestic" || value === "overseas") {
-            setSelectedQuoteIndex(0)
             setGlobalUrlState({ market: value })
           }
         }}
@@ -94,98 +48,89 @@ export function RootPage() {
           <ErrorBoundary fallback="오류가 발생했습니다">
             <Suspense fallback="로딩중">
               <SuspenseQuery {...getSummary1SuspenseQueryOptions({ region })}>
-                {({ data: response }) => (
-                  <>
-                    <Separator className="mt-8" />
-                    <div
-                      aria-label="주요 시장 지표 선택"
-                      className="grid grid-cols-2 gap-y-5 py-5 sm:grid-cols-4 sm:gap-y-0"
-                    >
-                      {response.data?.indicators?.map((quote, index) => (
-                        <Button
-                          key={`${quote.indicator}-${index}`}
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setSelectedQuoteIndex(index)}
-                          aria-pressed={selectedQuoteIndex === index}
-                          className="group relative h-auto min-w-0 flex-col items-start gap-1.5 rounded-none py-0 pl-4 text-left text-foreground hover:bg-transparent hover:text-foreground sm:pl-6"
-                        >
-                          <Separator
-                            orientation="vertical"
-                            className="absolute top-0 left-0 group-aria-pressed:bg-primary"
-                          />
-                          <span className="typo-helper text-muted-foreground">{quote.name}</span>
-                          <span className="typo-numeric-compact tabular-nums">
-                            {quote.value?.toLocaleString("ko-KR") ?? "—"}
-                            {quote.unit === "KRW" ? "원" : ""}
-                          </span>
-                          {quote.changeRate == null ? (
-                            <span className="typo-caption text-muted-foreground">—</span>
-                          ) : (
-                            <PriceNumber
-                              value={quote.changeRate}
-                              format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                              className="typo-caption"
-                            />
-                          )}
-                        </Button>
-                      ))}
-                    </div>
-                    <Separator />
-                  </>
-                )}
-              </SuspenseQuery>
-            </Suspense>
-          </ErrorBoundary>
+                {({ data: response }) => {
+                  const indicators = response.data?.indicators ?? []
 
-          <div className="mt-8 min-w-0">
-            <section aria-labelledby="market-chart-title" className="min-w-0">
-              <h2 id="market-chart-title" className="typo-section-heading">
-                주요 시장 지표
-              </h2>
-              <ErrorBoundary fallback="오류가 발생했습니다">
-                <Suspense fallback="로딩중">
-                  <SuspenseQuery {...getSummary1SuspenseQueryOptions({ region })}>
-                    {({ data: response }) => {
-                      const quote = response.data?.indicators?.[selectedQuoteIndex]
-                      return quote ? (
-                        <>
-                          <div className="mt-4 flex items-end justify-between gap-4">
-                            <div>
-                              <p className="typo-helper text-muted-foreground">{quote.name}</p>
-                              <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
-                                {quote.value?.toLocaleString("ko-KR") ?? "—"}
-                                {quote.unit === "KRW" ? "원" : ""}
-                              </p>
-                            </div>
+                  return (
+                    <Tabs.Root defaultValue={indicators[0]?.indicator ?? "0"} className="gap-0">
+                      <Tabs.List
+                        variant={null}
+                        aria-label="주요 시장 지표 선택"
+                        className="grid w-full grid-cols-2 gap-y-5 py-5 sm:grid-cols-4 sm:gap-y-0"
+                      >
+                        {indicators.map((quote, index) => (
+                          <Tabs.Trigger
+                            key={`${quote.indicator}-${index}`}
+                            value={quote.indicator ?? String(index)}
+                            className="group relative h-auto min-w-0 flex-col items-start gap-1.5 rounded-none px-4 py-0 text-left text-foreground hover:bg-transparent hover:text-foreground sm:pl-6"
+                          >
+                            <span className="typo-helper text-muted-foreground">{quote.name}</span>
+                            <span className="typo-numeric-compact tabular-nums">
+                              {quote.value?.toLocaleString("ko-KR") ?? "—"}
+                              {quote.unit === "KRW" ? "원" : ""}
+                            </span>
                             {quote.changeRate == null ? (
-                              <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
+                              <span className="typo-caption text-muted-foreground">—</span>
                             ) : (
                               <PriceNumber
-                                as="p"
                                 value={quote.changeRate}
                                 format={{
                                   style: "unit",
                                   unit: "percent",
                                   signDisplay: "exceptZero",
                                 }}
-                                className="pb-1 typo-numeric-sm"
+                                className="typo-caption"
                               />
                             )}
-                          </div>
-                          <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
-                            차트 준비 중
-                          </div>
-                        </>
-                      ) : (
-                        "시장 지표가 없습니다"
-                      )
-                    }}
-                  </SuspenseQuery>
-                </Suspense>
-              </ErrorBoundary>
-            </section>
-          </div>
+                          </Tabs.Trigger>
+                        ))}
+                      </Tabs.List>
+                      <Separator />
+                      <section aria-labelledby="market-chart-title" className="mt-8 min-w-0">
+                        <h2 id="market-chart-title" className="typo-section-heading">
+                          주요 시장 지표
+                        </h2>
+                        {indicators.map((quote, index) => (
+                          <Tabs.Content
+                            key={`${quote.indicator}-${index}`}
+                            value={quote.indicator ?? String(index)}
+                          >
+                            <div className="mt-4 flex items-end justify-between gap-4">
+                              <div>
+                                <p className="typo-helper text-muted-foreground">{quote.name}</p>
+                                <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
+                                  {quote.value?.toLocaleString("ko-KR") ?? "—"}
+                                  {quote.unit === "KRW" ? "원" : ""}
+                                </p>
+                              </div>
+                              {quote.changeRate == null ? (
+                                <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
+                              ) : (
+                                <PriceNumber
+                                  as="p"
+                                  value={quote.changeRate}
+                                  format={{
+                                    style: "unit",
+                                    unit: "percent",
+                                    signDisplay: "exceptZero",
+                                  }}
+                                  className="pb-1 typo-numeric-sm"
+                                />
+                              )}
+                            </div>
+                            <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
+                              차트 준비 중
+                            </div>
+                          </Tabs.Content>
+                        ))}
+                        {indicators.length === 0 && "시장 지표가 없습니다"}
+                      </section>
+                    </Tabs.Root>
+                  )
+                }}
+              </SuspenseQuery>
+            </Suspense>
+          </ErrorBoundary>
 
           <section id="industry-issues" aria-labelledby="industry-issues-title" className="mt-8">
             <h2 id="industry-issues-title" className="typo-section-heading">
@@ -257,66 +202,94 @@ export function RootPage() {
                     <Table.Head className="text-right">현재가</Table.Head>
                     <Table.Head className="text-right">등락률</Table.Head>
                     <Table.Head className="text-right">거래량</Table.Head>
-                    <Table.Head className="text-right">일중 흐름</Table.Head>
+                    <Table.Head className="text-right">최근 종가 흐름</Table.Head>
                   </Table.Row>
                 </Table.Header>
-                <Table.Body>
-                  {data.movers.map((stock) => (
-                    <Table.Row key={stock.code} className="h-19">
-                      <Table.Cell>
-                        <span className="block typo-table-label">{stock.name}</span>
-                        <span className="block typo-caption text-muted-foreground">
-                          {stock.code}
-                        </span>
-                      </Table.Cell>
-                      <Table.Cell className="text-right tabular-nums">{stock.price}</Table.Cell>
-                      <Table.Cell className="text-right">
-                        <PriceNumber
-                          value={stock.change}
-                          format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                        />
-                      </Table.Cell>
-                      <Table.Cell className="text-right tabular-nums">{stock.volume}</Table.Cell>
-                      <Table.Cell className="text-right">
-                        <svg
-                          viewBox="0 0 128 48"
-                          preserveAspectRatio="none"
-                          className={
-                            stock.change > 0
-                              ? "ml-auto h-10 w-32 text-positive"
-                              : "ml-auto h-10 w-32 text-negative"
-                          }
-                        >
-                          <title>{stock.name} 일중 흐름</title>
-                          <polyline
-                            points={stock.trend
-                              .map(
-                                (value, index) =>
-                                  (index * 128) / (stock.trend.length - 1) +
-                                  "," +
-                                  (44 - value * 0.4),
-                              )
-                              .join(" ")}
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            vectorEffect="non-scaling-stroke"
-                          />
-                        </svg>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                  {data.movers.length === 0 && (
-                    <Table.Row>
-                      <Table.Cell
-                        colSpan={5}
-                        className="py-12 text-center typo-body-sm text-muted-foreground"
-                      >
-                        검색 결과가 없습니다. 종목명이나 종목코드를 다시 입력해 주세요.
-                      </Table.Cell>
-                    </Table.Row>
-                  )}
-                </Table.Body>
+                <ErrorBoundary
+                  fallback={
+                    <Table.Body>
+                      <Table.Row>
+                        <Table.Cell colSpan={5}>오류가 발생했습니다</Table.Cell>
+                      </Table.Row>
+                    </Table.Body>
+                  }
+                >
+                  <Suspense
+                    fallback={
+                      <Table.Body>
+                        <Table.Row>
+                          <Table.Cell colSpan={5}>로딩중</Table.Cell>
+                        </Table.Row>
+                      </Table.Body>
+                    }
+                  >
+                    <SuspenseQuery
+                      {...getReadStocksSuspenseQueryOptions({
+                        country: market === "domestic" ? "KR" : "US",
+                        sort: "ALL",
+                        size: 5,
+                      })}
+                    >
+                      {({ data: response }) => (
+                        <Table.Body>
+                          {response.data.items.map((stock) => (
+                            <Table.Row key={stock.stockId} className="h-19">
+                              <Table.Cell>
+                                <Link
+                                  to="/stocks/$stockId"
+                                  params={{ stockId: String(stock.stockId) }}
+                                  className="block typo-table-label hover:text-primary hover:underline"
+                                >
+                                  {stock.name}
+                                </Link>
+                                <span className="block typo-caption text-muted-foreground">
+                                  {stock.ticker}
+                                </span>
+                              </Table.Cell>
+                              <Table.Cell className="text-right tabular-nums">
+                                {stock.price.toLocaleString("ko-KR")} {stock.currency}
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                <PriceNumber
+                                  value={stock.changeRate}
+                                  format={{
+                                    style: "unit",
+                                    unit: "percent",
+                                    signDisplay: "exceptZero",
+                                  }}
+                                />
+                              </Table.Cell>
+                              <Table.Cell className="text-right tabular-nums">
+                                {stock.indicators.volume?.toLocaleString("ko-KR") ?? "—"}
+                              </Table.Cell>
+                              <Table.Cell className="text-right">
+                                <ErrorBoundary fallback="—">
+                                  <Suspense fallback="—">
+                                    <StockSparkline
+                                      stockId={stock.stockId}
+                                      name={stock.name}
+                                      changeRate={stock.changeRate}
+                                    />
+                                  </Suspense>
+                                </ErrorBoundary>
+                              </Table.Cell>
+                            </Table.Row>
+                          ))}
+                          {response.data.items.length === 0 && (
+                            <Table.Row>
+                              <Table.Cell
+                                colSpan={5}
+                                className="py-12 text-center typo-body-sm text-muted-foreground"
+                              >
+                                표시할 종목이 없습니다.
+                              </Table.Cell>
+                            </Table.Row>
+                          )}
+                        </Table.Body>
+                      )}
+                    </SuspenseQuery>
+                  </Suspense>
+                </ErrorBoundary>
               </Table.Root>
             </div>
           </section>

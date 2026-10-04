@@ -102,7 +102,17 @@ export function IndustryFlowCarousel() {
                         </Link>
                         {industry.majorStocks?.map((stock) => (
                           <span key={stock.ticker}>
-                            {stock.name}{" "}
+                            {stock.stockId == null ? (
+                              stock.name
+                            ) : (
+                              <Link
+                                to="/stocks/$stockId"
+                                params={{ stockId: String(stock.stockId) }}
+                                className="hover:text-primary hover:underline"
+                              >
+                                {stock.name}
+                              </Link>
+                            )}{" "}
                             {stock.changeRate == null ? (
                               "—"
                             ) : (
