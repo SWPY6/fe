@@ -2,7 +2,7 @@ import { ErrorBoundary, Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { Link, getRouteApi } from "@tanstack/react-router"
 import { Star } from "lucide-react"
-import { useStorageState } from "react-simplikit"
+import { Separated, useStorageState } from "react-simplikit"
 
 import { getQuoteSuspenseQueryOptions, getSummarySuspenseQueryOptions } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
@@ -22,102 +22,104 @@ export function StockPage() {
   const isWatchlisted = watchlistStockIds.includes(stockId)
 
   return (
-    <main className="py-8">
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="typo-section-heading">종목 상세</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            aria-pressed={isWatchlisted}
-            onClick={() =>
-              setWatchlistStockIds((stockIds) =>
-                stockIds.includes(stockId)
-                  ? stockIds.filter((id) => id !== stockId)
-                  : [...stockIds, stockId],
-              )
-            }
-          >
-            <Star aria-hidden="true" fill={isWatchlisted ? "currentColor" : "none"} />
-            {isWatchlisted ? "관심종목 해제" : "관심종목 추가"}
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/movers">다른 종목 찾기</Link>
-          </Button>
+    <main className="flex flex-col gap-8 py-8">
+      <Separated by={<Separator />}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="typo-section-heading">종목 상세</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              aria-pressed={isWatchlisted}
+              onClick={() =>
+                setWatchlistStockIds((stockIds) =>
+                  stockIds.includes(stockId)
+                    ? stockIds.filter((id) => id !== stockId)
+                    : [...stockIds, stockId],
+                )
+              }
+            >
+              <Star aria-hidden="true" fill={isWatchlisted ? "currentColor" : "none"} />
+              {isWatchlisted ? "관심종목 해제" : "관심종목 추가"}
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/movers">다른 종목 찾기</Link>
+            </Button>
+          </div>
         </div>
-      </div>
-      <Separator className="my-6" />
-      <section aria-label="종목 요약 정보" className="flex flex-wrap items-center gap-x-12 gap-y-5">
-        <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
-          <Suspense fallback="로딩중">
-            <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
-              {({ data: response }) => (
-                <div>
-                  <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
-                  <p className="mt-1 typo-body-sm text-muted-foreground">
-                    {response.data.profile?.ticker} · {response.data.market} ·{" "}
-                    {response.data.currency}
-                  </p>
-                </div>
-              )}
-            </SuspenseQuery>
-          </Suspense>
-        </ErrorBoundary>
-        <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
-          <Suspense fallback="로딩중">
-            <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
-              {({ data: response }) => (
-                <div>
-                  <p className="typo-numeric-md">
-                    {response.data.price == null || !response.data.currency ? (
-                      "—"
-                    ) : (
-                      <>
+        <section
+          aria-label="종목 요약 정보"
+          className="flex flex-wrap items-center gap-x-12 gap-y-5"
+        >
+          <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
+            <Suspense fallback="로딩중">
+              <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
+                {({ data: response }) => (
+                  <div>
+                    <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
+                    <p className="mt-1 typo-body-sm text-muted-foreground">
+                      {response.data.profile?.ticker} · {response.data.market} ·{" "}
+                      {response.data.currency}
+                    </p>
+                  </div>
+                )}
+              </SuspenseQuery>
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
+            <Suspense fallback="로딩중">
+              <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
+                {({ data: response }) => (
+                  <div>
+                    <p className="typo-numeric-md">
+                      {response.data.price == null || !response.data.currency ? (
+                        "—"
+                      ) : (
+                        <>
+                          <PriceNumber
+                            value={response.data.price}
+                            className="text-foreground"
+                            format={{ maximumFractionDigits: 2 }}
+                          />{" "}
+                          {response.data.currency}
+                        </>
+                      )}
+                    </p>
+                    <p className="typo-body">
+                      {response.data.changeRate == null ? (
+                        "—"
+                      ) : (
                         <PriceNumber
-                          value={response.data.price}
-                          className="text-foreground"
-                          format={{ maximumFractionDigits: 2 }}
-                        />{" "}
-                        {response.data.currency}
-                      </>
-                    )}
-                  </p>
-                  <p className="typo-body">
-                    {response.data.changeRate == null ? (
-                      "—"
-                    ) : (
-                      <PriceNumber
-                        value={response.data.changeRate}
-                        format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                      />
-                    )}
-                  </p>
-                  <p className="mt-2 typo-helper text-muted-foreground">
-                    {response.data.priceAt
-                      ? new Date(response.data.priceAt).toLocaleString("ko-KR")
-                      : "기준 시각 없음"}
-                    {response.data.priceTiming === "DELAYED"
-                      ? " · 지연 시세"
-                      : response.data.priceTiming === "REALTIME"
-                        ? " · 실시간 시세"
-                        : ""}
-                  </p>
-                </div>
-              )}
-            </SuspenseQuery>
-          </Suspense>
-        </ErrorBoundary>
-      </section>
-      <Separator className="my-8" />
-      <StockChartSection />
-      <Separator className="my-8" />
-      <section aria-labelledby="stock-news-title">
-        <h2 id="stock-news-title" className="typo-section-heading">
-          관련 뉴스·공시
-        </h2>
-        <p className="mt-4 typo-body-sm text-muted-foreground">관련 자료 준비 중</p>
-      </section>
+                          value={response.data.changeRate}
+                          format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
+                        />
+                      )}
+                    </p>
+                    <p className="mt-2 typo-helper text-muted-foreground">
+                      {response.data.priceAt
+                        ? new Date(response.data.priceAt).toLocaleString("ko-KR")
+                        : "기준 시각 없음"}
+                      {response.data.priceTiming === "DELAYED"
+                        ? " · 지연 시세"
+                        : response.data.priceTiming === "REALTIME"
+                          ? " · 실시간 시세"
+                          : ""}
+                    </p>
+                  </div>
+                )}
+              </SuspenseQuery>
+            </Suspense>
+          </ErrorBoundary>
+        </section>
+        <StockChartSection />
+        <section aria-labelledby="stock-news-title" className="flex flex-col gap-6">
+          <h2 id="stock-news-title" className="typo-section-heading">
+            관련 뉴스·공시
+          </h2>
+          <p className="typo-body-sm text-muted-foreground">관련 자료 준비 중</p>
+        </section>
+      </Separated>
     </main>
   )
 }

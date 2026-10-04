@@ -45,8 +45,8 @@ function Layout() {
         </Header.Navigation>
       </Header.Root>
       <Outlet />
-      <footer className="pb-8">
-        <Separator className="mb-7" />
+      <footer className="flex flex-col gap-8 pb-8">
+        <Separator />
         <div>
           <p className="typo-wordmark-sm text-primary">ploutos.</p>
           <p className="mt-2 typo-caption text-muted-foreground">

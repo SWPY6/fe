@@ -9,7 +9,6 @@ import { getReadFlowsSuspenseQueryOptions } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Carousel, type CarouselApi } from "@/components/ui/carousel"
-import { Separator } from "@/components/ui/separator"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 export function IndustryFlowCarousel() {
@@ -54,9 +53,7 @@ export function IndustryFlowCarousel() {
                 autoplay={{ delay: 3000 }}
                 opts={{ loop: true }}
                 setApi={setApi}
-                className="mt-8"
               >
-                <Separator className="mb-6" />
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="typo-section-heading">오늘의 산업 흐름</h2>
                   <div className="flex items-center gap-2">
@@ -131,7 +128,6 @@ export function IndustryFlowCarousel() {
                     </Carousel.Item>
                   ))}
                 </Carousel.Content>
-                <Separator className="mt-6" />
               </Carousel.Root>
             )
           }

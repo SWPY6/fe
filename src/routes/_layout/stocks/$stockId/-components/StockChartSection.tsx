@@ -26,7 +26,7 @@ export function StockChartSection() {
   const [chartView, setChartView] = useState<"line" | "candlestick">("line")
 
   return (
-    <section aria-labelledby="stock-chart-title">
+    <section aria-labelledby="stock-chart-title" className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 id="stock-chart-title" className="typo-section-heading">
           차트 및 주요 지표
@@ -100,7 +100,7 @@ export function StockChartSection() {
           </Select.Root>
         </div>
       </div>
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="min-w-0">
           <ErrorBoundary
             key={`${stockId}-${from}-${to}-${interval}`}
