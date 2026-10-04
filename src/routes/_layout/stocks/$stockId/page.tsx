@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
 import { StockChartSection } from "./-components/StockChartSection"
+import { StockMaterialsSection } from "./-components/StockMaterialsSection"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
@@ -59,8 +60,13 @@ export function StockPage() {
                   <div>
                     <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
                     <p className="mt-1 typo-body-sm text-muted-foreground">
-                      {response.data.profile?.ticker} · {response.data.market} ·{" "}
+                      {response.data.profile?.ticker} · {response.data.country} ·{" "}
                       {response.data.currency}
+                    </p>
+                    <p className="mt-1 typo-body-sm text-muted-foreground">
+                      {response.data.profile?.industries
+                        ?.map((industry) => industry.name)
+                        .join(" · ") || "연결된 산업이 없습니다"}
                     </p>
                   </div>
                 )}
@@ -113,12 +119,7 @@ export function StockPage() {
           </ErrorBoundary>
         </section>
         <StockChartSection />
-        <section aria-labelledby="stock-news-title" className="flex flex-col gap-6">
-          <h2 id="stock-news-title" className="typo-section-heading">
-            관련 뉴스·공시
-          </h2>
-          <p className="typo-body-sm text-muted-foreground">관련 자료 준비 중</p>
-        </section>
+        <StockMaterialsSection key={stockId} />
       </Separated>
     </main>
   )

@@ -22,16 +22,21 @@ import type {
   ApiResultListIndustryTrendResponse,
   ApiResultMarketSummaryResponse,
   ApiResultStockChartResponse,
+  ApiResultStockDisclosureResponse,
   ApiResultStockListResponse,
+  ApiResultStockNewsResponse,
   ApiResultStockQuoteResponse,
   ApiResultSummary,
   Candle,
   IndicatorCard,
+  Industry,
   IndustryFlowResponse,
   IndustryNewsResponse,
   IndustryTrendResponse,
+  Item,
   MajorStockResponse,
   RelatedNewsResponse,
+  StockDisclosureItem,
   StockListItem,
   TrendStockResponse
 } from './api.schemas';
@@ -53,8 +58,28 @@ export type ApiResultSummaryMock = {
   [K in keyof Required<NonNullable<ApiResultSummary>>]: NonNullable<Required<NonNullable<ApiResultSummary>>[K]>;
 };
 
+export type IndustryMock = {
+  [K in keyof Required<NonNullable<Industry>>]: NonNullable<Required<NonNullable<Industry>>[K]>;
+};
+
 export type ApiResultStockQuoteResponseMock = {
   [K in keyof Required<NonNullable<ApiResultStockQuoteResponse>>]: NonNullable<Required<NonNullable<ApiResultStockQuoteResponse>>[K]>;
+};
+
+export type ApiResultStockNewsResponseMock = {
+  [K in keyof Required<NonNullable<ApiResultStockNewsResponse>>]: NonNullable<Required<NonNullable<ApiResultStockNewsResponse>>[K]>;
+};
+
+export type ItemMock = {
+  [K in keyof Required<NonNullable<Item>>]: NonNullable<Required<NonNullable<Item>>[K]>;
+};
+
+export type ApiResultStockDisclosureResponseMock = {
+  [K in keyof Required<NonNullable<ApiResultStockDisclosureResponse>>]: NonNullable<Required<NonNullable<ApiResultStockDisclosureResponse>>[K]>;
+};
+
+export type StockDisclosureItemMock = {
+  [K in keyof Required<NonNullable<StockDisclosureItem>>]: NonNullable<Required<NonNullable<StockDisclosureItem>>[K]>;
 };
 
 export type ApiResultStockChartResponseMock = {
@@ -117,9 +142,19 @@ export type StockListItemMock = {
   [K in keyof Required<NonNullable<StockListItem>>]: NonNullable<Required<NonNullable<StockListItem>>[K]>;
 };
 
-export const getSummaryResponseMock = <O extends Partial<Extract<ApiResultSummary, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultSummary, O, ApiResultSummaryMock> => ({data: {stockId: faker.number.int(), profile: {name: (() => faker.company.name())(), ticker: (() => faker.string.alpha({ length: 4, casing: "upper" }))(), logoUrl: null}, market: faker.helpers.arrayElement(['KR','US'] as const), currency: faker.helpers.arrayElement(['KRW','USD','USDT'] as const), timezone: faker.string.alpha({length: {min: 10, max: 20}})}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultSummary, O, ApiResultSummaryMock>;
+export const getIndustryMock = <O extends Partial<Industry> = {}>(overrideResponse?: O): MockWithNullableOverrides<Industry, O, IndustryMock> => ({...{code: faker.helpers.arrayElement(['AUTOMOBILE','CONSTRUCTION','TRANSPORT','RETAIL','FOOD_BEVERAGE','TELECOM','STEEL','ENERGY','CHEMICAL'] as const), name: faker.string.alpha({length: {min: 10, max: 20}})}, ...overrideResponse}) as MockWithNullableOverrides<Industry, O, IndustryMock>;
+
+export const getSummaryResponseMock = <O extends Partial<Extract<ApiResultSummary, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultSummary, O, ApiResultSummaryMock> => ({data: {stockId: faker.number.int(), profile: {name: (() => faker.company.name())(), ticker: (() => faker.string.alpha({ length: 4, casing: "upper" }))(), logoUrl: null, industries: Array.from({ length: faker.number.int({min: 1, max: 4}) }, (_, i) => i + 1).map(() => ({...getIndustryMock() as IndustryMock}))}, country: faker.helpers.arrayElement(['KR','US'] as const), currency: faker.helpers.arrayElement(['KRW','USD','USDT'] as const), timezone: faker.string.alpha({length: {min: 10, max: 20}})}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultSummary, O, ApiResultSummaryMock>;
 
 export const getQuoteResponseMock = <O extends Partial<Extract<ApiResultStockQuoteResponse, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultStockQuoteResponse, O, ApiResultStockQuoteResponseMock> => ({data: {stockId: faker.number.int(), ticker: (() => faker.string.alpha({ length: 4, casing: "upper" }))(), name: (() => faker.company.name())(), currency: faker.helpers.arrayElement(['KRW','USD','USDT'] as const), price: (() => faker.number.float({ min: 20, max: 500, fractionDigits: 2 }))(), change: (() => faker.number.float({ min: -10, max: 10, fractionDigits: 2 }))(), changeRate: (() => faker.number.float({ min: -5, max: 5, fractionDigits: 2 }))(), priceAt: faker.date.past().toISOString().slice(0, 19) + 'Z', priceTiming: faker.helpers.arrayElement(['REALTIME','DELAYED'] as const), indicators: {previousClose: faker.number.float({fractionDigits: 2}), open: faker.number.float({fractionDigits: 2}), high: faker.number.float({fractionDigits: 2}), low: faker.number.float({fractionDigits: 2}), volume: (() => faker.number.int({ min: 100_000, max: 2_000_000 }))(), volumeRatio20d: (() => faker.number.float({ min: 0.5, max: 3, fractionDigits: 2 }))(), marketCap: (() => faker.number.int({ min: 1_000_000_000, max: 100_000_000_000 }))(), tradingValue: faker.number.float({fractionDigits: 2})}}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultStockQuoteResponse, O, ApiResultStockQuoteResponseMock>;
+
+export const getItemMock = <O extends Partial<Item> = {}>(overrideResponse?: O): MockWithNullableOverrides<Item, O, ItemMock> => ({...{documentId: faker.string.alpha({length: {min: 10, max: 20}}), title: (() => faker.lorem.sentence(5))(), summary: (() => faker.lorem.sentence())(), source: 'example.com', publisherName: '모의 시장 뉴스', publishedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', timestampBasis: 'NAVER_PROVIDED', url: 'https://example.com/mock-news', linkKind: faker.helpers.arrayElement(['ORIGINAL','NAVER'] as const)}, ...overrideResponse}) as MockWithNullableOverrides<Item, O, ItemMock>;
+
+export const getNewsResponseMock = <O extends Partial<Extract<ApiResultStockNewsResponse, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultStockNewsResponse, O, ApiResultStockNewsResponseMock> => ({data: {stockId: faker.number.int(), country: faker.helpers.arrayElement(['KR','US'] as const), window: {from: faker.date.past().toISOString().slice(0, 19) + 'Z', to: faker.date.past().toISOString().slice(0, 19) + 'Z'}, fetchedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', windowCovered: faker.datatype.boolean(), total: faker.number.int(), items: Array.from({ length: faker.number.int({min: 0, max: 20}) }, (_, i) => i + 1).map(() => ({...getItemMock() as ItemMock}))}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultStockNewsResponse, O, ApiResultStockNewsResponseMock>;
+
+export const getStockDisclosureItemMock = <O extends Partial<StockDisclosureItem> = {}>(overrideResponse?: O): MockWithNullableOverrides<StockDisclosureItem, O, StockDisclosureItemMock> => ({...{provider: faker.helpers.arrayElement(['DART','SEC'] as const), providerDocumentId: faker.string.alpha({length: {min: 10, max: 20}}), type: faker.helpers.arrayElement(['DISCLOSURE'] as const), title: '모의 경영 공시', formType: faker.string.alpha({length: {min: 10, max: 20}}), formLabel: faker.string.alpha({length: {min: 10, max: 20}}), issuerName: faker.string.alpha({length: {min: 10, max: 20}}), filerName: faker.string.alpha({length: {min: 10, max: 20}}), remark: faker.string.alpha({length: {min: 10, max: 20}}), filedDate: faker.date.past().toISOString().slice(0, 10), publishedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', datePrecision: faker.string.alpha({length: {min: 10, max: 20}}), timeBasis: faker.string.alpha({length: {min: 10, max: 20}}), summary: null, summaryStatus: 'UNAVAILABLE', url: 'https://example.com/mock-disclosures', linkKind: faker.string.alpha({length: {min: 10, max: 20}})}, ...overrideResponse}) as MockWithNullableOverrides<StockDisclosureItem, O, StockDisclosureItemMock>;
+
+export const getDisclosuresResponseMock = <O extends Partial<Extract<ApiResultStockDisclosureResponse, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultStockDisclosureResponse, O, ApiResultStockDisclosureResponseMock> => ({data: {stockId: faker.number.int(), country: faker.helpers.arrayElement(['KR','US'] as const), source: faker.helpers.arrayElement(['DART','SEC'] as const), window: {from: faker.date.past().toISOString().slice(0, 19) + 'Z', to: faker.date.past().toISOString().slice(0, 19) + 'Z'}, windowPrecision: faker.helpers.arrayElement(['DATE_EXPANDED','EXACT'] as const), fetchedAt: faker.date.past().toISOString().slice(0, 19) + 'Z', coverage: faker.helpers.arrayElement(['COMPLETE','PARTIAL','UNMAPPED'] as const), total: faker.number.int(), items: Array.from({ length: faker.number.int({min: 0, max: 100}) }, (_, i) => i + 1).map(() => ({...getStockDisclosureItemMock() as StockDisclosureItemMock})), filedDateRange: faker.helpers.arrayElement([{from: faker.date.past().toISOString().slice(0, 10), to: faker.date.past().toISOString().slice(0, 10)},null,])}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultStockDisclosureResponse, O, ApiResultStockDisclosureResponseMock>;
 
 export const getCandleMock = <O extends Partial<Candle> = {}>(overrideResponse?: O): MockWithNullableOverrides<Candle, O, CandleMock> => ({...{tradeAt: faker.date.past().toISOString().slice(0, 10), open: faker.number.float({fractionDigits: 2}), high: faker.number.float({fractionDigits: 2}), low: faker.number.float({fractionDigits: 2}), close: (() => faker.number.float({ min: 20, max: 500, fractionDigits: 2 }))(), volume: (() => faker.number.int({ min: 100_000, max: 2_000_000 }))(), closed: faker.datatype.boolean()}, ...overrideResponse}) as MockWithNullableOverrides<Candle, O, CandleMock>;
 
@@ -171,6 +206,30 @@ export const getQuoteMockHandler = (overrideResponse?: ApiResultStockQuoteRespon
     return HttpResponse.json(overrideResponse !== undefined
     ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
     : getQuoteResponseMock(),
+      { status: 200
+      })
+  }, options)
+}
+
+export const getNewsMockHandler = (overrideResponse?: ApiResultStockNewsResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiResultStockNewsResponse> | ApiResultStockNewsResponse), options?: RequestHandlerOptions) => {
+  return http.get('*/api/v1/stocks/:stockId/news', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+
+
+    return HttpResponse.json(overrideResponse !== undefined
+    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
+    : getNewsResponseMock(),
+      { status: 200
+      })
+  }, options)
+}
+
+export const getDisclosuresMockHandler = (overrideResponse?: ApiResultStockDisclosureResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiResultStockDisclosureResponse> | ApiResultStockDisclosureResponse), options?: RequestHandlerOptions) => {
+  return http.get('*/api/v1/stocks/:stockId/disclosures', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+
+
+    return HttpResponse.json(overrideResponse !== undefined
+    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
+    : getDisclosuresResponseMock(),
       { status: 200
       })
   }, options)
@@ -250,6 +309,8 @@ export const getReadStocksMockHandler = (overrideResponse?: ApiResultStockListRe
 export const getOpenAPIDefinitionMock = () => [
   getSummaryMockHandler(),
   getQuoteMockHandler(),
+  getNewsMockHandler(),
+  getDisclosuresMockHandler(),
   getChartMockHandler(),
   getSummary1MockHandler(),
   getReadTrendsMockHandler(),

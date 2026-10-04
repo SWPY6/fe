@@ -1,8 +1,11 @@
 import { HttpResponse } from "msw"
 import { setupWorker } from "msw/browser"
+import { z } from "zod"
 
 import {
   getChartMockHandler,
+  getDisclosuresMockHandler,
+  getNewsMockHandler,
   getOpenAPIDefinitionMock,
   getQuoteMockHandler,
   getReadFlowsMockHandler,
@@ -24,7 +27,9 @@ import {
 } from "../generated/api.schemas"
 import { industrySnapshot } from "./industry"
 import { markets, marketSummary } from "./market"
+import { stockDisclosures, stockNews } from "./materials"
 import { stockChart, stockList, stocks } from "./stock"
+import type { Stock } from "./stock"
 
 function invalidInput(): never {
   // MSW는 resolver에서 던진 HttpResponse도 응답으로 처리한다.
@@ -73,6 +78,57 @@ function requestedStock(value: string | readonly string[] | undefined) {
   return stock
 }
 
+function requestedWindow(params: URLSearchParams, defaultDays: number, maximumDays: number) {
+  const from = params.get("from")
+  const to = params.get("to")
+  const now = Date.now()
+  const day = 24 * 60 * 60 * 1000
+  if (from === null && to === null) {
+    return {
+      from: new Date(now - defaultDays * day).toISOString(),
+      to: new Date(now).toISOString(),
+    }
+  }
+  const timestamp = z.iso.datetime({ offset: true })
+  if (!timestamp.safeParse(from).success || !timestamp.safeParse(to).success) return invalidInput()
+  if (from === null || to === null) return invalidInput()
+  const start = Date.parse(from)
+  const end = Date.parse(to)
+  if (start >= end || end > now || end - start > maximumDays * day) return invalidInput()
+  return { from, to }
+}
+
+function checkMaterialProvider(stock: Stock, kind: "news" | "disclosures") {
+  const scenario = (stock.item.stockId - 1) % 8
+  if (scenario !== 5 && scenario !== 6) return
+  const errors = {
+    news: [
+      { name: "NewsUnavailableException", code: "P008", message: "뉴스를 불러올 수 없습니다." },
+      {
+        name: "NewsQuotaExceededException",
+        code: "P009",
+        message: "뉴스 조회가 일시적으로 제한되었습니다.",
+      },
+    ],
+    disclosures: [
+      {
+        name: "DisclosureUnavailableException",
+        code: "P010",
+        message: "공시를 불러올 수 없습니다.",
+      },
+      {
+        name: "DisclosureQuotaExceededException",
+        code: "P011",
+        message: "공시 조회가 일시적으로 제한되었습니다.",
+      },
+    ],
+  }
+  throw HttpResponse.json(
+    { error: errors[kind][scenario - 5] },
+    { status: scenario === 5 ? 502 : 503 },
+  )
+}
+
 const industries = {
   KR: industrySnapshot(stocks, "KR"),
   US: industrySnapshot(stocks, "US"),
@@ -100,12 +156,29 @@ export const worker = setupWorker(
     return {
       data: {
         stockId: item.stockId,
-        profile: { name: item.name, ticker: item.ticker, logoUrl: null },
-        market: country,
+        profile: {
+          name: item.name,
+          ticker: item.ticker,
+          logoUrl: null,
+          industries: [{ code: item.industryCode, name: item.industryName }],
+        },
+        country,
         currency: item.currency,
         timezone: markets[country].timezone,
       },
     }
+  }),
+  getNewsMockHandler(({ params, request }) => {
+    const stock = requestedStock(params.stockId)
+    const { from, to } = requestedWindow(new URL(request.url).searchParams, 7, 7)
+    checkMaterialProvider(stock, "news")
+    return { data: stockNews(stock, from, to) }
+  }),
+  getDisclosuresMockHandler(({ params, request }) => {
+    const stock = requestedStock(params.stockId)
+    const { from, to } = requestedWindow(new URL(request.url).searchParams, 30, 90)
+    checkMaterialProvider(stock, "disclosures")
+    return { data: stockDisclosures(stock, from, to) }
   }),
   getQuoteMockHandler(({ params }) => {
     const { item } = requestedStock(params.stockId)

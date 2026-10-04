@@ -29,11 +29,15 @@ import type {
   ApiResultListIndustryTrendResponse,
   ApiResultMarketSummaryResponse,
   ApiResultStockChartResponse,
+  ApiResultStockDisclosureResponse,
   ApiResultStockListResponse,
+  ApiResultStockNewsResponse,
   ApiResultStockQuoteResponse,
   ApiResultSummary,
   ChartParams,
+  DisclosuresParams,
   ErrorResponse,
+  NewsParams,
   ReadFlowsParams,
   ReadNewsParams,
   ReadStocksParams,
@@ -349,6 +353,330 @@ export function useQuoteSuspense<TData = Awaited<ReturnType<typeof quote>>, TErr
  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getQuoteSuspenseQueryOptions(stockId,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 네이버 뉴스 검색에서 제목·요약에 종목명이 들어간 기사를 최신순 최대 20건 준다. 검색 결과는 종목별로 최대 10분 캐시한다. publishedAt은 네이버 제공 시각이므로 화면에 '최초 발표'로 표기하지 않는다. 가격 변동의 원인으로 단정하지 않는다는 안내를 함께 표시한다.
+ * @summary 종목 관련 뉴스 조회
+ */
+export const news = (
+    stockId: number,
+    params?: NewsParams,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<ApiResultStockNewsResponse>(
+      {url: `/api/v1/stocks/${stockId}/news`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getNewsQueryKey = (stockId: number,
+    params?: NewsParams,) => {
+    return [
+    `/api/v1/stocks/${stockId}/news`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getNewsQueryOptions = <TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNewsQueryKey(stockId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof news>>> = ({ signal }) => news(stockId,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: stockId !== null && stockId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type NewsQueryResult = NonNullable<Awaited<ReturnType<typeof news>>>
+export type NewsQueryError = ErrorResponse
+
+
+export function useNews<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params: undefined |  NewsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof news>>,
+          TError,
+          Awaited<ReturnType<typeof news>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNews<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof news>>,
+          TError,
+          Awaited<ReturnType<typeof news>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNews<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 종목 관련 뉴스 조회
+ */
+
+export function useNews<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNewsQueryOptions(stockId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getNewsSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNewsQueryKey(stockId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof news>>> = ({ signal }) => news(stockId,params, requestOptions, signal);
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type NewsSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof news>>>
+export type NewsSuspenseQueryError = ErrorResponse
+
+
+export function useNewsSuspense<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params: undefined |  NewsParams, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNewsSuspense<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNewsSuspense<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 종목 관련 뉴스 조회
+ */
+
+export function useNewsSuspense<TData = Awaited<ReturnType<typeof news>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: NewsParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof news>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNewsSuspenseQueryOptions(stockId,params,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 종목 법인의 공시를 최신순으로 최대 100건 준다. 국내 종목은 DART, 미국 종목은 SEC EDGAR다. DART는 접수 날짜만 주므로 기간 양 끝 날짜 전체를 조회하고(windowPrecision=DATE_EXPANDED) publishedAt은 null이다. 화면에는 '접수일 기준'으로 표기한다. SEC는 접수 시각(publishedAt)으로 기간을 거른다(windowPrecision=EXACT). SEC 제목은 영문 원문이며, formLabel에 Form 한글 라벨(고정 사전)을 준다. 요약은 제공하지 않는다(summaryStatus=UNAVAILABLE). 목록은 최대 10분 캐시한다. 법인을 찾지 못한 종목은 coverage=UNMAPPED이며 공시 0건(coverage=COMPLETE, total=0)과 구분한다. 가격 변동의 원인으로 단정하지 않는다는 안내를 함께 표시한다.
+ * @summary 종목 공시 조회
+ */
+export const disclosures = (
+    stockId: number,
+    params?: DisclosuresParams,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<ApiResultStockDisclosureResponse>(
+      {url: `/api/v1/stocks/${stockId}/disclosures`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getDisclosuresQueryKey = (stockId: number,
+    params?: DisclosuresParams,) => {
+    return [
+    `/api/v1/stocks/${stockId}/disclosures`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDisclosuresQueryOptions = <TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDisclosuresQueryKey(stockId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof disclosures>>> = ({ signal }) => disclosures(stockId,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: stockId !== null && stockId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DisclosuresQueryResult = NonNullable<Awaited<ReturnType<typeof disclosures>>>
+export type DisclosuresQueryError = ErrorResponse
+
+
+export function useDisclosures<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params: undefined |  DisclosuresParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disclosures>>,
+          TError,
+          Awaited<ReturnType<typeof disclosures>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisclosures<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disclosures>>,
+          TError,
+          Awaited<ReturnType<typeof disclosures>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisclosures<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 종목 공시 조회
+ */
+
+export function useDisclosures<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDisclosuresQueryOptions(stockId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getDisclosuresSuspenseQueryOptions = <TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDisclosuresQueryKey(stockId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof disclosures>>> = ({ signal }) => disclosures(stockId,params, requestOptions, signal);
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type DisclosuresSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof disclosures>>>
+export type DisclosuresSuspenseQueryError = ErrorResponse
+
+
+export function useDisclosuresSuspense<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params: undefined |  DisclosuresParams, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisclosuresSuspense<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisclosuresSuspense<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 종목 공시 조회
+ */
+
+export function useDisclosuresSuspense<TData = Awaited<ReturnType<typeof disclosures>>, TError = ErrorResponse>(
+ stockId: number,
+    params?: DisclosuresParams, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof disclosures>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDisclosuresSuspenseQueryOptions(stockId,params,options)
 
   const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

@@ -2,6 +2,8 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 
 import {
   getChartSuspenseQueryOptions,
+  getDisclosuresQueryOptions,
+  getNewsQueryOptions,
   getQuoteSuspenseQueryOptions,
   getSummarySuspenseQueryOptions,
 } from "@/api/generated/api"
@@ -19,6 +21,8 @@ export const Route = createFileRoute("/_layout/stocks/$stockId/")({
     queryClient.prefetchQuery(getSummarySuspenseQueryOptions(Number(stockId)))
     queryClient.prefetchQuery(getQuoteSuspenseQueryOptions(Number(stockId)))
     queryClient.prefetchQuery(getChartSuspenseQueryOptions(Number(stockId), deps))
+    queryClient.prefetchQuery(getNewsQueryOptions(Number(stockId)))
+    queryClient.prefetchQuery(getDisclosuresQueryOptions(Number(stockId)))
   },
   component: StockPage,
   notFoundComponent: () => "종목을 찾을 수 없습니다",
