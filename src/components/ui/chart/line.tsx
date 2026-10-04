@@ -1,0 +1,73 @@
+"use client"
+
+import {
+  LineSeries,
+  type ISeriesApi,
+  type LineData,
+  type LineSeriesPartialOptions,
+  type Time,
+  type WhitespaceData,
+} from "lightweight-charts"
+import { use, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react"
+
+import { ChartContext } from "./chart-context"
+import { resolveCssColors } from "./color"
+
+export type LineApi = ISeriesApi<"Line">
+
+export type LineProps = {
+  ref?: Ref<LineApi | null>
+  data: (LineData<Time> | WhitespaceData<Time>)[]
+  options?: LineSeriesPartialOptions
+}
+
+export function Line({ ref, data, options }: LineProps) {
+  const context = use(ChartContext)
+  const initialData = useRef(data)
+  const initialOptions = useRef(options)
+  const [line, setLine] = useState<LineApi | null>(null)
+
+  useLayoutEffect(() => {
+    if (!context) {
+      return
+    }
+
+    const nextLine = context.chart.addSeries(
+      LineSeries,
+      resolveCssColors(context.root, initialOptions.current),
+    )
+    nextLine.setData(initialData.current)
+    setLine(nextLine)
+
+    return () => {
+      // oxlint-disable-next-line react/exhaustive-deps -- Read the latest liveness state during cleanup.
+      if (context.alive.current) {
+        context.chart.removeSeries(nextLine)
+      }
+    }
+  }, [context])
+
+  useLayoutEffect(() => {
+    if (!line) {
+      return
+    }
+
+    line.setData(data)
+  }, [data, line])
+
+  useLayoutEffect(() => {
+    if (!context || !line || !options) {
+      return
+    }
+
+    line.applyOptions(resolveCssColors(context.root, options))
+  }, [context, line, options])
+
+  useImperativeHandle<LineApi | null, LineApi | null>(ref, () => line, [line])
+
+  if (!context) {
+    throw new Error("Line must be rendered inside Chart.")
+  }
+
+  return null
+}
