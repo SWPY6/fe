@@ -7,7 +7,6 @@ const navigation = [
   linkOptions({ to: "/", label: "시장 요약" }),
   linkOptions({ to: "/industries", label: "산업별 동향", preload: "viewport" }),
   linkOptions({ to: "/movers", label: "주요 변동 종목" }),
-  linkOptions({ to: "/stocks", label: "종목 상세" }),
 ]
 
 export const Route = createFileRoute("/_layout")({
@@ -31,7 +30,7 @@ function Layout() {
               <li key={options.to}>
                 <Link
                   {...options}
-                  activeOptions={{ exact: options.to !== "/stocks", includeSearch: false }}
+                  activeOptions={{ exact: true, includeSearch: false }}
                   activeProps={{ className: "text-primary", "aria-current": "page" }}
                   inactiveProps={{ className: "hover:text-primary" }}
                   className="group relative block px-3 py-2.5"
