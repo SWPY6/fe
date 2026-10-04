@@ -175,19 +175,19 @@ export const StockChartResponseCurrency = {
  */
 export interface Candle {
   /** 봉에 포함된 첫 거래일 */
-  tradeAt?: string;
+  tradeAt: string;
   /** 시가 — 봉의 첫 거래일 시가 */
-  open?: number;
+  open: number;
   /** 고가 — 봉 구간의 최댓값 */
-  high?: number;
+  high: number;
   /** 저가 — 봉 구간의 최솟값 */
-  low?: number;
+  low: number;
   /** 종가 — 봉의 마지막 거래일 종가. 진행 중 봉은 현재가 */
-  close?: number;
+  close: number;
   /** 거래량(주) — 봉 구간의 합계 */
-  volume?: number;
+  volume: number;
   /** true 확정 봉, false 진행 중 봉 */
-  closed?: boolean;
+  closed: boolean;
 }
 
 /**
@@ -221,7 +221,7 @@ export interface StockChartResponse {
      */
   averageVolume?: number | null;
   /** 거래일 오름차순. 빈 배열 가능 */
-  candles?: Candle[];
+  candles: Candle[];
 }
 
 export interface ApiResultStockChartResponse {
@@ -332,7 +332,9 @@ export const IndustryTrendResponseCurrency = {
  * 산업 카드에 표시하는 종목
  */
 export interface TrendStockResponse {
-  /** 종목 코드. 종목 상세로 이동할 때 이 값을 쓴다 */
+  /** 종목 식별자. 종목 상세·현재가·차트 조회에 이 값을 쓴다 */
+  stockId?: number;
+  /** 종목 코드. 화면에 표시한다 */
   ticker?: string;
   /** 종목명. 계산 시점의 값 */
   name?: string;
@@ -365,10 +367,15 @@ export interface IndustryTrendResponse {
   /**
      * 시가총액 상위 종목. 0~4개로 가변이다 — 시세를 구하지 못한 산업은 빈 배열이므로
      * 4개를 가정하면 안 된다.
+     * @minItems 0
+     * @maxItems 4
      */
   stocks?: TrendStockResponse[];
-  /** 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null */
-  calculatedAt?: string;
+  /**
+     * 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null
+     * @nullable
+     */
+  calculatedAt?: string | null;
 }
 
 export interface ApiResultListIndustryTrendResponse {
@@ -445,10 +452,15 @@ export interface IndustryNewsResponse {
      * 가격 움직임 전후에 발표된 관련 뉴스. 직전 거래일 종가 산정 시점부터 calculatedAt
      * 까지 발표되고 이 산업 종목에 연결된 것이다. 없으면 빈 배열이며 화면은 이 영역을
      * 생략한다. 함께 확인된 맥락이고 가격 변동의 원인이 아니다.
+     * @minItems 0
+     * @maxItems 1
      */
   news?: RelatedNewsResponse[];
-  /** 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null */
-  calculatedAt?: string;
+  /**
+     * 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null
+     * @nullable
+     */
+  calculatedAt?: string | null;
 }
 
 export interface ApiResultListIndustryNewsResponse {
@@ -477,7 +489,9 @@ export const IndustryFlowResponseCode = {
  * 산업의 대표 종목
  */
 export interface MajorStockResponse {
-  /** 종목 코드 */
+  /** 종목 식별자. 종목 상세·현재가·차트 조회에 이 값을 쓴다 */
+  stockId?: number;
+  /** 종목 코드. 화면에 표시한다 */
   ticker?: string;
   /** 종목명. 계산 시점의 값 */
   name?: string;
@@ -499,10 +513,17 @@ export interface IndustryFlowResponse {
   avgChangeRate?: number;
   /** 평균에 실제로 반영된 종목 수 */
   stockCount?: number;
-  /** 시가총액 상위 대표 종목. 0~2개 */
+  /**
+     * 시가총액 상위 대표 종목. 0~2개
+     * @minItems 0
+     * @maxItems 2
+     */
   majorStocks?: MajorStockResponse[];
-  /** 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null */
-  calculatedAt?: string;
+  /**
+     * 계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null
+     * @nullable
+     */
+  calculatedAt?: string | null;
 }
 
 export interface ApiResultListIndustryFlowResponse {

@@ -3,6 +3,33 @@ info:
   title: Frontend API contract adjustments
   version: 1.0.0
 actions:
+  - target: $.components.schemas.Candle
+    description: Match required Candle fields to the stock chart API contract.
+    update:
+      required: [tradeAt, open, high, low, close, volume, closed]
+  - target: $.components.schemas.StockChartResponse
+    description: The stock chart API always returns candles, including an empty array when no data is available.
+    update:
+      required: [candles]
+  - target: $.components.schemas.IndustryTrendResponse.properties.stocks
+    description: 서버 명세의 시가총액 상위 0~4개 조건을 반영한다.
+    update:
+      minItems: 0
+      maxItems: 4
+  - target: $.components.schemas.IndustryFlowResponse.properties.majorStocks
+    description: 서버 명세의 시가총액 상위 0~2개 조건을 반영한다.
+    update:
+      minItems: 0
+      maxItems: 2
+  - target: $.components.schemas.IndustryNewsResponse.properties.news
+    description: 서버 명세의 가장 최근 관련 뉴스 0~1건 조건을 반영한다.
+    update:
+      minItems: 0
+      maxItems: 1
+  - target: "$..properties.calculatedAt"
+    description: 산업 API 문서의 계산 이력 없음(null)을 반영한다.
+    update:
+      type: [string, "null"]
   - target: $.components.schemas.ErrorResponse
     description: 오류 응답의 error를 필수로 지정한다.
     update:
