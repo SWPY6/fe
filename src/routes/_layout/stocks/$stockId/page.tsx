@@ -1,6 +1,8 @@
 import { ErrorBoundary, Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { Link, getRouteApi } from "@tanstack/react-router"
+import { Star } from "lucide-react"
+import { useStorageState } from "react-simplikit"
 
 import { getQuoteSuspenseQueryOptions, getSummarySuspenseQueryOptions } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
@@ -13,14 +15,37 @@ const route = getRouteApi("/_layout/stocks/$stockId/")
 
 export function StockPage() {
   const stockId = route.useParams({ select: (params) => params.stockId })
+  const [watchlistStockIds, setWatchlistStockIds] = useStorageState<string[]>(
+    "watchlist-stock-ids",
+    { defaultValue: [] },
+  )
+  const isWatchlisted = watchlistStockIds.includes(stockId)
 
   return (
     <main className="py-8">
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="typo-section-heading">종목 상세</h1>
-        <Button asChild size="sm" variant="outline">
-          <Link to="/movers">다른 종목 찾기</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            aria-pressed={isWatchlisted}
+            onClick={() =>
+              setWatchlistStockIds((stockIds) =>
+                stockIds.includes(stockId)
+                  ? stockIds.filter((id) => id !== stockId)
+                  : [...stockIds, stockId],
+              )
+            }
+          >
+            <Star aria-hidden="true" fill={isWatchlisted ? "currentColor" : "none"} />
+            {isWatchlisted ? "관심종목 해제" : "관심종목 추가"}
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/movers">다른 종목 찾기</Link>
+          </Button>
+        </div>
       </div>
       <Separator className="my-6" />
       <section aria-label="종목 요약 정보" className="flex flex-wrap items-center gap-x-12 gap-y-5">
