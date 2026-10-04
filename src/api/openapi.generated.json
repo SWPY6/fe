@@ -371,7 +371,7 @@
       "get": {
         "tags": ["industry-trend-controller"],
         "summary": "산업별 동향",
-        "description": "산업 카드 목록을 탭에 맞게 **걸러서 정렬까지 끝낸 상태로** 돌려준다.\n프론트는 받은 순서대로 그리면 된다 — 다시 정렬하지 않는다.\n\n`avgChangeRate`가 소수 둘째 자리로 반올림된 값이라 그것으로 정렬하면 동률이\n어긋난다. 서버는 반올림 전 값과 거래대금으로 가른다.\n\n`filter=ALL`은 9개 전부를 산업명 가나다순으로, `RISING`은 오른 산업만 많이 오른\n순으로, `FALLING`은 내린 산업만 많이 내린 순으로 준다. 등락률이 정확히 0인 산업은\n`ALL`에만 나오므로 두 탭의 길이 합이 9보다 작을 수 있다. 전 산업이 한쪽으로 쏠린\n날에는 반대쪽 탭이 **빈 배열**이다.\n\n`rank`는 9개 전체를 놓고 매긴 순위라 `filter`에 영향받지 않는다 — `FALLING`으로\n3건을 받아도 `7`·`8`·`9`가 온다. 카드의 \"평균 등락률 N위\"에는 이 값을 그대로\n쓰고 **배열 인덱스로 세면 안 된다.**\n\n`stocks`는 시가총액 상위 **0~4개**로 가변이다. 종목 상세로 이동할 때는 `ticker`를\n쓴다. 현재가의 단위는 `currency`가 정한다.\n\n관심 산업 고정은 받은 목록을 프론트가 앞으로 당기는 것이고, 그때도 `rank`는\n바뀌지 않는다.\n\n값은 서버가 주기적으로 미리 계산해 저장한 것이며 이 요청은 외부 시세를\n호출하지 않는다. 폴링 주기는 10초를 권장한다.\n",
+        "description": "산업 카드 목록을 탭에 맞게 **걸러서 정렬까지 끝낸 상태로** 돌려준다.\n프론트는 받은 순서대로 그리면 된다 — 다시 정렬하지 않는다.\n\n`avgChangeRate`가 소수 둘째 자리로 반올림된 값이라 그것으로 정렬하면 동률이\n어긋난다. 서버는 반올림 전 값과 거래대금으로 가른다.\n\n`filter=ALL`은 9개 전부를 산업명 가나다순으로, `RISING`은 오른 산업만 많이 오른\n순으로, `FALLING`은 내린 산업만 많이 내린 순으로 준다. 등락률이 정확히 0인 산업은\n`ALL`에만 나오므로 두 탭의 길이 합이 9보다 작을 수 있다. 전 산업이 한쪽으로 쏠린\n날에는 반대쪽 탭이 **빈 배열**이다.\n\n`rank`는 9개 전체를 놓고 매긴 순위라 `filter`에 영향받지 않는다 — `FALLING`으로\n3건을 받아도 `7`·`8`·`9`가 온다. 카드의 \"평균 등락률 N위\"에는 이 값을 그대로\n쓰고 **배열 인덱스로 세면 안 된다.**\n\n`stocks`는 시가총액 상위 **0~4개**로 가변이다. 종목 상세·현재가·차트로 이동할\n때는 `stockId`를 쓴다 — `ticker`는 화면에 표시하는 종목 코드다. `stockId`는\n환경마다 달라질 수 있으니 저장하지 말고 그 화면에서만 쓴다. 현재가의 단위는\n`currency`가 정한다.\n\n관심 산업 고정은 받은 목록을 프론트가 앞으로 당기는 것이고, 그때도 `rank`는\n바뀌지 않는다.\n\n값은 서버가 주기적으로 미리 계산해 저장한 것이며 이 요청은 외부 시세를\n호출하지 않는다. 폴링 주기는 10초를 권장한다.\n",
         "operationId": "readTrends",
         "parameters": [
           {
@@ -841,7 +841,8 @@
             "description": "true 확정 봉, false 진행 중 봉",
             "example": true
           }
-        }
+        },
+        "required": ["tradeAt", "open", "high", "low", "close", "volume", "closed"]
       },
       "StockChartResponse": {
         "type": "object",
@@ -895,7 +896,8 @@
               "$ref": "#/components/schemas/Candle"
             }
           }
-        }
+        },
+        "required": ["candles"]
       },
       "ApiResultMarketSummaryResponse": {
         "type": "object",
@@ -1034,10 +1036,12 @@
             "description": "시가총액 상위 종목. 0~4개로 가변이다 — 시세를 구하지 못한 산업은 빈 배열이므로\n4개를 가정하면 안 된다.",
             "items": {
               "$ref": "#/components/schemas/TrendStockResponse"
-            }
+            },
+            "minItems": 0,
+            "maxItems": 4
           },
           "calculatedAt": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null",
             "example": "2026-09-28T10:00:07+09:00"
@@ -1048,9 +1052,15 @@
         "type": "object",
         "description": "산업 카드에 표시하는 종목",
         "properties": {
+          "stockId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "종목 식별자. 종목 상세·현재가·차트 조회에 이 값을 쓴다",
+            "example": 10
+          },
           "ticker": {
             "type": "string",
-            "description": "종목 코드. 종목 상세로 이동할 때 이 값을 쓴다",
+            "description": "종목 코드. 화면에 표시한다",
             "example": "005380"
           },
           "name": {
@@ -1147,10 +1157,12 @@
             "description": "가격 움직임 전후에 발표된 관련 뉴스. 직전 거래일 종가 산정 시점부터 calculatedAt\n까지 발표되고 이 산업 종목에 연결된 것이다. 없으면 빈 배열이며 화면은 이 영역을\n생략한다. 함께 확인된 맥락이고 가격 변동의 원인이 아니다.",
             "items": {
               "$ref": "#/components/schemas/RelatedNewsResponse"
-            }
+            },
+            "minItems": 0,
+            "maxItems": 1
           },
           "calculatedAt": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null",
             "example": "2026-09-04T15:30:00+09:00"
@@ -1243,10 +1255,12 @@
             "description": "시가총액 상위 대표 종목. 0~2개",
             "items": {
               "$ref": "#/components/schemas/MajorStockResponse"
-            }
+            },
+            "minItems": 0,
+            "maxItems": 2
           },
           "calculatedAt": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "계산 시각(시장 현지). 한 번도 계산되지 않은 산업은 null",
             "example": "2026-09-28T10:00:07+09:00"
@@ -1257,9 +1271,15 @@
         "type": "object",
         "description": "산업의 대표 종목",
         "properties": {
+          "stockId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "종목 식별자. 종목 상세·현재가·차트 조회에 이 값을 쓴다",
+            "example": 10
+          },
           "ticker": {
             "type": "string",
-            "description": "종목 코드",
+            "description": "종목 코드. 화면에 표시한다",
             "example": "005380"
           },
           "name": {
@@ -1357,7 +1377,6 @@
   },
   "x-source": {
     "url": "https://ploutosbe.duckdns.org/v3/api-docs",
-    "fetchedAt": "2026-10-03T13:11:54.213Z"
-  },
-  "x-generated-at": "2026-10-03T14:14:58.018Z"
+    "fetchedAt": "2026-10-03T14:24:30.866Z"
+  }
 }

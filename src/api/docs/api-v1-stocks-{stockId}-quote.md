@@ -1,7 +1,6 @@
 # SPEC-stock-quote
 
-원본: `docs/SPEC-stock-quote.md` @ 17a461c
-갱신 시각: 2026-09-30 14:44 KST
+원본: `docs/SPEC-stock-quote.md` @ 6b07b52
 
 ## API 계약
 
@@ -9,7 +8,11 @@
 
 ### `GET /api/v1/stocks/{stockId}/quote`
 
-요청: 경로 변수 `stockId`(정수). 쿼리 없음. 권장 폴링 주기 10초(캐시 TTL과 동일).
+요청: 경로 변수 `stockId`(정수). 쿼리 없음.
+
+시세 갱신 주기와 권장 폴링 주기는 10초다. 캐시 TTL은 30초이며, `priceAt`은 시세를
+받은 시각을 나타낸다. 일반적으로 갱신 주기 안쪽의 값이고, 캐시 응답은 최대 30초 전
+값일 수 있다. 차트의 장중 갱신은 이 시세 캐시를 공유한다.
 
 **200 성공**
 
@@ -44,12 +47,12 @@
 | `stockId`                   | integer                       | X    | 종목 ID                                                                                                          |
 | `ticker`                    | string                        | X    | 종목 코드 (`005380`, `AAPL`)                                                                                     |
 | `name`                      | string                        | X    | 종목명                                                                                                           |
-| `currency`                  | "KRW" / "USD"                 | X    | 아래 모든 금액의 통화. 표기(원/달러, 조·억 축약)는 프론트                                                        |
+| `currency`                  | `"KRW"` / `"USD"`             | X    | 아래 모든 금액의 통화. 표기(원/달러, 조·억 축약)는 프론트                                                        |
 | `price`                     | number                        | X    | 현재가 (RQ-1001)                                                                                                 |
 | `change`                    | number                        | X    | 직전 정규장 종가 대비 등락폭. 음수 가능                                                                          |
 | `changeRate`                | number                        | X    | 등락률 %, 소수 둘째 자리 (RQ-1001)                                                                               |
-| `priceAt`                   | string(ISO-8601, 오프셋 포함) | X    | 가격 기준 시각 = 서버가 시세를 받은 시각. 캐시 응답이면 최대 TTL만큼 과거 (RQ-1001)                              |
-| `priceTiming`               | "REALTIME" / "DELAYED"        | X    | 실시간·지연 여부 (RQ-1001)                                                                                       |
+| `priceAt`                   | string(ISO-8601, 오프셋 포함) | X    | 가격 기준 시각 = 서버가 시세를 받은 시각. 보통 갱신 주기(10초) 안쪽, 최대 캐시 TTL(30초)만큼 과거 (RQ-1001)      |
+| `priceTiming`               | `"REALTIME"` / `"DELAYED"`    | X    | 실시간·지연 여부 (RQ-1001)                                                                                       |
 | `indicators.previousClose`  | number                        | X    | 전일 종가 (RQ-1008)                                                                                              |
 | `indicators.open`           | number                        | X    | 당일 시가                                                                                                        |
 | `indicators.high`           | number                        | X    | 당일 고가                                                                                                        |
@@ -83,7 +86,7 @@
 }
 ```
 
-**502 시세 제공자 오류** (KIS 토큰 실패·응답 코드 오류·HTTP 오류·타임아웃)
+**502 시세 제공자 오류** (KIS 토큰 실패·응답 코드 오류·HTTP 오류·타임아웃, Redis 접근 불가, 첫 조회 대기 초과)
 
 ```json
 {

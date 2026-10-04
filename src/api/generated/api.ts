@@ -43,6 +43,10 @@ import type {
 
 import { apiRequest } from '../http/client';
 
+type AwaitedInput<T> = PromiseLike<T> | T;
+
+      type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
+
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -689,8 +693,10 @@ export function useSummary1Suspense<TData = Awaited<ReturnType<typeof summary1>>
  * 3건을 받아도 `7`·`8`·`9`가 온다. 카드의 "평균 등락률 N위"에는 이 값을 그대로
  * 쓰고 **배열 인덱스로 세면 안 된다.**
  *
- * `stocks`는 시가총액 상위 **0~4개**로 가변이다. 종목 상세로 이동할 때는 `ticker`를
- * 쓴다. 현재가의 단위는 `currency`가 정한다.
+ * `stocks`는 시가총액 상위 **0~4개**로 가변이다. 종목 상세·현재가·차트로 이동할
+ * 때는 `stockId`를 쓴다 — `ticker`는 화면에 표시하는 종목 코드다. `stockId`는
+ * 환경마다 달라질 수 있으니 저장하지 말고 그 화면에서만 쓴다. 현재가의 단위는
+ * `currency`가 정한다.
  *
  * 관심 산업 고정은 받은 목록을 프론트가 앞으로 당기는 것이고, 그때도 `rank`는
  * 바뀌지 않는다.
@@ -1314,3 +1320,10 @@ export function useReadStocksSuspense<TData = Awaited<ReturnType<typeof readStoc
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
+
+
