@@ -4,7 +4,6 @@ import { SuspenseQuery } from "@suspensive/react-query"
 import { Link } from "@tanstack/react-router"
 
 import {
-  getSummary1SuspenseQueryOptions,
   getReadNewsSuspenseQueryOptions,
   getReadStocksSuspenseQueryOptions,
 } from "@/api/generated/api"
@@ -17,6 +16,7 @@ import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
 import { StockSparkline } from "./-components/StockSparkline"
+import { getMarketSummaryQueryOptions } from "./-query/market-summary"
 
 export function RootPage() {
   const [{ market }, setGlobalUrlState] = useGlobalUrlState()
@@ -47,7 +47,7 @@ export function RootPage() {
           <IndustryFlowCarousel />
           <ErrorBoundary fallback="오류가 발생했습니다">
             <Suspense fallback="로딩중">
-              <SuspenseQuery {...getSummary1SuspenseQueryOptions({ region })}>
+              <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
                 {({ data: response }) => {
                   const indicators = response.data?.indicators ?? []
 
@@ -68,6 +68,7 @@ export function RootPage() {
                             <span className="typo-numeric-compact tabular-nums">
                               {quote.value?.toLocaleString("ko-KR") ?? "—"}
                               {quote.unit === "KRW" ? "원" : ""}
+                              {quote.unit === "USD" ? " USD" : ""}
                             </span>
                             {quote.changeRate == null ? (
                               <span className="typo-caption text-muted-foreground">—</span>
@@ -101,6 +102,7 @@ export function RootPage() {
                                 <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
                                   {quote.value?.toLocaleString("ko-KR") ?? "—"}
                                   {quote.unit === "KRW" ? "원" : ""}
+                                  {quote.unit === "USD" ? " USD" : ""}
                                 </p>
                               </div>
                               {quote.changeRate == null ? (
