@@ -1,24 +1,29 @@
 import { ErrorBoundary, Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { getRouteApi } from "@tanstack/react-router"
+import type { IChartApi } from "lightweight-charts"
 import { Fragment, useState } from "react"
 
 import { getChartSuspenseQueryOptions, getQuoteSuspenseQueryOptions } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
+import { TradingChart } from "@/components/ui/chart"
 import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 
 import { stockChartIntervalSchema } from "../-schema"
-import { StockChart } from "./StockChart"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
+
+function fitContent(chart: IChartApi | null) {
+  chart?.timeScale().fitContent()
+}
 
 export function StockChartSection() {
   const { stockId } = route.useParams()
   const { from, to, interval } = route.useSearch()
   const navigate = route.useNavigate()
-  const [chartView, setChartView] = useState<"line" | "candlestick">("candlestick")
+  const [chartView, setChartView] = useState<"line" | "candlestick">("line")
 
   return (
     <section aria-labelledby="stock-chart-title">
@@ -121,12 +126,77 @@ export function StockChartSection() {
                   const hasData = candles.length > 0
 
                   return hasData ? (
-                    <StockChart
-                      view={chartView}
-                      candlestickData={candlestickData}
-                      lineData={lineData}
+                    <TradingChart.Root
+                      ref={fitContent}
                       className="h-96 w-full"
-                    />
+                      aria-label={chartView === "line" ? "라인 차트" : "캔들 차트"}
+                      options={{ localization: { locale: "ko-KR" } }}
+                    >
+                      {chartView === "line" ? (
+                        <TradingChart.Line data={lineData}>
+                          <TradingChart.Tooltip>
+                            {({ time }) => {
+                              const candle = candles.find((item) => item.tradeAt === time)
+                              if (!candle) return null
+
+                              return (
+                                <div className="grid gap-2">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
+                                    <span>{response.data.currency}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span>종가</span>
+                                    <PriceNumber
+                                      value={candle.close}
+                                      className="text-inherit"
+                                      format={{ maximumFractionDigits: 2 }}
+                                    />
+                                  </div>
+                                </div>
+                              )
+                            }}
+                          </TradingChart.Tooltip>
+                        </TradingChart.Line>
+                      ) : (
+                        <TradingChart.Candle data={candlestickData}>
+                          <TradingChart.Tooltip>
+                            {({ time }) => {
+                              const candle = candles.find((item) => item.tradeAt === time)
+                              if (!candle) return null
+
+                              return (
+                                <div className="grid gap-2">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
+                                    <span>{response.data.currency}</span>
+                                  </div>
+                                  <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    {[
+                                      { label: "시가", value: candle.open },
+                                      { label: "고가", value: candle.high },
+                                      { label: "저가", value: candle.low },
+                                      { label: "종가", value: candle.close },
+                                    ].map(({ label, value }) => (
+                                      <Fragment key={label}>
+                                        <dt>{label}</dt>
+                                        <dd className="text-right">
+                                          <PriceNumber
+                                            value={value}
+                                            className="text-inherit"
+                                            format={{ maximumFractionDigits: 2 }}
+                                          />
+                                        </dd>
+                                      </Fragment>
+                                    ))}
+                                  </dl>
+                                </div>
+                              )
+                            }}
+                          </TradingChart.Tooltip>
+                        </TradingChart.Candle>
+                      )}
+                    </TradingChart.Root>
                   ) : (
                     <p className="flex h-96 items-center justify-center typo-body-sm text-muted-foreground">
                       선택한 기간의 차트 데이터가 없습니다. 조건을 변경해주세요.

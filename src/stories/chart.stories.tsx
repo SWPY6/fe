@@ -1,15 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { useState } from "react"
+import type { RoundedCandleData } from "@tradingview/lwc-plugin-rounded-candles-series"
+import type { IChartApi } from "lightweight-charts"
+import { useState, type ComponentProps } from "react"
 
 import { Button } from "../components/ui/button"
-import {
-  Candlestick,
-  Chart,
-  Line,
-  type CandlestickOptions,
-  type ChartApi,
-  type ChartProps,
-} from "../components/ui/chart"
+import { TradingChart } from "../components/ui/chart"
 
 const candles = [
   { time: "2026-09-01", open: 100, high: 106, low: 98, close: 104 },
@@ -24,60 +19,42 @@ const candles = [
   { time: "2026-09-14", open: 110, high: 120, low: 109, close: 118 },
   { time: "2026-09-15", open: 118, high: 122, low: 113, close: 115 },
   { time: "2026-09-16", open: 115, high: 125, low: 114, close: 123 },
-]
+] satisfies RoundedCandleData[]
 const points = candles.map(({ time, close }) => ({ time, value: close }))
 
-const chartOptions = {
-  layout: { textColor: "var(--muted-foreground)" },
-  grid: {
-    vertLines: { visible: false },
-    horzLines: { color: "var(--border)" },
-  },
-  rightPriceScale: { borderVisible: false },
-  timeScale: { borderVisible: false },
-} satisfies NonNullable<ChartProps["options"]>
-
-const candleOptions = {
-  upColor: "var(--positive)",
-  downColor: "var(--negative)",
-  wickUpColor: "var(--positive)",
-  wickDownColor: "var(--negative)",
-  borderVisible: false,
-} satisfies CandlestickOptions
-
-function fitContent(chart: ChartApi | null) {
+function fitContent(chart: IChartApi | null) {
   chart?.timeScale().fitContent()
 }
 
 const meta = {
-  title: "Components/Chart",
-  component: Chart,
+  title: "Components/TradingChart",
+  component: TradingChart.Root,
   parameters: {
     layout: "padded",
     controls: { disable: true },
     docs: {
       description: {
         component:
-          "Chart 안에 Line과 Candlestick을 조합합니다. 각 시리즈는 데이터와 options를 받고, ref로 차트와 시리즈를 직접 제어할 수 있습니다. 예제 데이터는 서버 API와 무관한 고정 데이터입니다.",
+          "TradingChart.Root 안에 Line과 Candle을 조합합니다. Tooltip은 해당 Series 아래에 배치하고, children 함수에서 hover 정보와 외부 데이터를 사용해 내용을 구성합니다.",
       },
     },
   },
-  args: { className: "h-80 w-full", options: chartOptions },
-} satisfies Meta<typeof Chart>
+  args: { className: "h-80 w-full", ref: fitContent },
+} satisfies Meta<typeof TradingChart.Root>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const LineChart: Story = {
-  name: "라인",
+  name: "Line",
   render: (args) => (
-    <Chart {...args} ref={fitContent}>
-      <Line data={points} options={{ color: "var(--primary)", lineWidth: 2 }} />
-    </Chart>
+    <TradingChart.Root {...args}>
+      <TradingChart.Line data={points} />
+    </TradingChart.Root>
   ),
 }
 
-function CandlestickExample(props: ChartProps) {
+function CandleExample(props: ComponentProps<typeof TradingChart.Root>) {
   const [radius, setRadius] = useState(4)
 
   return (
@@ -92,33 +69,85 @@ function CandlestickExample(props: ChartProps) {
           onChange={(event) => setRadius(event.currentTarget.valueAsNumber)}
         />
       </label>
-      <Chart {...props} ref={fitContent}>
-        <Candlestick data={candles} options={{ ...candleOptions, radius }} />
-      </Chart>
+      <TradingChart.Root {...props}>
+        <TradingChart.Candle data={candles} options={{ radius }} />
+      </TradingChart.Root>
     </div>
   )
 }
 
-export const CandlestickChart: Story = {
-  name: "캔들과 모서리 옵션",
-  render: (args) => <CandlestickExample {...args} />,
+export const CandleChart: Story = {
+  name: "Candle · radius 옵션",
+  render: (args) => <CandleExample {...args} />,
 }
 
 export const Composed: Story = {
-  name: "캔들과 라인 조합",
+  name: "Candle + Line",
   render: (args) => (
-    <Chart {...args} ref={fitContent}>
-      <Candlestick data={candles} options={candleOptions} />
-      <Line
-        data={points}
-        options={{ color: "var(--primary)", lineWidth: 2, priceLineVisible: false }}
-      />
-    </Chart>
+    <TradingChart.Root {...args}>
+      <TradingChart.Candle data={candles} />
+      <TradingChart.Line data={points} options={{ priceLineVisible: false }} />
+    </TradingChart.Root>
   ),
 }
 
-function SwitchableExample(props: ChartProps) {
-  const [view, setView] = useState<"line" | "candlestick">("candlestick")
+export const LineWithTooltip: Story = {
+  name: "Line · Tooltip",
+  render: (args) => (
+    <TradingChart.Root {...args}>
+      <TradingChart.Line data={points}>
+        <TradingChart.Tooltip>
+          {({ time }) => {
+            const point = points.find((item) => item.time === time)
+            if (!point) return null
+
+            return (
+              <div className="grid gap-1 tabular-nums">
+                <span>{point.time}</span>
+                <span>Value: {point.value}</span>
+              </div>
+            )
+          }}
+        </TradingChart.Tooltip>
+      </TradingChart.Line>
+    </TradingChart.Root>
+  ),
+}
+
+export const CandleWithTooltip: Story = {
+  name: "Candle · Tooltip",
+  render: (args) => (
+    <TradingChart.Root {...args}>
+      <TradingChart.Candle data={candles}>
+        <TradingChart.Tooltip>
+          {({ time }) => {
+            const candle = candles.find((item) => item.time === time)
+            if (!candle) return null
+
+            return (
+              <div className="grid gap-2 tabular-nums">
+                <span>{candle.time}</span>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  <dt>Open</dt>
+                  <dd className="text-right">{candle.open}</dd>
+                  <dt>High</dt>
+                  <dd className="text-right">{candle.high}</dd>
+                  <dt>Low</dt>
+                  <dd className="text-right">{candle.low}</dd>
+                  <dt>Close</dt>
+                  <dd className="text-right">{candle.close}</dd>
+                </dl>
+              </div>
+            )
+          }}
+        </TradingChart.Tooltip>
+      </TradingChart.Candle>
+    </TradingChart.Root>
+  ),
+}
+
+function SwitchableExample(props: ComponentProps<typeof TradingChart.Root>) {
+  const [view, setView] = useState<"line" | "candle">("line")
 
   return (
     <div className="grid gap-4">
@@ -128,28 +157,28 @@ function SwitchableExample(props: ChartProps) {
           aria-pressed={view === "line"}
           onClick={() => setView("line")}
         >
-          라인
+          Line
         </Button>
         <Button
-          variant={view === "candlestick" ? "default" : "outline"}
-          aria-pressed={view === "candlestick"}
-          onClick={() => setView("candlestick")}
+          variant={view === "candle" ? "default" : "outline"}
+          aria-pressed={view === "candle"}
+          onClick={() => setView("candle")}
         >
-          캔들
+          Candle
         </Button>
       </div>
-      <Chart {...props} ref={fitContent}>
+      <TradingChart.Root {...props}>
         {view === "line" ? (
-          <Line data={points} options={{ color: "var(--primary)", lineWidth: 2 }} />
+          <TradingChart.Line data={points} />
         ) : (
-          <Candlestick data={candles} options={candleOptions} />
+          <TradingChart.Candle data={candles} />
         )}
-      </Chart>
+      </TradingChart.Root>
     </div>
   )
 }
 
 export const Switchable: Story = {
-  name: "라인·캔들 전환",
+  name: "Line · Candle 전환",
   render: (args) => <SwitchableExample {...args} />,
 }

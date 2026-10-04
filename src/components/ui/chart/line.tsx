@@ -1,73 +1,73 @@
 "use client"
 
+import { isEqual } from "es-toolkit"
 import {
   LineSeries,
   type ISeriesApi,
   type LineData,
   type LineSeriesPartialOptions,
-  type Time,
   type WhitespaceData,
 } from "lightweight-charts"
-import { use, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react"
+import {
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from "react"
+import { usePreservedReference } from "react-simplikit"
 
-import { ChartContext } from "./chart-context"
 import { resolveCssColors } from "./color"
+import { TradingSeriesProvider, useTradingChart } from "./context"
 
-export type LineApi = ISeriesApi<"Line">
-
-export type LineProps = {
-  ref?: Ref<LineApi | null>
-  data: (LineData<Time> | WhitespaceData<Time>)[]
+export type TradingChartLineProps = {
+  ref?: Ref<ISeriesApi<"Line"> | null>
+  data: (LineData | WhitespaceData)[]
   options?: LineSeriesPartialOptions
+  children?: ReactNode
 }
 
-export function Line({ ref, data, options }: LineProps) {
-  const context = use(ChartContext)
-  const initialData = useRef(data)
-  const initialOptions = useRef(options)
-  const [line, setLine] = useState<LineApi | null>(null)
+const defaultOptions = { color: "var(--primary)", lineWidth: 2 } satisfies LineSeriesPartialOptions
 
-  useLayoutEffect(() => {
-    if (!context) {
-      return
-    }
+export function TradingChartLine({ ref, data, options, children }: TradingChartLineProps) {
+  const { chart, container, lifecycle } = useTradingChart()
+  const [series, setSeries] = useState<ISeriesApi<"Line"> | null>(null)
+  const initial = useRef({ data, options })
+  const stableOptions = usePreservedReference(options ?? {}, isEqual)
 
-    const nextLine = context.chart.addSeries(
-      LineSeries,
-      resolveCssColors(context.root, initialOptions.current),
-    )
-    nextLine.setData(initialData.current)
-    setLine(nextLine)
+  useLayoutEffect(
+    function createLine() {
+      if (lifecycle.removed) return
+      const line = chart.addSeries(
+        LineSeries,
+        resolveCssColors(container, { ...defaultOptions, ...initial.current.options }),
+      )
+      line.setData(initial.current.data)
+      setSeries(line)
 
-    return () => {
-      // oxlint-disable-next-line react/exhaustive-deps -- Read the latest liveness state during cleanup.
-      if (context.alive.current) {
-        context.chart.removeSeries(nextLine)
+      return () => {
+        if (!lifecycle.removed) chart.removeSeries(line)
       }
-    }
-  }, [context])
+    },
+    [chart, container, lifecycle],
+  )
 
-  useLayoutEffect(() => {
-    if (!line) {
-      return
-    }
+  useLayoutEffect(
+    function updateData() {
+      if (!lifecycle.removed) series?.setData(data)
+    },
+    [data, series, lifecycle],
+  )
 
-    line.setData(data)
-  }, [data, line])
+  useLayoutEffect(
+    function updateOptions() {
+      if (!lifecycle.removed) series?.applyOptions(resolveCssColors(container, stableOptions))
+    },
+    [container, series, stableOptions, lifecycle],
+  )
 
-  useLayoutEffect(() => {
-    if (!context || !line || !options) {
-      return
-    }
+  useImperativeHandle<typeof series, typeof series>(ref, () => series, [series])
 
-    line.applyOptions(resolveCssColors(context.root, options))
-  }, [context, line, options])
-
-  useImperativeHandle<LineApi | null, LineApi | null>(ref, () => line, [line])
-
-  if (!context) {
-    throw new Error("Line must be rendered inside Chart.")
-  }
-
-  return null
+  return series ? <TradingSeriesProvider series={series}>{children}</TradingSeriesProvider> : null
 }
