@@ -180,11 +180,8 @@ export function StockMaterialsSection() {
               <div className="flex flex-col gap-1 typo-caption text-muted-foreground">
                 <p>
                   최근 30일 · 최신순 최대 100건 · {disclosures.data.data.source}
-                  {disclosures.data.data.windowPrecision === "DATE_EXPANDED"
-                    ? " · 접수일 기준"
-                    : disclosures.data.data.windowPrecision === "EXACT"
-                      ? " · 미국 동부 시각"
-                      : ""}
+                  {disclosures.data.data.windowPrecision === "DATE_EXPANDED" && " · 접수일 기준"}
+                  {disclosures.data.data.windowPrecision === "EXACT" && " · 미국 동부 시각"}
                 </p>
                 <p>공시 요약은 제공되지 않습니다.</p>
                 {disclosures.data.data.fetchedAt && (
@@ -197,68 +194,73 @@ export function StockMaterialsSection() {
                   <p>확인된 공시만 표시합니다. 조회 기간의 일부 공시가 누락됐을 수 있습니다.</p>
                 )}
               </div>
-              {disclosures.data.data.coverage === "UNMAPPED" ? (
+              {disclosures.data.data.coverage === "UNMAPPED" && (
                 <p className="py-8 typo-body-sm text-muted-foreground">
                   종목과 공시 제공 기관의 법인 정보를 연결하지 못했습니다.
                 </p>
-              ) : disclosures.data.data.items.length === 0 ? (
-                <p className="py-8 typo-body-sm text-muted-foreground">조회된 공시가 없습니다.</p>
-              ) : (
-                <ul className="flex flex-col gap-5">
-                  <Separated
-                    by={
-                      <li aria-hidden="true">
-                        <Separator />
-                      </li>
-                    }
-                  >
-                    {disclosures.data.data.items.map((filing, index) => (
-                      <li
-                        key={`${filing.provider}-${filing.providerDocumentId}-${index}`}
-                        className="flex min-w-0 flex-col gap-2"
-                      >
-                        <h3 className="typo-heading-xs wrap-break-word">
-                          {filing.url ? (
-                            <a
-                              className="hover:text-primary hover:underline"
-                              href={filing.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {filing.title}
-                              <ExternalLink
-                                aria-hidden="true"
-                                className="ml-1 inline size-3.5 align-baseline"
-                              />
-                              <span className="sr-only"> (새 창)</span>
-                            </a>
-                          ) : (
-                            filing.title
-                          )}
-                        </h3>
-                        <p className="typo-caption text-muted-foreground">
-                          {filing.provider}
-                          {filing.formLabel && ` · ${filing.formLabel}`}
-                          {filing.publishedAt ? (
-                            <>
-                              {" "}
-                              · 접수 시각{" "}
-                              <time dateTime={filing.publishedAt}>
-                                {materialTime(filing.publishedAt, disclosures.data.data.country)}
-                              </time>
-                            </>
-                          ) : filing.filedDate ? (
-                            <>
-                              {" "}
-                              · 접수일 <time dateTime={filing.filedDate}>{filing.filedDate}</time>
-                            </>
-                          ) : null}
-                        </p>
-                      </li>
-                    ))}
-                  </Separated>
-                </ul>
               )}
+              {disclosures.data.data.coverage !== "UNMAPPED" &&
+                disclosures.data.data.items.length === 0 && (
+                  <p className="py-8 typo-body-sm text-muted-foreground">조회된 공시가 없습니다.</p>
+                )}
+              {disclosures.data.data.coverage !== "UNMAPPED" &&
+                disclosures.data.data.items.length > 0 && (
+                  <ul className="flex flex-col gap-5">
+                    <Separated
+                      by={
+                        <li aria-hidden="true">
+                          <Separator />
+                        </li>
+                      }
+                    >
+                      {disclosures.data.data.items.map((filing, index) => (
+                        <li
+                          key={`${filing.provider}-${filing.providerDocumentId}-${index}`}
+                          className="flex min-w-0 flex-col gap-2"
+                        >
+                          <h3 className="typo-heading-xs wrap-break-word">
+                            {filing.url ? (
+                              <a
+                                className="hover:text-primary hover:underline"
+                                href={filing.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {filing.title}
+                                <ExternalLink
+                                  aria-hidden="true"
+                                  className="ml-1 inline size-3.5 align-baseline"
+                                />
+                                <span className="sr-only"> (새 창)</span>
+                              </a>
+                            ) : (
+                              filing.title
+                            )}
+                          </h3>
+                          <p className="typo-caption text-muted-foreground">
+                            {filing.provider}
+                            {filing.formLabel && ` · ${filing.formLabel}`}
+                            {filing.publishedAt && (
+                              <>
+                                {" "}
+                                · 접수 시각{" "}
+                                <time dateTime={filing.publishedAt}>
+                                  {materialTime(filing.publishedAt, disclosures.data.data.country)}
+                                </time>
+                              </>
+                            )}
+                            {!filing.publishedAt && filing.filedDate && (
+                              <>
+                                {" "}
+                                · 접수일 <time dateTime={filing.filedDate}>{filing.filedDate}</time>
+                              </>
+                            )}
+                          </p>
+                        </li>
+                      ))}
+                    </Separated>
+                  </ul>
+                )}
             </div>
           )}
         </Tabs.Content>
