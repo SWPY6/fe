@@ -28,7 +28,12 @@ export function useGlobalUrlState() {
   const navigate = useNavigate()
 
   const setState = <Key extends keyof GlobalUrlState>(updates: Pick<GlobalUrlState, Key>) =>
-    navigate({ to: ".", search: (previous) => ({ ...previous, ...updates }), replace: true })
+    navigate({
+      to: ".",
+      search: (previous) => ({ ...previous, ...updates }),
+      replace: true,
+      resetScroll: false,
+    })
 
   return [state, setState] as const
 }
