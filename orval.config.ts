@@ -60,6 +60,24 @@ export default defineConfig({
                 url: "https://example.com/mock-news",
               },
             },
+            Item: {
+              properties: {
+                title: () => faker.lorem.sentence(5),
+                summary: () => faker.lorem.sentence(),
+                source: "example.com",
+                publisherName: "모의 시장 뉴스",
+                timestampBasis: "NAVER_PROVIDED",
+                url: "https://example.com/mock-news",
+              },
+            },
+            StockDisclosureItem: {
+              properties: {
+                title: "모의 경영 공시",
+                summary: null,
+                summaryStatus: "UNAVAILABLE",
+                url: "https://example.com/mock-disclosures",
+              },
+            },
           },
         },
         query: {

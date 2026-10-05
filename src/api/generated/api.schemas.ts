@@ -23,7 +23,35 @@ export interface ErrorResponse {
 }
 
 /**
- * 종목 식별 정보. 산업(industries)은 추후 추가된다
+ * 산업 코드
+ */
+export type IndustryCode = typeof IndustryCode[keyof typeof IndustryCode];
+
+
+export const IndustryCode = {
+  AUTOMOBILE: 'AUTOMOBILE',
+  CONSTRUCTION: 'CONSTRUCTION',
+  TRANSPORT: 'TRANSPORT',
+  RETAIL: 'RETAIL',
+  FOOD_BEVERAGE: 'FOOD_BEVERAGE',
+  TELECOM: 'TELECOM',
+  STEEL: 'STEEL',
+  ENERGY: 'ENERGY',
+  CHEMICAL: 'CHEMICAL',
+} as const;
+
+/**
+ * 종목에 연결된 산업
+ */
+export interface Industry {
+  /** 산업 코드 */
+  code?: IndustryCode;
+  /** 산업 한글 표시명 */
+  name?: string;
+}
+
+/**
+ * 종목 식별 정보
  */
 export interface Profile {
   /** 종목명 */
@@ -35,15 +63,17 @@ export interface Profile {
      * @nullable
      */
   logoUrl?: string | null;
+  /** 연결된 산업. 한글 표시명 가나다순이며 연결이 없으면 빈 배열이다 */
+  industries?: Industry[];
 }
 
 /**
- * 시장 국가
+ * 종목 시장의 국가(KR/US)
  */
-export type SummaryMarket = typeof SummaryMarket[keyof typeof SummaryMarket];
+export type SummaryCountry = typeof SummaryCountry[keyof typeof SummaryCountry];
 
 
-export const SummaryMarket = {
+export const SummaryCountry = {
   KR: 'KR',
   US: 'US',
 } as const;
@@ -68,8 +98,8 @@ export interface Summary {
   stockId?: number;
   /** 종목 식별 정보 */
   profile?: Profile;
-  /** 시장 국가 */
-  market?: SummaryMarket;
+  /** 종목 시장의 국가(KR/US) */
+  country?: SummaryCountry;
   /** 가격 통화 */
   currency?: SummaryCurrency;
   /** 시장 현지 시간대(IANA) */
@@ -156,6 +186,239 @@ export interface StockQuoteResponse {
 
 export interface ApiResultStockQuoteResponse {
   data: StockQuoteResponse;
+}
+
+/**
+ * 종목 시장의 국가(KR/US)
+ */
+export type StockNewsResponseCountry = typeof StockNewsResponseCountry[keyof typeof StockNewsResponseCountry];
+
+
+export const StockNewsResponseCountry = {
+  KR: 'KR',
+  US: 'US',
+} as const;
+
+/**
+ * 조회 기간
+ */
+export interface Window {
+  from?: string;
+  to?: string;
+}
+
+/**
+ * ORIGINAL: 언론사 원문, NAVER: 원문이 없어 대신 준 네이버 뉴스 링크
+ */
+export type ItemLinkKind = typeof ItemLinkKind[keyof typeof ItemLinkKind];
+
+
+export const ItemLinkKind = {
+  ORIGINAL: 'ORIGINAL',
+  NAVER: 'NAVER',
+} as const;
+
+/**
+ * 뉴스 기사
+ */
+export interface Item {
+  /** 원문 URL 기반 문서 ID. 같은 원문이면 같은 값 */
+  documentId: string;
+  /** 기사 제목(HTML 제거된 일반 텍스트) */
+  title: string;
+  /**
+     * 네이버 검색 요약(일반 텍스트). 기사 전체 요약이 아니다. 없으면 null
+     * @nullable
+     */
+  summary: string | null;
+  /** 표시용 출처. 원문 호스트 */
+  source: string;
+  /**
+     * 언론사명. 서버 사전에 없는 도메인이면 null
+     * @nullable
+     */
+  publisherName: string | null;
+  /** 네이버가 제공한 기사 시각. 원문 최초 발표 시각이라고 단정하지 않는다 */
+  publishedAt: string;
+  /** publishedAt의 의미. 항상 NAVER_PROVIDED */
+  timestampBasis: string;
+  /** 기사 링크 */
+  url: string;
+  /** ORIGINAL: 언론사 원문, NAVER: 원문이 없어 대신 준 네이버 뉴스 링크 */
+  linkKind: ItemLinkKind;
+}
+
+/**
+ * 종목 관련 뉴스. 함께 확인된 맥락이며 가격 변동의 원인으로 단정하지 않는다
+ */
+export interface StockNewsResponse {
+  /** 종목 ID */
+  stockId: number;
+  /** 종목 시장의 국가(KR/US) */
+  country: StockNewsResponseCountry;
+  /** 적용한 조회 기간. from 제외, to 포함 */
+  window: Window;
+  /** 네이버에서 검색 결과를 받은 시각(시장 현지 시각). 최대 10분 캐시라 현재보다 과거일 수 있다 */
+  fetchedAt: string;
+  /** 기간 시작까지 검색 결과를 다 훑었는지. false면 기간 앞쪽 기사가 빠졌을 수 있다 */
+  windowCovered: boolean;
+  /** items 건수(필터·중복 제거 후, 최대 20). 네이버 검색 전체 건수가 아니다 */
+  total: number;
+  /**
+     * 최신순 기사. 없으면 빈 배열
+     * @minItems 0
+     * @maxItems 20
+     */
+  items: Item[];
+}
+
+export interface ApiResultStockNewsResponse {
+  data: StockNewsResponse;
+}
+
+/**
+ * 종목 시장의 국가(KR/US)
+ */
+export type StockDisclosureResponseCountry = typeof StockDisclosureResponseCountry[keyof typeof StockDisclosureResponseCountry];
+
+
+export const StockDisclosureResponseCountry = {
+  KR: 'KR',
+  US: 'US',
+} as const;
+
+/**
+ * 공시 공급자. KR=DART, US=SEC
+ */
+export type StockDisclosureResponseSource = typeof StockDisclosureResponseSource[keyof typeof StockDisclosureResponseSource];
+
+
+export const StockDisclosureResponseSource = {
+  DART: 'DART',
+  SEC: 'SEC',
+} as const;
+
+/**
+ * DATE_EXPANDED(DART): 접수 날짜만 있어 기간 양 끝 날짜 전체를 포함했다. EXACT(SEC): 접수 시각으로 기간을 걸렀다(시각이 없는 건만 날짜로 포함). 공급자를 조회하지 않았으면 null
+ * @nullable
+ */
+export type StockDisclosureResponseWindowPrecision = typeof StockDisclosureResponseWindowPrecision[keyof typeof StockDisclosureResponseWindowPrecision] | null;
+
+
+export const StockDisclosureResponseWindowPrecision = {
+  DATE_EXPANDED: 'DATE_EXPANDED',
+  EXACT: 'EXACT',
+} as const;
+
+/**
+ * COMPLETE: 요청 기간의 공시를 다 받음(0건이면 정말 없음), PARTIAL: 최신 100건만 받았거나 과거 이력을 다 보지 못해 요청 기간에 더 있을 수 있음, UNMAPPED: 종목을 공급자 법인에 연결하지 못함(items가 비어 있어도 공시 0건이 아니다)
+ */
+export type StockDisclosureResponseCoverage = typeof StockDisclosureResponseCoverage[keyof typeof StockDisclosureResponseCoverage];
+
+
+export const StockDisclosureResponseCoverage = {
+  COMPLETE: 'COMPLETE',
+  PARTIAL: 'PARTIAL',
+  UNMAPPED: 'UNMAPPED',
+} as const;
+
+export type StockDisclosureItemProvider = typeof StockDisclosureItemProvider[keyof typeof StockDisclosureItemProvider];
+
+
+export const StockDisclosureItemProvider = {
+  DART: 'DART',
+  SEC: 'SEC',
+} as const;
+
+export type StockDisclosureItemType = typeof StockDisclosureItemType[keyof typeof StockDisclosureItemType];
+
+
+export const StockDisclosureItemType = {
+  DISCLOSURE: 'DISCLOSURE',
+} as const;
+
+export type StockDisclosureItemSummaryStatus = typeof StockDisclosureItemSummaryStatus[keyof typeof StockDisclosureItemSummaryStatus];
+
+
+export const StockDisclosureItemSummaryStatus = {
+  UNAVAILABLE: 'UNAVAILABLE',
+} as const;
+
+export interface StockDisclosureItem {
+  provider: StockDisclosureItemProvider;
+  providerDocumentId: string;
+  type: StockDisclosureItemType;
+  title: string;
+  /** @nullable */
+  formType: string | null;
+  /** @nullable */
+  formLabel: string | null;
+  issuerName: string;
+  /** @nullable */
+  filerName: string | null;
+  /** @nullable */
+  remark: string | null;
+  filedDate: string;
+  /** @nullable */
+  publishedAt: string | null;
+  datePrecision: string;
+  timeBasis: string;
+  /**
+     * 현재 요약은 제공하지 않으며 summaryStatus=UNAVAILABLE일 때 null이다.
+     * @nullable
+     */
+  summary: string | null;
+  summaryStatus: StockDisclosureItemSummaryStatus;
+  url: string;
+  linkKind: string;
+}
+
+/**
+ * 접수일 조회 범위(양 끝 포함)
+ */
+export interface FiledDateRange {
+  from?: string;
+  to?: string;
+}
+
+/**
+ * 종목 공시. 함께 확인된 맥락이며 가격 변동의 원인으로 단정하지 않는다
+ */
+export interface StockDisclosureResponse {
+  /** 종목 ID */
+  stockId: number;
+  /** 종목 시장의 국가(KR/US) */
+  country: StockDisclosureResponseCountry;
+  /** 공시 공급자. KR=DART, US=SEC */
+  source: StockDisclosureResponseSource;
+  /** 요청 기간. from 제외, to 포함 */
+  window: Window;
+  /**
+     * DATE_EXPANDED(DART): 접수 날짜만 있어 기간 양 끝 날짜 전체를 포함했다. EXACT(SEC): 접수 시각으로 기간을 걸렀다(시각이 없는 건만 날짜로 포함). 공급자를 조회하지 않았으면 null
+     * @nullable
+     */
+  windowPrecision: StockDisclosureResponseWindowPrecision;
+  /**
+     * 공급자에서 목록을 받은 시각(시장 현지 시각). 최대 10분 캐시라 현재보다 과거일 수 있다. 공급자를 조회하지 않았으면 null
+     * @nullable
+     */
+  fetchedAt: string | null;
+  /** COMPLETE: 요청 기간의 공시를 다 받음(0건이면 정말 없음), PARTIAL: 최신 100건만 받았거나 과거 이력을 다 보지 못해 요청 기간에 더 있을 수 있음, UNMAPPED: 종목을 공급자 법인에 연결하지 못함(items가 비어 있어도 공시 0건이 아니다) */
+  coverage: StockDisclosureResponseCoverage;
+  /** items 건수(기간 필터·중복 제거 후). 공급자 전체 건수가 아니다 */
+  total: number;
+  /**
+     * 접수일 → 접수 시각 → 원문 ID 내림차순. 시각이 없는 같은 날짜 안의 순서는 실제 접수 순서를 보장하지 않는다
+     * @minItems 0
+     * @maxItems 100
+     */
+  items: StockDisclosureItem[];
+  /** 공급자 접수일 조회 범위. 공급자를 조회하지 않으면 null이다. */
+  filedDateRange: FiledDateRange | null;
+}
+
+export interface ApiResultStockDisclosureResponse {
+  data: StockDisclosureResponse;
 }
 
 /**
@@ -563,6 +826,28 @@ export interface StockListResponse {
 export interface ApiResultStockListResponse {
   data: StockListResponse;
 }
+
+export type NewsParams = {
+/**
+ * 기간 시작(제외). 예: 2026-09-23T14:00:00+09:00. 오프셋 필수, URL에서 +는 %2B로 인코딩. to와 함께 주거나 둘 다 생략(최근 7일)
+ */
+from?: string;
+/**
+ * 기간 끝(포함). 예: 2026-09-30T14:00:00+09:00. 오프셋 필수, 미래 불가, from과 최대 7일
+ */
+to?: string;
+};
+
+export type DisclosuresParams = {
+/**
+ * 기간 시작(제외). 예: 2026-09-02T14:00:00+09:00. 오프셋 필수, URL에서 +는 %2B로 인코딩. to와 함께 주거나 둘 다 생략(최근 30일)
+ */
+from?: string;
+/**
+ * 기간 끝(포함). 예: 2026-10-02T14:00:00+09:00. 오프셋 필수, 미래 불가, from과 최대 90일
+ */
+to?: string;
+};
 
 export type ChartParams = {
 /**

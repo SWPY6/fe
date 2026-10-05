@@ -16,12 +16,20 @@
       "description": "종목 상세 화면의 가격 차트와 거래량 차트"
     },
     {
+      "name": "종목 공시",
+      "description": "종목 상세 화면의 관련 공시"
+    },
+    {
       "name": "종목 현재가",
       "description": "종목 상세 화면의 현재가와 주요 지표"
     },
     {
       "name": "시장 지표",
       "description": "시장 요약 화면의 지표 카드"
+    },
+    {
+      "name": "종목 뉴스",
+      "description": "종목 상세 화면의 관련 뉴스"
     },
     {
       "name": "종목 기본정보",
@@ -173,6 +181,250 @@
                     "name": "MarketDataUnavailableException",
                     "code": "P007",
                     "message": "시세 정보를 불러올 수 없습니다."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-contract-source": "backend-spec"
+      }
+    },
+    "/api/v1/stocks/{stockId}/news": {
+      "get": {
+        "tags": ["종목 뉴스"],
+        "summary": "종목 관련 뉴스 조회",
+        "description": "네이버 뉴스 검색에서 제목·요약에 종목명이 들어간 기사를 최신순 최대 20건 준다. 검색 결과는 종목별로 최대 10분 캐시한다. publishedAt은 네이버 제공 시각이므로 화면에 '최초 발표'로 표기하지 않는다. 가격 변동의 원인으로 단정하지 않는다는 안내를 함께 표시한다.",
+        "operationId": "news",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "description": "종목 ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "기간 시작(제외). 예: 2026-09-23T14:00:00+09:00. 오프셋 필수, URL에서 +는 %2B로 인코딩. to와 함께 주거나 둘 다 생략(최근 7일)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "기간 끝(포함). 예: 2026-09-30T14:00:00+09:00. 오프셋 필수, 미래 불가, from과 최대 7일",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공. 관련 기사가 없으면 items=[], total=0",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultStockNewsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "P001 stockId가 정수가 아님, from·to 중 하나만 있음, 오프셋 없는 시각, from ≥ to, 미래 to, 7일 초과 기간",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "InvalidInputValueException",
+                    "code": "P001",
+                    "message": "잘못된 입력값입니다."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "P002 없는 종목",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "StockNotFoundException",
+                    "code": "P002",
+                    "message": "주식을 찾을 수 없습니다."
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "P008 뉴스 공급자 오류(네이버 실패·인증 오류·쓸 수 없는 응답)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "NewsUnavailableException",
+                    "code": "P008",
+                    "message": "뉴스를 불러올 수 없습니다."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "P009 뉴스 조회 제한(일일 호출 한도 소진, 캐시 저장소 접근 불가). 즉시 재시도하지 않는다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "NewsQuotaExceededException",
+                    "code": "P009",
+                    "message": "뉴스 조회가 일시적으로 제한되었습니다."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-contract-source": "backend-spec"
+      }
+    },
+    "/api/v1/stocks/{stockId}/disclosures": {
+      "get": {
+        "tags": ["종목 공시"],
+        "summary": "종목 공시 조회",
+        "description": "종목 법인의 공시를 최신순으로 최대 100건 준다. 국내 종목은 DART, 미국 종목은 SEC EDGAR다. DART는 접수 날짜만 주므로 기간 양 끝 날짜 전체를 조회하고(windowPrecision=DATE_EXPANDED) publishedAt은 null이다. 화면에는 '접수일 기준'으로 표기한다. SEC는 접수 시각(publishedAt)으로 기간을 거른다(windowPrecision=EXACT). SEC 제목은 영문 원문이며, formLabel에 Form 한글 라벨(고정 사전)을 준다. 요약은 제공하지 않는다(summaryStatus=UNAVAILABLE). 목록은 최대 10분 캐시한다. 법인을 찾지 못한 종목은 coverage=UNMAPPED이며 공시 0건(coverage=COMPLETE, total=0)과 구분한다. 가격 변동의 원인으로 단정하지 않는다는 안내를 함께 표시한다.",
+        "operationId": "disclosures",
+        "parameters": [
+          {
+            "name": "stockId",
+            "in": "path",
+            "description": "종목 ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "기간 시작(제외). 예: 2026-09-02T14:00:00+09:00. 오프셋 필수, URL에서 +는 %2B로 인코딩. to와 함께 주거나 둘 다 생략(최근 30일)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "기간 끝(포함). 예: 2026-10-02T14:00:00+09:00. 오프셋 필수, 미래 불가, from과 최대 90일",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공. 공시가 없으면 items=[], total=0, coverage=COMPLETE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultStockDisclosureResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "P001 stockId가 양의 정수가 아님, from·to 중 하나만 있음, 오프셋 없는 시각, from ≥ to, 미래 to, 90일 초과 기간",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "InvalidInputValueException",
+                    "code": "P001",
+                    "message": "잘못된 입력값입니다."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "P002 없는 종목",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "StockNotFoundException",
+                    "code": "P002",
+                    "message": "주식을 찾을 수 없습니다."
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "P010 공시 공급자 오류(DART·SEC 실패, 인증 오류·SEC 접근 거부, 쓸 수 없는 응답, 법인 매핑 파일 수신 실패)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "DisclosureUnavailableException",
+                    "code": "P010",
+                    "message": "공시를 불러올 수 없습니다."
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "P011 공시 조회 제한(DART 일일·SEC 초당 호출 한도, 공급자 호출 제한·점검, 캐시 저장소 접근 불가, 법인 매핑 최초 수신 중). 즉시 재시도하지 않는다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "name": "DisclosureQuotaExceededException",
+                    "code": "P011",
+                    "message": "공시 조회가 일시적으로 제한되었습니다."
                   }
                 }
               }
@@ -622,9 +874,36 @@
         },
         "required": ["data"]
       },
+      "Industry": {
+        "type": "object",
+        "description": "종목에 연결된 산업",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "산업 코드",
+            "enum": [
+              "AUTOMOBILE",
+              "CONSTRUCTION",
+              "TRANSPORT",
+              "RETAIL",
+              "FOOD_BEVERAGE",
+              "TELECOM",
+              "STEEL",
+              "ENERGY",
+              "CHEMICAL"
+            ],
+            "example": "AUTOMOBILE"
+          },
+          "name": {
+            "type": "string",
+            "description": "산업 한글 표시명",
+            "example": "자동차"
+          }
+        }
+      },
       "Profile": {
         "type": "object",
-        "description": "종목 식별 정보. 산업(industries)은 추후 추가된다",
+        "description": "종목 식별 정보",
         "properties": {
           "name": {
             "type": "string",
@@ -640,6 +919,13 @@
             "type": ["string", "null"],
             "description": "로고 이미지 URL. 없으면 null이며 프론트가 대체 이미지를 쓴다",
             "example": "https://example.com/logo/005930.png"
+          },
+          "industries": {
+            "type": "array",
+            "description": "연결된 산업. 한글 표시명 가나다순이며 연결이 없으면 빈 배열이다",
+            "items": {
+              "$ref": "#/components/schemas/Industry"
+            }
           }
         }
       },
@@ -657,9 +943,9 @@
             "$ref": "#/components/schemas/Profile",
             "description": "종목 식별 정보"
           },
-          "market": {
+          "country": {
             "type": "string",
-            "description": "시장 국가",
+            "description": "종목 시장의 국가(KR/US)",
             "enum": ["KR", "US"],
             "example": "KR"
           },
@@ -790,6 +1076,253 @@
             "description": "주요 지표"
           }
         }
+      },
+      "ApiResultStockNewsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/StockNewsResponse"
+          }
+        },
+        "required": ["data"]
+      },
+      "Item": {
+        "type": "object",
+        "description": "뉴스 기사",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "원문 URL 기반 문서 ID. 같은 원문이면 같은 값",
+            "example": "3f2a9c01b7d4e865"
+          },
+          "title": {
+            "type": "string",
+            "description": "기사 제목(HTML 제거된 일반 텍스트)",
+            "example": "삼성전자, HBM 공급 확대"
+          },
+          "summary": {
+            "type": ["string", "null"],
+            "description": "네이버 검색 요약(일반 텍스트). 기사 전체 요약이 아니다. 없으면 null",
+            "example": "삼성전자가 HBM 공급을 늘린다"
+          },
+          "source": {
+            "type": "string",
+            "description": "표시용 출처. 원문 호스트",
+            "example": "news.mt.co.kr"
+          },
+          "publisherName": {
+            "type": ["string", "null"],
+            "description": "언론사명. 서버 사전에 없는 도메인이면 null",
+            "example": "머니투데이"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "네이버가 제공한 기사 시각. 원문 최초 발표 시각이라고 단정하지 않는다",
+            "example": "2026-09-30T09:12:00+09:00"
+          },
+          "timestampBasis": {
+            "type": "string",
+            "description": "publishedAt의 의미. 항상 NAVER_PROVIDED",
+            "example": "NAVER_PROVIDED"
+          },
+          "url": {
+            "type": "string",
+            "description": "기사 링크",
+            "example": "https://news.mt.co.kr/mtview.php?no=2026093009120012345"
+          },
+          "linkKind": {
+            "type": "string",
+            "description": "ORIGINAL: 언론사 원문, NAVER: 원문이 없어 대신 준 네이버 뉴스 링크",
+            "enum": ["ORIGINAL", "NAVER"],
+            "example": "ORIGINAL"
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "summary",
+          "source",
+          "publisherName",
+          "publishedAt",
+          "timestampBasis",
+          "url",
+          "linkKind"
+        ]
+      },
+      "StockNewsResponse": {
+        "type": "object",
+        "description": "종목 관련 뉴스. 함께 확인된 맥락이며 가격 변동의 원인으로 단정하지 않는다",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "종목 ID",
+            "example": 1
+          },
+          "country": {
+            "type": "string",
+            "description": "종목 시장의 국가(KR/US)",
+            "enum": ["KR", "US"],
+            "example": "KR"
+          },
+          "window": {
+            "$ref": "#/components/schemas/Window",
+            "description": "적용한 조회 기간. from 제외, to 포함"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "네이버에서 검색 결과를 받은 시각(시장 현지 시각). 최대 10분 캐시라 현재보다 과거일 수 있다",
+            "example": "2026-09-30T13:55:12+09:00"
+          },
+          "windowCovered": {
+            "type": "boolean",
+            "description": "기간 시작까지 검색 결과를 다 훑었는지. false면 기간 앞쪽 기사가 빠졌을 수 있다",
+            "example": true
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "description": "items 건수(필터·중복 제거 후, 최대 20). 네이버 검색 전체 건수가 아니다",
+            "example": 1
+          },
+          "items": {
+            "type": "array",
+            "description": "최신순 기사. 없으면 빈 배열",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "minItems": 0,
+            "maxItems": 20
+          }
+        },
+        "required": ["stockId", "country", "window", "fetchedAt", "windowCovered", "total", "items"]
+      },
+      "Window": {
+        "type": "object",
+        "description": "조회 기간",
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-23T14:00:00+09:00"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-30T14:00:00+09:00"
+          }
+        }
+      },
+      "ApiResultStockDisclosureResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/StockDisclosureResponse"
+          }
+        },
+        "required": ["data"]
+      },
+      "FiledDateRange": {
+        "type": "object",
+        "description": "접수일 조회 범위(양 끝 포함)",
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "to": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-02"
+          }
+        }
+      },
+      "StockDisclosureResponse": {
+        "type": "object",
+        "description": "종목 공시. 함께 확인된 맥락이며 가격 변동의 원인으로 단정하지 않는다",
+        "properties": {
+          "stockId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "종목 ID",
+            "example": 1
+          },
+          "country": {
+            "type": "string",
+            "description": "종목 시장의 국가(KR/US)",
+            "enum": ["KR", "US"],
+            "example": "KR"
+          },
+          "source": {
+            "type": "string",
+            "description": "공시 공급자. KR=DART, US=SEC",
+            "enum": ["DART", "SEC"],
+            "example": "DART"
+          },
+          "window": {
+            "$ref": "#/components/schemas/Window",
+            "description": "요청 기간. from 제외, to 포함"
+          },
+          "windowPrecision": {
+            "type": ["string", "null"],
+            "description": "DATE_EXPANDED(DART): 접수 날짜만 있어 기간 양 끝 날짜 전체를 포함했다. EXACT(SEC): 접수 시각으로 기간을 걸렀다(시각이 없는 건만 날짜로 포함). 공급자를 조회하지 않았으면 null",
+            "enum": ["DATE_EXPANDED", "EXACT"],
+            "example": "DATE_EXPANDED"
+          },
+          "fetchedAt": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "description": "공급자에서 목록을 받은 시각(시장 현지 시각). 최대 10분 캐시라 현재보다 과거일 수 있다. 공급자를 조회하지 않았으면 null",
+            "example": "2026-10-02T13:55:12+09:00"
+          },
+          "coverage": {
+            "type": "string",
+            "description": "COMPLETE: 요청 기간의 공시를 다 받음(0건이면 정말 없음), PARTIAL: 최신 100건만 받았거나 과거 이력을 다 보지 못해 요청 기간에 더 있을 수 있음, UNMAPPED: 종목을 공급자 법인에 연결하지 못함(items가 비어 있어도 공시 0건이 아니다)",
+            "enum": ["COMPLETE", "PARTIAL", "UNMAPPED"],
+            "example": "COMPLETE"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "description": "items 건수(기간 필터·중복 제거 후). 공급자 전체 건수가 아니다",
+            "example": 1
+          },
+          "items": {
+            "type": "array",
+            "description": "접수일 → 접수 시각 → 원문 ID 내림차순. 시각이 없는 같은 날짜 안의 순서는 실제 접수 순서를 보장하지 않는다",
+            "items": {
+              "$ref": "#/components/schemas/StockDisclosureItem"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "filedDateRange": {
+            "description": "공급자 접수일 조회 범위. 공급자를 조회하지 않으면 null이다.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiledDateRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "stockId",
+          "country",
+          "source",
+          "window",
+          "windowPrecision",
+          "filedDateRange",
+          "fetchedAt",
+          "coverage",
+          "total",
+          "items"
+        ]
       },
       "ApiResultStockChartResponse": {
         "type": "object",
@@ -1294,6 +1827,88 @@
           }
         }
       },
+      "StockDisclosureItem": {
+        "type": "object",
+        "required": [
+          "provider",
+          "providerDocumentId",
+          "type",
+          "title",
+          "formType",
+          "formLabel",
+          "issuerName",
+          "filerName",
+          "remark",
+          "filedDate",
+          "publishedAt",
+          "datePrecision",
+          "timeBasis",
+          "summary",
+          "summaryStatus",
+          "url",
+          "linkKind"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": ["DART", "SEC"]
+          },
+          "providerDocumentId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["DISCLOSURE"]
+          },
+          "title": {
+            "type": "string"
+          },
+          "formType": {
+            "type": ["string", "null"]
+          },
+          "formLabel": {
+            "type": ["string", "null"]
+          },
+          "issuerName": {
+            "type": "string"
+          },
+          "filerName": {
+            "type": ["string", "null"]
+          },
+          "remark": {
+            "type": ["string", "null"]
+          },
+          "filedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "publishedAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "datePrecision": {
+            "type": "string"
+          },
+          "timeBasis": {
+            "type": "string"
+          },
+          "summary": {
+            "type": ["string", "null"],
+            "description": "현재 요약은 제공하지 않으며 summaryStatus=UNAVAILABLE일 때 null이다."
+          },
+          "summaryStatus": {
+            "type": "string",
+            "enum": ["UNAVAILABLE"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "linkKind": {
+            "type": "string"
+          }
+        }
+      },
       "StockListItem": {
         "x-contract-source": "frontend-proposed",
         "allOf": [
@@ -1377,6 +1992,6 @@
   },
   "x-source": {
     "url": "https://ploutosbe.duckdns.org/v3/api-docs",
-    "fetchedAt": "2026-10-03T14:24:30.866Z"
+    "fetchedAt": "2026-10-04T14:07:36.393Z"
   }
 }

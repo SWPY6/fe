@@ -3,6 +3,108 @@ info:
   title: Frontend API contract adjustments
   version: 1.0.0
 actions:
+  - target: $.components.schemas.Item
+    description: 실제 뉴스 응답에 항상 포함되는 항목 필드. 요약·언론사명은 필수 키지만 null일 수 있다.
+    update:
+      required:
+        [
+          documentId,
+          title,
+          summary,
+          source,
+          publisherName,
+          publishedAt,
+          timestampBasis,
+          url,
+          linkKind,
+        ]
+  - target: $.components.schemas.StockNewsResponse
+    description: 뉴스 응답의 조회 조건·건수·목록을 필수로 지정한다.
+    update:
+      required: [stockId, country, window, fetchedAt, windowCovered, total, items]
+  - target: $.components.schemas.StockNewsResponse.properties.items
+    description: 종목 뉴스는 최대 20건이며 빈 목록도 반환한다.
+    update:
+      minItems: 0
+      maxItems: 20
+  - target: $.components.schemas.StockDisclosureResponse
+    description: 공시 응답의 조회 조건·수집 상태·건수·목록을 필수로 지정한다.
+    update:
+      required:
+        [
+          stockId,
+          country,
+          source,
+          window,
+          windowPrecision,
+          filedDateRange,
+          fetchedAt,
+          coverage,
+          total,
+          items,
+        ]
+  - target: $.components.schemas.StockDisclosureResponse.properties.filedDateRange
+    description: 객체 참조에 type null이 함께 선언된 서버 스키마를 nullable 객체로 보정한다.
+    remove: true
+  - target: $.components.schemas.StockDisclosureResponse.properties
+    update:
+      filedDateRange:
+        description: 공급자 접수일 조회 범위. 공급자를 조회하지 않으면 null이다.
+        anyOf:
+          - $ref: "#/components/schemas/FiledDateRange"
+          - type: "null"
+  - target: $.components.schemas.StockDisclosureResponse.properties.items
+    description: 최대 100건. 뉴스 Item과 충돌한 참조를 실제 공시 응답으로 확인한 별도 타입에 연결한다.
+    update:
+      minItems: 0
+      maxItems: 100
+      items:
+        $ref: "#/components/schemas/StockDisclosureItem"
+  - target: $.components.schemas
+    description: 2026-10-04 실제 KR(9001)·US(9037) 공시 응답으로 확인한 항목. 서버 Item 참조 충돌이 해소되면 제거한다.
+    update:
+      StockDisclosureItem:
+        type: object
+        required:
+          [
+            provider,
+            providerDocumentId,
+            type,
+            title,
+            formType,
+            formLabel,
+            issuerName,
+            filerName,
+            remark,
+            filedDate,
+            publishedAt,
+            datePrecision,
+            timeBasis,
+            summary,
+            summaryStatus,
+            url,
+            linkKind,
+          ]
+        properties:
+          provider: { type: string, enum: [DART, SEC] }
+          providerDocumentId: { type: string }
+          type: { type: string, enum: [DISCLOSURE] }
+          title: { type: string }
+          formType: { type: [string, "null"] }
+          formLabel: { type: [string, "null"] }
+          issuerName: { type: string }
+          filerName: { type: [string, "null"] }
+          remark: { type: [string, "null"] }
+          filedDate: { type: string, format: date }
+          publishedAt: { type: [string, "null"], format: date-time }
+          datePrecision: { type: string }
+          timeBasis: { type: string }
+          summary:
+            type: [string, "null"]
+            description: 현재 요약은 제공하지 않으며 summaryStatus=UNAVAILABLE일 때 null이다.
+          summaryStatus: { type: string, enum: [UNAVAILABLE] }
+          url: { type: string, format: uri }
+          linkKind: { type: string }
   - target: $.components.schemas.Candle
     description: Match required Candle fields to the stock chart API contract.
     update:
