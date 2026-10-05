@@ -70,6 +70,7 @@ export function StockChartSection() {
                       to: end.toISOString().slice(0, 10),
                     }),
                     replace: true,
+                    resetScroll: false,
                   })
                 }}
               >
@@ -84,6 +85,7 @@ export function StockChartSection() {
               navigate({
                 search: (previous) => ({ ...previous, interval: nextInterval }),
                 replace: true,
+                resetScroll: false,
               })
             }}
           >

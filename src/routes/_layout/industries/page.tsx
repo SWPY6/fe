@@ -60,7 +60,10 @@ export function IndustriesPage() {
                     size="sm"
                     variant={filter === value ? "default" : "ghost"}
                     onClick={() =>
-                      navigate({ search: (previous) => ({ ...previous, filter: value }) })
+                      navigate({
+                        search: (previous) => ({ ...previous, filter: value }),
+                        resetScroll: false,
+                      })
                     }
                   >
                     {{ ALL: "전체", RISING: "상승 산업", FALLING: "하락 산업" }[value]}
