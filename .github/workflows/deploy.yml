@@ -37,6 +37,7 @@ jobs:
         run: pnpm build
         env:
           BUILD_VERSION: production-${{ github.run_number }}.${{ github.run_attempt }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
       - name: Run quality checks
         run: pnpm check
