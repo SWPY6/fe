@@ -4,19 +4,14 @@ import { SuspenseQuery } from "@suspensive/react-query"
 import { Link } from "@tanstack/react-router"
 import { Separated } from "react-simplikit"
 
-import {
-  getReadNewsSuspenseQueryOptions,
-  getReadStocksSuspenseQueryOptions,
-} from "@/api/generated/api"
+import { getReadNewsSuspenseQueryOptions } from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Table } from "@/components/ui/table"
 import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
-import { StockSparkline } from "./-components/StockSparkline"
 import { getMarketSummaryQueryOptions } from "./-query/market-summary"
 
 export function RootPage() {
@@ -167,19 +162,27 @@ export function RootPage() {
                             </span>
                             <div className="min-w-0 flex-1">
                               <p className="typo-label-xs text-primary">{industry.displayName}</p>
-                              {industry.news?.map((story, storyIndex) => (
-                                <div key={`${story.url}-${storyIndex}`}>
-                                  <h3 className="mt-2 typo-heading-xs">
-                                    <a href={story.url}>{story.title}</a>
-                                  </h3>
+                              {industry.news?.length ? (
+                                <>
+                                  {industry.news.map((story, storyIndex) => (
+                                    <div key={`${story.url}-${storyIndex}`}>
+                                      <h3 className="mt-2 typo-heading-xs">
+                                        <a href={story.url}>{story.title}</a>
+                                      </h3>
+                                      <p className="mt-2 typo-body-sm text-muted-foreground">
+                                        {story.publisher}
+                                      </p>
+                                    </div>
+                                  ))}
                                   <p className="mt-2 typo-body-sm text-muted-foreground">
-                                    {story.publisher}
+                                    관련 뉴스는 가격 변동의 원인을 의미하지 않습니다.
                                   </p>
-                                </div>
-                              ))}
-                              <p className="mt-2 typo-body-sm text-muted-foreground">
-                                관련 뉴스는 가격 변동의 원인을 의미하지 않습니다.
-                              </p>
+                                </>
+                              ) : (
+                                <p className="mt-2 typo-body-sm text-muted-foreground">
+                                  관련 뉴스가 없습니다.
+                                </p>
+                              )}
                             </div>
                           </li>
                         ))}
@@ -200,111 +203,11 @@ export function RootPage() {
                   <h2 id="market-movers-title" className="typo-section-heading">
                     주요 변동 종목
                   </h2>
-                  <p className="mt-2 typo-body-sm text-muted-foreground">
-                    종목별 현재가, 등락률, 거래량을 비교해 보세요.
-                  </p>
+                  <p className="mt-2 typo-body-sm text-muted-foreground">준비 중입니다.</p>
                 </div>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/movers">전체 보기</Link>
                 </Button>
-              </div>
-              <div>
-                <Table.Root className="min-w-3xl">
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.Head>종목</Table.Head>
-                      <Table.Head className="text-right">현재가</Table.Head>
-                      <Table.Head className="text-right">등락률</Table.Head>
-                      <Table.Head className="text-right">거래량</Table.Head>
-                      <Table.Head className="text-right">최근 종가 흐름</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  <ErrorBoundary
-                    fallback={
-                      <Table.Body>
-                        <Table.Row>
-                          <Table.Cell colSpan={5}>오류가 발생했습니다</Table.Cell>
-                        </Table.Row>
-                      </Table.Body>
-                    }
-                  >
-                    <Suspense
-                      fallback={
-                        <Table.Body>
-                          <Table.Row>
-                            <Table.Cell colSpan={5}>로딩중</Table.Cell>
-                          </Table.Row>
-                        </Table.Body>
-                      }
-                    >
-                      <SuspenseQuery
-                        {...getReadStocksSuspenseQueryOptions({
-                          country: market === "domestic" ? "KR" : "US",
-                          sort: "ALL",
-                          size: 5,
-                        })}
-                      >
-                        {({ data: response }) => (
-                          <Table.Body>
-                            {response.data.items.map((stock) => (
-                              <Table.Row key={stock.stockId} className="h-19">
-                                <Table.Cell>
-                                  <Link
-                                    to="/stocks/$stockId"
-                                    params={{ stockId: String(stock.stockId) }}
-                                    className="block typo-table-label hover:text-primary hover:underline"
-                                  >
-                                    {stock.name}
-                                  </Link>
-                                  <span className="block typo-caption text-muted-foreground">
-                                    {stock.ticker}
-                                  </span>
-                                </Table.Cell>
-                                <Table.Cell className="text-right tabular-nums">
-                                  {stock.price.toLocaleString("ko-KR")} {stock.currency}
-                                </Table.Cell>
-                                <Table.Cell className="text-right">
-                                  <PriceNumber
-                                    value={stock.changeRate}
-                                    format={{
-                                      style: "unit",
-                                      unit: "percent",
-                                      signDisplay: "exceptZero",
-                                    }}
-                                  />
-                                </Table.Cell>
-                                <Table.Cell className="text-right tabular-nums">
-                                  {stock.indicators.volume?.toLocaleString("ko-KR") ?? "—"}
-                                </Table.Cell>
-                                <Table.Cell className="text-right">
-                                  <ErrorBoundary fallback="—">
-                                    <Suspense fallback="—">
-                                      <StockSparkline
-                                        stockId={stock.stockId}
-                                        name={stock.name}
-                                        changeRate={stock.changeRate}
-                                      />
-                                    </Suspense>
-                                  </ErrorBoundary>
-                                </Table.Cell>
-                              </Table.Row>
-                            ))}
-                            {response.data.items.length === 0 && (
-                              <Table.Row>
-                                <Table.Cell
-                                  colSpan={5}
-                                  className="py-12 text-center typo-body-sm text-muted-foreground"
-                                >
-                                  표시할 종목이 없습니다.
-                                </Table.Cell>
-                              </Table.Row>
-                            )}
-                          </Table.Body>
-                        )}
-                      </SuspenseQuery>
-                    </Suspense>
-                  </ErrorBoundary>
-                </Table.Root>
               </div>
             </section>
           </Separated>
