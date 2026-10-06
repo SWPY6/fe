@@ -13,9 +13,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Tabs } from "@/components/ui/tabs"
 
-import stockDisclosuresBones from "./stock-disclosures.bones.json"
-import stockNewsBones from "./stock-news.bones.json"
-
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
 function materialTime(value: string, country: "KR" | "US") {
@@ -41,7 +38,7 @@ export function StockMaterialsSection() {
         </Tabs.List>
         <Tabs.Content value="news" forceMount className="min-w-0 data-[state=inactive]:hidden">
           <ErrorBoundary fallback="오류가 발생했습니다">
-            <BoneSuspense name="stock-news" select="viewport" initialBones={stockNewsBones}>
+            <BoneSuspense select="viewport">
               <SuspenseQuery {...getNewsSuspenseQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">
@@ -116,11 +113,7 @@ export function StockMaterialsSection() {
           className="min-w-0 data-[state=inactive]:hidden"
         >
           <ErrorBoundary fallback="오류가 발생했습니다">
-            <BoneSuspense
-              name="stock-disclosures"
-              select="viewport"
-              initialBones={stockDisclosuresBones}
-            >
+            <BoneSuspense select="viewport">
               <SuspenseQuery {...getDisclosuresSuspenseQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">

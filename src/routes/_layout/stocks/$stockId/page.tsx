@@ -3,7 +3,6 @@ import { SuspenseQuery } from "@suspensive/react-query"
 import { Link, getRouteApi } from "@tanstack/react-router"
 import { BoneSuspense } from "boneyard-js/react"
 import { Star } from "lucide-react"
-import type { CSSProperties } from "react"
 import { Separated, useStorageState } from "react-simplikit"
 
 import { getQuoteSuspenseQueryOptions, getSummarySuspenseQueryOptions } from "@/api/generated/api"
@@ -11,8 +10,6 @@ import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
-import stockQuoteBones from "./-components/stock-quote.bones.json"
-import stockSummaryBones from "./-components/stock-summary.bones.json"
 import { StockChartSection } from "./-components/StockChartSection"
 import { StockMaterialsSection } from "./-components/StockMaterialsSection"
 
@@ -57,25 +54,9 @@ export function StockPage() {
           aria-label="종목 요약 정보"
           className="flex flex-wrap items-center gap-x-12 gap-y-5"
         >
-          <div
-            style={
-              {
-                "--loading-width": `${stockSummaryBones.breakpoints[375].width}px`,
-                "--loading-width-sm": `${stockSummaryBones.breakpoints[640].width}px`,
-                "--loading-width-md": `${stockSummaryBones.breakpoints[768].width}px`,
-                "--loading-width-lg": `${stockSummaryBones.breakpoints[1024].width}px`,
-                "--loading-width-xl": `${stockSummaryBones.breakpoints[1280].width}px`,
-              } as CSSProperties
-            }
-            className="has-aria-busy:w-(--loading-width) has-aria-busy:max-w-full sm:has-aria-busy:w-(--loading-width-sm) md:has-aria-busy:w-(--loading-width-md) lg:has-aria-busy:w-(--loading-width-lg) xl:has-aria-busy:w-(--loading-width-xl)"
-          >
+          <div className="has-aria-busy:w-(--loading-width) has-aria-busy:max-w-full sm:has-aria-busy:w-(--loading-width-sm) md:has-aria-busy:w-(--loading-width-md) lg:has-aria-busy:w-(--loading-width-lg) xl:has-aria-busy:w-(--loading-width-xl)">
             <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
-              <BoneSuspense
-                name="stock-summary"
-                className="w-full"
-                select="viewport"
-                initialBones={stockSummaryBones}
-              >
+              <BoneSuspense className="w-full" select="viewport">
                 <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
                   {({ data: response }) => (
                     <>
@@ -95,25 +76,9 @@ export function StockPage() {
               </BoneSuspense>
             </ErrorBoundary>
           </div>
-          <div
-            style={
-              {
-                "--loading-width": `${stockQuoteBones.breakpoints[375].width}px`,
-                "--loading-width-sm": `${stockQuoteBones.breakpoints[640].width}px`,
-                "--loading-width-md": `${stockQuoteBones.breakpoints[768].width}px`,
-                "--loading-width-lg": `${stockQuoteBones.breakpoints[1024].width}px`,
-                "--loading-width-xl": `${stockQuoteBones.breakpoints[1280].width}px`,
-              } as CSSProperties
-            }
-            className="has-aria-busy:w-(--loading-width) has-aria-busy:max-w-full sm:has-aria-busy:w-(--loading-width-sm) md:has-aria-busy:w-(--loading-width-md) lg:has-aria-busy:w-(--loading-width-lg) xl:has-aria-busy:w-(--loading-width-xl)"
-          >
+          <div className="has-aria-busy:w-(--loading-width) has-aria-busy:max-w-full sm:has-aria-busy:w-(--loading-width-sm) md:has-aria-busy:w-(--loading-width-md) lg:has-aria-busy:w-(--loading-width-lg) xl:has-aria-busy:w-(--loading-width-xl)">
             <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
-              <BoneSuspense
-                name="stock-quote"
-                className="w-full"
-                select="viewport"
-                initialBones={stockQuoteBones}
-              >
+              <BoneSuspense className="w-full" select="viewport">
                 <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
                   {({ data: response }) => (
                     <>

@@ -13,8 +13,6 @@ import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 
 import { stockChartIntervalSchema } from "../-schema"
-import stockChartBones from "./stock-chart.bones.json"
-import stockIndicatorsBones from "./stock-indicators.bones.json"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
@@ -111,12 +109,7 @@ export function StockChartSection() {
             key={`${stockId}-${from}-${to}-${interval}`}
             fallback="오류가 발생했습니다"
           >
-            <BoneSuspense
-              name="stock-chart"
-              className="h-full"
-              select="viewport"
-              initialBones={stockChartBones}
-            >
+            <BoneSuspense className="h-full *:h-full" select="viewport">
               <SuspenseQuery
                 {...getChartSuspenseQueryOptions(Number(stockId), { from, to, interval })}
               >
@@ -218,11 +211,7 @@ export function StockChartSection() {
           </ErrorBoundary>
         </div>
         <ErrorBoundary key={`indicators-${stockId}`} fallback="오류가 발생했습니다">
-          <BoneSuspense
-            name="stock-indicators"
-            select="viewport"
-            initialBones={stockIndicatorsBones}
-          >
+          <BoneSuspense select="viewport">
             <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
               {({ data: response }) => (
                 <dl>

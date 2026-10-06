@@ -1,7 +1,13 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "endOfLine": "lf",
-  "ignorePatterns": ["public/**", ".agents/**", "src/routeTree.gen.ts", "src/api/generated/**"],
+  "ignorePatterns": [
+    "public/**",
+    ".agents/**",
+    "src/routeTree.gen.ts",
+    "src/api/generated/**",
+    "src/components/ui/bones/**"
+  ],
   "printWidth": 100,
   "semi": false,
   "singleQuote": false,

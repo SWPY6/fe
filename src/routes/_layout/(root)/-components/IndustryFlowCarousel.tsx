@@ -12,8 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Carousel, type CarouselApi } from "@/components/ui/carousel"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
-import industryFlowBones from "./industry-flow.bones.json"
-
 export function IndustryFlowCarousel() {
   const [{ market }] = useGlobalUrlState()
   const [api, setApi] = useState<CarouselApi>()
@@ -43,7 +41,7 @@ export function IndustryFlowCarousel() {
 
   return (
     <ErrorBoundary fallback="오류가 발생했습니다">
-      <BoneSuspense name="industry-flow" select="viewport" initialBones={industryFlowBones}>
+      <BoneSuspense select="viewport">
         <SuspenseQuery
           {...getReadFlowsSuspenseQueryOptions({ country: market === "domestic" ? "KR" : "US" })}
         >

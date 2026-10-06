@@ -1,0 +1,79 @@
+:where(:has(> [data-boneyard="bone_040de5356bee2a96"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 260px;
+  --loading-width-xl: 260px;
+}
+
+:where(:has(> [data-boneyard="bone_12a6aae9fc8c3bff"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 685px;
+  --loading-width-xl: 941px;
+}
+
+:where(:has(> [data-boneyard="bone_304e3dca9ca2fbe5"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_421cd65178fdc48d"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_4789128a6dbd856e"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_48d69c0f327d9f67"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_4ed59d358bb548b0"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_52bab78f86dd397e"][aria-busy="true"])) {
+  --loading-width: 128px;
+  --loading-width-sm: 128px;
+  --loading-width-md: 128px;
+  --loading-width-lg: 128px;
+  --loading-width-xl: 128px;
+}
+
+:where(:has(> [data-boneyard="bone_9c5bde0e98598415"][aria-busy="true"])) {
+  --loading-width: 336px;
+  --loading-width-sm: 593px;
+  --loading-width-md: 705px;
+  --loading-width-lg: 977px;
+  --loading-width-xl: 1233px;
+}
+
+:where(:has(> [data-boneyard="bone_fac1c2be10a2ab18"][aria-busy="true"])) {
+  --loading-width: 212px;
+  --loading-width-sm: 212px;
+  --loading-width-md: 212px;
+  --loading-width-lg: 212px;
+  --loading-width-xl: 212px;
+}

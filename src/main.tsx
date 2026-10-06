@@ -8,7 +8,9 @@ import { Toaster } from "sonner"
 
 import { queryClient } from "./api/query/queryClient"
 import { routeTree } from "./routeTree.gen"
+import "./components/ui/bones/registry"
 
+import "./components/ui/bones/widths.css"
 import "./index.css"
 
 if (import.meta.env.VITE_ENABLE_MSW === "true") {

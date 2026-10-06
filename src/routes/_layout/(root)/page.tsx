@@ -12,9 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
-import industryIssuesBones from "./-components/industry-issues.bones.json"
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
-import marketSummaryBones from "./-components/market-summary.bones.json"
 import { getMarketSummaryQueryOptions } from "./-query/market-summary"
 
 export function RootPage() {
@@ -47,11 +45,7 @@ export function RootPage() {
           <Separated by={<Separator />}>
             <IndustryFlowCarousel />
             <ErrorBoundary fallback="오류가 발생했습니다">
-              <BoneSuspense
-                name="market-summary"
-                select="viewport"
-                initialBones={marketSummaryBones}
-              >
+              <BoneSuspense select="viewport">
                 <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
                   {({ data: response }) => {
                     const indicators = response.data?.indicators ?? []
@@ -151,11 +145,7 @@ export function RootPage() {
                 산업별 이슈
               </h2>
               <ErrorBoundary fallback="오류가 발생했습니다">
-                <BoneSuspense
-                  name="industry-issues"
-                  select="viewport"
-                  initialBones={industryIssuesBones}
-                >
+                <BoneSuspense select="viewport">
                   <SuspenseQuery
                     {...getReadNewsSuspenseQueryOptions({
                       country: market === "domestic" ? "KR" : "US",

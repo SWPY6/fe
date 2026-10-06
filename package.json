@@ -19,7 +19,8 @@
     "format:check": "oxfmt --check .",
     "test": "vitest",
     "test:run": "vitest run",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:run"
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:run",
+    "bones:capture": "node scripts/capture-bones.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
@@ -70,6 +71,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "lefthook": "^2.1.12",
+    "magic-string": "0.30.21",
     "msw": "^2.15.0",
     "openapi-format": "^1.33.7",
     "orval": "^8.38.0",
