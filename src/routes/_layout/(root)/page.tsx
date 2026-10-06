@@ -1,7 +1,8 @@
 // oxlint-disable react/no-array-index-key
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { Link } from "@tanstack/react-router"
+import { BoneSuspense } from "boneyard-js/react"
 import { Separated } from "react-simplikit"
 
 import { getReadNewsSuspenseQueryOptions } from "@/api/generated/api"
@@ -11,7 +12,9 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
+import industryIssuesBones from "./-components/industry-issues.bones.json"
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
+import marketSummaryBones from "./-components/market-summary.bones.json"
 import { getMarketSummaryQueryOptions } from "./-query/market-summary"
 
 export function RootPage() {
@@ -44,7 +47,11 @@ export function RootPage() {
           <Separated by={<Separator />}>
             <IndustryFlowCarousel />
             <ErrorBoundary fallback="오류가 발생했습니다">
-              <Suspense fallback="로딩중">
+              <BoneSuspense
+                name="market-summary"
+                select="viewport"
+                initialBones={marketSummaryBones}
+              >
                 <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
                   {({ data: response }) => {
                     const indicators = response.data?.indicators ?? []
@@ -132,7 +139,7 @@ export function RootPage() {
                     )
                   }}
                 </SuspenseQuery>
-              </Suspense>
+              </BoneSuspense>
             </ErrorBoundary>
 
             <section
@@ -144,7 +151,11 @@ export function RootPage() {
                 산업별 이슈
               </h2>
               <ErrorBoundary fallback="오류가 발생했습니다">
-                <Suspense fallback="로딩중">
+                <BoneSuspense
+                  name="industry-issues"
+                  select="viewport"
+                  initialBones={industryIssuesBones}
+                >
                   <SuspenseQuery
                     {...getReadNewsSuspenseQueryOptions({
                       country: market === "domestic" ? "KR" : "US",
@@ -189,7 +200,7 @@ export function RootPage() {
                       </ol>
                     )}
                   </SuspenseQuery>
-                </Suspense>
+                </BoneSuspense>
               </ErrorBoundary>
             </section>
 

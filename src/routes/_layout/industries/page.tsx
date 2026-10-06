@@ -1,6 +1,7 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { getRouteApi, Link } from "@tanstack/react-router"
+import { BoneSuspense } from "boneyard-js/react"
 import { Pin } from "lucide-react"
 import { useStorageState } from "react-simplikit"
 
@@ -12,6 +13,7 @@ import { Table } from "@/components/ui/table"
 import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
+import industryListBones from "./-industry-list.bones.json"
 import { industryFilterSchema } from "./-schema"
 
 const route = getRouteApi("/_layout/industries/")
@@ -74,7 +76,11 @@ export function IndustriesPage() {
             <div className="flex flex-col gap-8">
               <p className="typo-caption text-muted-foreground">고정 {pinned[market].length}/3</p>
               <ErrorBoundary key={`${market}-${filter}`} fallback="오류가 발생했습니다">
-                <Suspense fallback="로딩중">
+                <BoneSuspense
+                  name="industry-list"
+                  select="viewport"
+                  initialBones={industryListBones}
+                >
                   <SuspenseQuery
                     {...getReadTrendsSuspenseQueryOptions({
                       country: market === "domestic" ? "KR" : "US",
@@ -236,7 +242,7 @@ export function IndustriesPage() {
                       )
                     }}
                   </SuspenseQuery>
-                </Suspense>
+                </BoneSuspense>
               </ErrorBoundary>
             </div>
           </section>

@@ -1,7 +1,8 @@
 // oxlint-disable react/no-array-index-key
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { getRouteApi } from "@tanstack/react-router"
+import { BoneSuspense } from "boneyard-js/react"
 import { ExternalLink } from "lucide-react"
 import { Separated } from "react-simplikit"
 
@@ -11,6 +12,9 @@ import {
 } from "@/api/generated/api"
 import { Separator } from "@/components/ui/separator"
 import { Tabs } from "@/components/ui/tabs"
+
+import stockDisclosuresBones from "./stock-disclosures.bones.json"
+import stockNewsBones from "./stock-news.bones.json"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
@@ -37,7 +41,7 @@ export function StockMaterialsSection() {
         </Tabs.List>
         <Tabs.Content value="news" forceMount className="min-w-0 data-[state=inactive]:hidden">
           <ErrorBoundary fallback="오류가 발생했습니다">
-            <Suspense>
+            <BoneSuspense name="stock-news" select="viewport" initialBones={stockNewsBones}>
               <SuspenseQuery {...getNewsSuspenseQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">
@@ -103,7 +107,7 @@ export function StockMaterialsSection() {
                   </div>
                 )}
               </SuspenseQuery>
-            </Suspense>
+            </BoneSuspense>
           </ErrorBoundary>
         </Tabs.Content>
         <Tabs.Content
@@ -112,7 +116,11 @@ export function StockMaterialsSection() {
           className="min-w-0 data-[state=inactive]:hidden"
         >
           <ErrorBoundary fallback="오류가 발생했습니다">
-            <Suspense>
+            <BoneSuspense
+              name="stock-disclosures"
+              select="viewport"
+              initialBones={stockDisclosuresBones}
+            >
               <SuspenseQuery {...getDisclosuresSuspenseQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">
@@ -190,7 +198,7 @@ export function StockMaterialsSection() {
                   </div>
                 )}
               </SuspenseQuery>
-            </Suspense>
+            </BoneSuspense>
           </ErrorBoundary>
         </Tabs.Content>
       </Tabs.Root>

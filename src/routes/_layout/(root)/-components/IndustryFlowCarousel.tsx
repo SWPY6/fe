@@ -1,6 +1,7 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { Link } from "@tanstack/react-router"
+import { BoneSuspense } from "boneyard-js/react"
 import { Pause, Play } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useBooleanState } from "react-simplikit"
@@ -10,6 +11,8 @@ import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Carousel, type CarouselApi } from "@/components/ui/carousel"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
+
+import industryFlowBones from "./industry-flow.bones.json"
 
 export function IndustryFlowCarousel() {
   const [{ market }] = useGlobalUrlState()
@@ -40,7 +43,7 @@ export function IndustryFlowCarousel() {
 
   return (
     <ErrorBoundary fallback="오류가 발생했습니다">
-      <Suspense fallback="로딩중">
+      <BoneSuspense name="industry-flow" select="viewport" initialBones={industryFlowBones}>
         <SuspenseQuery
           {...getReadFlowsSuspenseQueryOptions({ country: market === "domestic" ? "KR" : "US" })}
         >
@@ -132,7 +135,7 @@ export function IndustryFlowCarousel() {
             )
           }
         </SuspenseQuery>
-      </Suspense>
+      </BoneSuspense>
     </ErrorBoundary>
   )
 }
