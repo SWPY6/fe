@@ -1,6 +1,7 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
 import { getRouteApi } from "@tanstack/react-router"
+import { BoneSuspense } from "boneyard-js/react"
 import type { IChartApi } from "lightweight-charts"
 import { Fragment, useState } from "react"
 
@@ -12,6 +13,8 @@ import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 
 import { stockChartIntervalSchema } from "../-schema"
+import stockChartBones from "./stock-chart.bones.json"
+import stockIndicatorsBones from "./stock-indicators.bones.json"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
@@ -103,12 +106,17 @@ export function StockChartSection() {
         </div>
       </div>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="min-w-0">
+        <div className="h-96 min-w-0">
           <ErrorBoundary
             key={`${stockId}-${from}-${to}-${interval}`}
             fallback="오류가 발생했습니다"
           >
-            <Suspense fallback="로딩중">
+            <BoneSuspense
+              name="stock-chart"
+              className="h-full"
+              select="viewport"
+              initialBones={stockChartBones}
+            >
               <SuspenseQuery
                 {...getChartSuspenseQueryOptions(Number(stockId), { from, to, interval })}
               >
@@ -130,7 +138,7 @@ export function StockChartSection() {
                   return hasData ? (
                     <TradingChart.Root
                       ref={fitContent}
-                      className="h-96 w-full"
+                      className="size-full"
                       aria-label={chartView === "line" ? "라인 차트" : "캔들 차트"}
                       options={{ localization: { locale: "ko-KR" } }}
                     >
@@ -200,17 +208,21 @@ export function StockChartSection() {
                       )}
                     </TradingChart.Root>
                   ) : (
-                    <p className="flex h-96 items-center justify-center typo-body-sm text-muted-foreground">
+                    <p className="flex h-full items-center justify-center typo-body-sm text-muted-foreground">
                       선택한 기간의 차트 데이터가 없습니다. 조건을 변경해주세요.
                     </p>
                   )
                 }}
               </SuspenseQuery>
-            </Suspense>
+            </BoneSuspense>
           </ErrorBoundary>
         </div>
         <ErrorBoundary key={`indicators-${stockId}`} fallback="오류가 발생했습니다">
-          <Suspense fallback="로딩중">
+          <BoneSuspense
+            name="stock-indicators"
+            select="viewport"
+            initialBones={stockIndicatorsBones}
+          >
             <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
               {({ data: response }) => (
                 <dl>
@@ -277,7 +289,7 @@ export function StockChartSection() {
                 </dl>
               )}
             </SuspenseQuery>
-          </Suspense>
+          </BoneSuspense>
         </ErrorBoundary>
       </div>
     </section>
