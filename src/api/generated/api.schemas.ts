@@ -793,6 +793,75 @@ export interface ApiResultListIndustryFlowResponse {
   data: IndustryFlowResponse[];
 }
 
+/**
+ * 지표 식별자. 요청 경로의 값. 값이 늘어날 수 있다
+ */
+export type MarketChartResponseIndicator = typeof MarketChartResponseIndicator[keyof typeof MarketChartResponseIndicator];
+
+
+export const MarketChartResponseIndicator = {
+  KOSPI: 'KOSPI',
+  KOSDAQ: 'KOSDAQ',
+  NASDAQ: 'NASDAQ',
+  SP500: 'SP500',
+  USD_KRW: 'USD_KRW',
+} as const;
+
+/**
+ * 가격 단위. 값이 늘어날 수 있다
+ */
+export type MarketChartResponseUnit = typeof MarketChartResponseUnit[keyof typeof MarketChartResponseUnit];
+
+
+export const MarketChartResponseUnit = {
+  POINT: 'POINT',
+  KRW: 'KRW',
+} as const;
+
+export interface MarketChartCandle {
+  tradeAt: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  closed: boolean;
+}
+
+/**
+ * 구간·봉 단위별 지표 캔들 차트
+ */
+export interface MarketChartResponse {
+  /** 지표 식별자. 요청 경로의 값. 값이 늘어날 수 있다 */
+  indicator?: MarketChartResponseIndicator;
+  /** 한글 표시명 */
+  name?: string;
+  /** 가격 단위. 값이 늘어날 수 있다 */
+  unit?: MarketChartResponseUnit;
+  /** 적용된 봉 단위. 생략 요청이면 1D */
+  interval?: string;
+  /**
+     * 첫 봉의 거래일. 봉이 없으면 null
+     * @nullable
+     */
+  from?: string | null;
+  /**
+     * 마지막 봉의 거래일. 봉이 없으면 null
+     * @nullable
+     */
+  to?: string | null;
+  /**
+     * 진행 중인 봉의 기준 시각. 진행 중인 봉이 없으면 null
+     * @nullable
+     */
+  asOf?: string | null;
+  /** 거래일 오름차순. 빈 배열 가능 */
+  candles?: MarketChartCandle[];
+}
+
+export interface ApiResultMarketChartResponse {
+  data: MarketChartResponse;
+}
+
 export type StockListItem = StockQuoteResponse & ({
   industryCode: string;
   industryName: string;
@@ -946,6 +1015,32 @@ export type ReadFlowsCountry = typeof ReadFlowsCountry[keyof typeof ReadFlowsCou
 export const ReadFlowsCountry = {
   KR: 'KR',
   US: 'US',
+} as const;
+
+export type Chart1Params = {
+/**
+ * 조회 시작일. 생략하면 to에서 2개월 전
+ */
+from?: string;
+/**
+ * 조회 종료일. 생략하면 지표 타임존의 오늘. 구간은 5년을 넘을 수 없다
+ */
+to?: string;
+/**
+ * 봉 단위. 생략하면 1D
+ */
+interval?: Chart1Interval;
+};
+
+export type Chart1Interval = typeof Chart1Interval[keyof typeof Chart1Interval];
+
+
+export const Chart1Interval = {
+  '1D': '1D',
+  '1W': '1W',
+  '1M': '1M',
+  '3M': '3M',
+  '1Y': '1Y',
 } as const;
 
 export type ReadStocksParams = {

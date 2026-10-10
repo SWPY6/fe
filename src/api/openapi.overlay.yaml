@@ -222,3 +222,21 @@ actions:
     update:
       required:
         - data
+  - target: $.components.schemas.MarketChartResponse.properties.candles
+    description: 시장 지표 차트 응답에는 거래량이 없으므로 종목 차트 Candle과 분리한다.
+    update:
+      items:
+        $ref: "#/components/schemas/MarketChartCandle"
+  - target: $.components.schemas
+    description: 백엔드 MarketChartResponse.Candle과 실제 응답에 맞춘 지표 차트 한 점.
+    update:
+      MarketChartCandle:
+        type: object
+        required: [tradeAt, open, high, low, close, closed]
+        properties:
+          tradeAt: { type: string, format: date }
+          open: { type: number }
+          high: { type: number }
+          low: { type: number }
+          close: { type: number }
+          closed: { type: boolean }
