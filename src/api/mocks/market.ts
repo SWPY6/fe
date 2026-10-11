@@ -1,6 +1,11 @@
 import { en, Faker } from "@faker-js/faker"
 
-import type { IndicatorCard, MarketSummaryResponse } from "../generated/api.schemas"
+import type {
+  IndicatorCard,
+  MarketChartResponse,
+  MarketChartResponseIndicator,
+  MarketSummaryResponse,
+} from "../generated/api.schemas"
 
 // 두 시장 모두 장이 끝난 전날을 기준으로 한 스냅샷. 공휴일은 재현하지 않는다.
 const date = new Date()
@@ -63,3 +68,34 @@ export const marketSummary = {
   DOMESTIC: { region: "DOMESTIC", indicators: [cards[0], cards[1], cards[4]] },
   OVERSEAS: { region: "OVERSEAS", indicators: [cards[2], cards[3], cards[4]] },
 } satisfies Record<string, MarketSummaryResponse>
+
+export function marketChart(indicator: MarketChartResponseIndicator): MarketChartResponse {
+  const card = cards.find((item) => item.indicator === indicator)
+  if (!card) throw new Error(`Unknown market indicator: ${indicator}`)
+
+  const days: string[] = []
+  const day = new Date(`${marketDate}T00:00:00Z`)
+
+  while (days.length < 5) {
+    if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) {
+      days.unshift(day.toISOString().slice(0, 10))
+    }
+    day.setUTCDate(day.getUTCDate() - 1)
+  }
+
+  const candles = days.map((tradeAt, index) => {
+    const close = Number((card.value * (0.98 + index * 0.005)).toFixed(2))
+    return { tradeAt, open: close, high: close, low: close, close, closed: true }
+  })
+
+  return {
+    indicator,
+    name: card.name,
+    unit: card.unit,
+    interval: "1D",
+    from: days[0] ?? null,
+    to: days.at(-1) ?? null,
+    asOf: null,
+    candles,
+  }
+}

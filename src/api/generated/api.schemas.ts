@@ -832,30 +832,30 @@ export interface MarketChartCandle {
  */
 export interface MarketChartResponse {
   /** 지표 식별자. 요청 경로의 값. 값이 늘어날 수 있다 */
-  indicator?: MarketChartResponseIndicator;
+  indicator: MarketChartResponseIndicator;
   /** 한글 표시명 */
-  name?: string;
+  name: string;
   /** 가격 단위. 값이 늘어날 수 있다 */
-  unit?: MarketChartResponseUnit;
+  unit: MarketChartResponseUnit;
   /** 적용된 봉 단위. 생략 요청이면 1D */
-  interval?: string;
+  interval: string;
   /**
      * 첫 봉의 거래일. 봉이 없으면 null
      * @nullable
      */
-  from?: string | null;
+  from: string | null;
   /**
      * 마지막 봉의 거래일. 봉이 없으면 null
      * @nullable
      */
-  to?: string | null;
+  to: string | null;
   /**
      * 진행 중인 봉의 기준 시각. 진행 중인 봉이 없으면 null
      * @nullable
      */
-  asOf?: string | null;
+  asOf: string | null;
   /** 거래일 오름차순. 빈 배열 가능 */
-  candles?: MarketChartCandle[];
+  candles: MarketChartCandle[];
 }
 
 export interface ApiResultMarketChartResponse {

@@ -14,9 +14,11 @@ import {
   getReadTrendsMockHandler,
   getSummary1MockHandler,
   getSummaryMockHandler,
+  getChart1MockHandler,
 } from "../generated/api.msw"
 import {
   ChartInterval,
+  MarketChartResponseIndicator,
   ReadFlowsCountry,
   ReadNewsCountry,
   ReadStocksCountry,
@@ -26,7 +28,7 @@ import {
   Summary1Region,
 } from "../generated/api.schemas"
 import { industrySnapshot } from "./industry"
-import { markets, marketSummary } from "./market"
+import { markets, marketChart, marketSummary } from "./market"
 import { stockDisclosures, stockNews } from "./materials"
 import { stockChart, stockList, stocks } from "./stock"
 import type { Stock } from "./stock"
@@ -243,6 +245,13 @@ export const worker = setupWorker(
   getSummary1MockHandler(({ request }) => {
     const region = enumParameter(new URL(request.url).searchParams, "region", Summary1Region)
     return { data: marketSummary[region] }
+  }),
+  getChart1MockHandler(({ params }) => {
+    const indicator =
+      Object.values(MarketChartResponseIndicator).find((value) => value === params.indicator) ??
+      invalidInput()
+
+    return { data: marketChart(indicator) }
   }),
   getReadTrendsMockHandler(({ request }) => {
     const { searchParams } = new URL(request.url)

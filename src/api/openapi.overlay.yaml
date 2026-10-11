@@ -222,6 +222,10 @@ actions:
     update:
       required:
         - data
+  - target: $.components.schemas.MarketChartResponse
+    description: 지표 차트 응답의 필드는 항상 포함된다. from, to, asOf의 값은 null일 수 있다.
+    update:
+      required: [indicator, name, unit, interval, from, to, asOf, candles]
   - target: $.components.schemas.MarketChartResponse.properties.candles
     description: 시장 지표 차트 응답에는 거래량이 없으므로 종목 차트 Candle과 분리한다.
     update:

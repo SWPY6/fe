@@ -20,9 +20,16 @@ export function MarketIndicatorChart({ indicator }: { indicator: ChartIndicator 
   return (
     <ErrorBoundary key={indicator} fallback="차트를 불러오지 못했습니다.">
       <Suspense fallback="차트를 불러오는 중입니다.">
-        <SuspenseQuery {...getChart1SuspenseQueryOptions(indicator)}>
+        <SuspenseQuery
+          {...getChart1SuspenseQueryOptions(indicator, undefined, {
+            query: { refetchInterval: 10_000 },
+          })}
+        >
           {({ data: response }) => {
-            const candles = response.data.candles ?? []
+            const candles = response.data.candles
+            if (!Array.isArray(candles)) {
+              throw new Error("차트 데이터가 빠졌습니다.")
+            }
             if (candles.length === 0) {
               return <p>선택한 기간의 차트 자료가 없습니다.</p>
             }

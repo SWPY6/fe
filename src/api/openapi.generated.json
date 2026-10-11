@@ -1986,7 +1986,8 @@
               "$ref": "#/components/schemas/MarketChartCandle"
             }
           }
-        }
+        },
+        "required": ["indicator", "name", "unit", "interval", "from", "to", "asOf", "candles"]
       },
       "StockDisclosureItem": {
         "type": "object",
