@@ -14,6 +14,7 @@ import {
   getReadTrendsMockHandler,
   getSummary1MockHandler,
   getSummaryMockHandler,
+  getReadMoversMockHandler,
 } from "../generated/api.msw"
 import {
   ChartInterval,
@@ -24,6 +25,9 @@ import {
   ReadTrendsCountry,
   ReadTrendsFilter,
   Summary1Region,
+  ReadMoversCountry,
+  ReadMoversCondition,
+  ReadMoversIndustry,
 } from "../generated/api.schemas"
 import { industrySnapshot } from "./industry"
 import { markets, marketSummary } from "./market"
@@ -135,6 +139,52 @@ const industries = {
 }
 
 export const worker = setupWorker(
+  // /stocks/movers가 /stocks/:stockId보다 먼저 매칭되어야 한다.
+  getReadMoversMockHandler(({ request }) => {
+    const { searchParams } = new URL(request.url)
+    const country = enumParameter(searchParams, "country", ReadMoversCountry, "KR")
+    const condition = enumParameter(searchParams, "condition", ReadMoversCondition, "ALL")
+    const industry = searchParams.has("industry")
+      ? enumParameter(searchParams, "industry", ReadMoversIndustry)
+      : undefined
+    const query = (searchParams.get("query") ?? "").trim().toLocaleLowerCase()
+
+    const rows = stocks
+      .filter(
+        ({ country: stockCountry, item }) =>
+          stockCountry === country &&
+          (!industry || item.industryCode === industry) &&
+          (!query || (item.name + " " + item.ticker).toLocaleLowerCase().includes(query)),
+      )
+      .filter(({ item }) =>
+        condition === "RISING"
+          ? item.changeRate > 0
+          : condition === "FALLING"
+            ? item.changeRate < 0
+            : true,
+      )
+      .toSorted((a, b) =>
+        condition === "VOLUME_SURGE"
+          ? b.item.indicators.volumeRatio20d - a.item.indicators.volumeRatio20d
+          : condition === "FALLING"
+            ? a.item.changeRate - b.item.changeRate
+            : b.item.changeRate - a.item.changeRate,
+      )
+      .slice(0, country === "KR" ? 60 : 100)
+      .map(({ item }) => ({
+        stockId: item.stockId,
+        ticker: item.ticker,
+        name: item.name,
+        industry: item.industryCode,
+        price: item.price,
+        changeRate: item.changeRate,
+        volume: item.indicators.volume,
+        tradingValue: item.indicators.tradingValue,
+        marketCap: item.indicators.marketCap,
+      }))
+
+    return { data: { condition, totalCount: rows.length, stocks: rows } }
+  }),
   getReadStocksMockHandler(({ request }) => {
     const { searchParams } = new URL(request.url)
     const includeCaution = searchParams.get("includeCaution") ?? "false"
