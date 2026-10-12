@@ -1,6 +1,7 @@
 import { en, Faker } from "@faker-js/faker"
 
 import type {
+  Chart1Interval,
   IndicatorCard,
   MarketChartResponse,
   MarketChartResponseIndicator,
@@ -69,13 +70,32 @@ export const marketSummary = {
   OVERSEAS: { region: "OVERSEAS", indicators: [cards[2], cards[3], cards[4]] },
 } satisfies Record<string, MarketSummaryResponse>
 
-export function marketChart(indicator: MarketChartResponseIndicator): MarketChartResponse {
+function periodKey(tradeAt: string, interval: Chart1Interval) {
+  if (interval === "1D") return tradeAt
+  if (interval === "1W") {
+    const monday = new Date(`${tradeAt}T00:00:00Z`)
+    monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7))
+    return monday.toISOString().slice(0, 10)
+  }
+  if (interval === "1M") return tradeAt.slice(0, 7)
+  if (interval === "3M") {
+    const quarter = Math.floor((Number(tradeAt.slice(5, 7)) - 1) / 3) + 1
+    return `${tradeAt.slice(0, 4)}-Q${quarter}`
+  }
+  return tradeAt.slice(0, 4)
+}
+
+export function marketChart(
+  indicator: MarketChartResponseIndicator,
+  from: string,
+  to: string,
+  interval: Chart1Interval,
+): MarketChartResponse {
   const card = cards.find((item) => item.indicator === indicator)
   if (!card) throw new Error(`Unknown market indicator: ${indicator}`)
 
   const days: string[] = []
   const day = new Date(`${marketDate}T00:00:00Z`)
-
   while (days.length < 5) {
     if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) {
       days.unshift(day.toISOString().slice(0, 10))
@@ -83,18 +103,35 @@ export function marketChart(indicator: MarketChartResponseIndicator): MarketChar
     day.setUTCDate(day.getUTCDate() - 1)
   }
 
-  const candles = days.map((tradeAt, index) => {
+  const grouped = new Map<string, MarketChartResponse["candles"][number]>()
+  days.forEach((tradeAt, index) => {
+    if (tradeAt < from || tradeAt > to) return
     const close = Number((card.value * (0.98 + index * 0.005)).toFixed(2))
-    return { tradeAt, open: close, high: close, low: close, close, closed: true }
+    const candle = { tradeAt, open: close, high: close, low: close, close, closed: true }
+    const key = periodKey(tradeAt, interval)
+    const previous = grouped.get(key)
+    grouped.set(
+      key,
+      previous
+        ? {
+            ...previous,
+            high: Math.max(previous.high, candle.high),
+            low: Math.min(previous.low, candle.low),
+            close: candle.close,
+            closed: previous.closed && candle.closed,
+          }
+        : candle,
+    )
   })
+  const candles = Array.from(grouped.values())
 
   return {
     indicator,
     name: card.name,
     unit: card.unit,
-    interval: "1D",
-    from: days[0] ?? null,
-    to: days.at(-1) ?? null,
+    interval,
+    from: candles[0]?.tradeAt ?? null,
+    to: candles.at(-1)?.tradeAt ?? null,
     asOf: null,
     candles,
   }

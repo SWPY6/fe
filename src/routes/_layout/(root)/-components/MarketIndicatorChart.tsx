@@ -7,6 +7,8 @@ import { TradingChart } from "@/components/ui/chart"
 
 const chartIndicators = ["KOSPI", "KOSDAQ", "NASDAQ", "SP500", "USD_KRW"] as const
 type ChartIndicator = (typeof chartIndicators)[number]
+const chartMessageClassName =
+  "mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground"
 
 export function isChartIndicator(value: string | undefined): value is ChartIndicator {
   return chartIndicators.some((indicator) => indicator === value)
@@ -18,20 +20,30 @@ function fitContent(chart: IChartApi | null) {
 
 export function MarketIndicatorChart({ indicator }: { indicator: ChartIndicator }) {
   return (
-    <ErrorBoundary key={indicator} fallback="차트를 불러오지 못했습니다.">
-      <Suspense fallback="차트를 불러오는 중입니다.">
+    <ErrorBoundary
+      key={indicator}
+      fallback={<p className={chartMessageClassName}>차트를 불러오지 못했습니다.</p>}
+    >
+      <Suspense fallback={<p className={chartMessageClassName}>차트를 불러오는 중입니다.</p>}>
         <SuspenseQuery
           {...getChart1SuspenseQueryOptions(indicator, undefined, {
             query: { refetchInterval: 10_000 },
           })}
         >
-          {({ data: response }) => {
+          {({ data: response, error, isFetching }) => {
+            if (error && !isFetching) {
+              return (
+                <p role="alert" className={chartMessageClassName}>
+                  차트를 불러오지 못했습니다.
+                </p>
+              )
+            }
             const candles = response.data.candles
             if (!Array.isArray(candles)) {
               throw new Error("차트 데이터가 빠졌습니다.")
             }
             if (candles.length === 0) {
-              return <p>선택한 기간의 차트 자료가 없습니다.</p>
+              return <p className={chartMessageClassName}>선택한 기간의 차트 자료가 없습니다.</p>
             }
 
             const lineData = candles.map(({ tradeAt, close }) => ({

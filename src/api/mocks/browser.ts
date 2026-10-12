@@ -18,6 +18,7 @@ import {
 } from "../generated/api.msw"
 import {
   ChartInterval,
+  Chart1Interval,
   MarketChartResponseIndicator,
   ReadFlowsCountry,
   ReadNewsCountry,
@@ -59,6 +60,17 @@ function positiveInteger(value: string | null, fallback?: number, max = Number.M
   const parsed = Number(value)
   if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > max) return invalidInput()
   return parsed
+}
+
+function validMarketDate(value: string) {
+  const date = new Date(`${value}T00:00:00Z`)
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+    !Number.isFinite(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  )
+    return invalidInput()
+  return date
 }
 
 function requestedStock(value: string | readonly string[] | undefined) {
@@ -246,12 +258,41 @@ export const worker = setupWorker(
     const region = enumParameter(new URL(request.url).searchParams, "region", Summary1Region)
     return { data: marketSummary[region] }
   }),
-  getChart1MockHandler(({ params }) => {
+  getChart1MockHandler(({ params, request }) => {
     const indicator =
       Object.values(MarketChartResponseIndicator).find((value) => value === params.indicator) ??
       invalidInput()
 
-    return { data: marketChart(indicator) }
+    const { searchParams } = new URL(request.url)
+    const interval = enumParameter(searchParams, "interval", Chart1Interval, "1D")
+    const market = indicator === "NASDAQ" || indicator === "SP500" ? "US" : "KR"
+    const to =
+      searchParams.get("to") ??
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: markets[market].timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date())
+    const end = validMarketDate(to)
+
+    const defaultStart = new Date(end)
+    const dayOfMonth = defaultStart.getUTCDate()
+    defaultStart.setUTCDate(1)
+    defaultStart.setUTCMonth(defaultStart.getUTCMonth() - 2)
+    const lastDayOfMonth = new Date(
+      Date.UTC(defaultStart.getUTCFullYear(), defaultStart.getUTCMonth() + 1, 0),
+    ).getUTCDate()
+    defaultStart.setUTCDate(Math.min(dayOfMonth, lastDayOfMonth))
+    const from = searchParams.get("from") ?? defaultStart.toISOString().slice(0, 10)
+    const start = validMarketDate(from)
+
+    const maximumEnd = new Date(start)
+    maximumEnd.setUTCFullYear(start.getUTCFullYear() + 5, start.getUTCMonth() + 1, 0)
+    maximumEnd.setUTCDate(Math.min(start.getUTCDate(), maximumEnd.getUTCDate()))
+    if (start > end || end > maximumEnd) return invalidInput()
+
+    return { data: marketChart(indicator, from, to, interval) }
   }),
   getReadTrendsMockHandler(({ request }) => {
     const { searchParams } = new URL(request.url)
