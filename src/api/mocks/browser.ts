@@ -179,8 +179,10 @@ export const worker = setupWorker(
         price: item.price,
         changeRate: item.changeRate,
         volume: item.indicators.volume,
-        tradingValue: item.indicators.tradingValue,
-        marketCap: item.indicators.marketCap,
+        tradingValue:
+          condition === "RISING" || condition === "FALLING" ? null : item.indicators.tradingValue,
+        marketCap:
+          condition === "RISING" || condition === "FALLING" ? null : item.indicators.marketCap,
       }))
 
     return { data: { condition, totalCount: rows.length, stocks: rows } }
