@@ -43,97 +43,101 @@ export function RootPage() {
         <Tabs.Content key={market} value={market} className="flex min-w-0 flex-col gap-8">
           <Separated by={<Separator />}>
             <IndustryFlowCarousel />
-            <ErrorBoundary fallback="오류가 발생했습니다">
-              <Suspense fallback="로딩중">
-                <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
-                  {({ data: response }) => {
-                    const indicators = response.data?.indicators ?? []
+            <div className="min-w-0">
+              <ErrorBoundary fallback="오류가 발생했습니다">
+                <Suspense data-skeleton fallback="로딩중">
+                  <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
+                    {({ data: response }) => {
+                      const indicators = response.data?.indicators ?? []
 
-                    return (
-                      <Tabs.Root defaultValue={indicators[0]?.indicator ?? "0"} className="gap-8">
-                        <Tabs.List
-                          variant="underline"
-                          showIndicator={false}
-                          aria-label="주요 시장 지표 선택"
-                          className="grid w-full grid-cols-2 gap-y-5 sm:grid-cols-4 sm:gap-y-0"
-                        >
-                          {indicators.map((quote, index) => (
-                            <Tabs.Trigger
-                              key={`${quote.indicator}-${index}`}
-                              value={quote.indicator ?? String(index)}
-                              className="group relative min-w-0 flex-col items-start gap-1.5 rounded-none px-4 py-0 text-left text-foreground group-data-[variant=underline]/tabs-list:h-auto hover:bg-transparent hover:text-foreground sm:pl-6"
-                            >
-                              <span className="typo-helper text-muted-foreground">
-                                {quote.name}
-                              </span>
-                              <span className="typo-numeric-compact tabular-nums">
-                                {quote.value?.toLocaleString("ko-KR") ?? "—"}
-                                {quote.unit === "KRW" ? "원" : ""}
-                                {quote.unit === "USD" ? " USD" : ""}
-                              </span>
-                              {quote.changeRate == null ? (
-                                <span className="typo-caption text-muted-foreground">—</span>
-                              ) : (
-                                <PriceNumber
-                                  value={quote.changeRate}
-                                  format={{
-                                    style: "unit",
-                                    unit: "percent",
-                                    signDisplay: "exceptZero",
-                                  }}
-                                  className="typo-caption"
-                                />
-                              )}
-                            </Tabs.Trigger>
-                          ))}
-                        </Tabs.List>
-                        <Separator />
-                        <section aria-labelledby="market-chart-title" className="min-w-0">
-                          <h2 id="market-chart-title" className="typo-section-heading">
-                            주요 시장 지표
-                          </h2>
-                          {indicators.map((quote, index) => (
-                            <Tabs.Content
-                              key={`${quote.indicator}-${index}`}
-                              value={quote.indicator ?? String(index)}
-                            >
-                              <div className="mt-4 flex items-end justify-between gap-4">
-                                <div>
-                                  <p className="typo-helper text-muted-foreground">{quote.name}</p>
-                                  <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
-                                    {quote.value?.toLocaleString("ko-KR") ?? "—"}
-                                    {quote.unit === "KRW" ? "원" : ""}
-                                    {quote.unit === "USD" ? " USD" : ""}
-                                  </p>
-                                </div>
+                      return (
+                        <Tabs.Root defaultValue={indicators[0]?.indicator ?? "0"} className="gap-8">
+                          <Tabs.List
+                            variant="underline"
+                            showIndicator={false}
+                            aria-label="주요 시장 지표 선택"
+                            className="grid w-full grid-cols-2 gap-y-5 sm:grid-cols-4 sm:gap-y-0"
+                          >
+                            {indicators.map((quote, index) => (
+                              <Tabs.Trigger
+                                key={`${quote.indicator}-${index}`}
+                                value={quote.indicator ?? String(index)}
+                                className="group relative min-w-0 flex-col items-start gap-1.5 rounded-none px-4 py-0 text-left text-foreground group-data-[variant=underline]/tabs-list:h-auto hover:bg-transparent hover:text-foreground sm:pl-6"
+                              >
+                                <span className="typo-helper text-muted-foreground">
+                                  {quote.name}
+                                </span>
+                                <span className="typo-numeric-compact tabular-nums">
+                                  {quote.value?.toLocaleString("ko-KR") ?? "—"}
+                                  {quote.unit === "KRW" ? "원" : ""}
+                                  {quote.unit === "USD" ? " USD" : ""}
+                                </span>
                                 {quote.changeRate == null ? (
-                                  <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
+                                  <span className="typo-caption text-muted-foreground">—</span>
                                 ) : (
                                   <PriceNumber
-                                    as="p"
                                     value={quote.changeRate}
                                     format={{
                                       style: "unit",
                                       unit: "percent",
                                       signDisplay: "exceptZero",
                                     }}
-                                    className="pb-1 typo-numeric-sm"
+                                    className="typo-caption"
                                   />
                                 )}
-                              </div>
-                              <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
-                                차트 준비 중
-                              </div>
-                            </Tabs.Content>
-                          ))}
-                          {indicators.length === 0 && "시장 지표가 없습니다"}
-                        </section>
-                      </Tabs.Root>
-                    )
-                  }}
-                </SuspenseQuery>
-              </Suspense>
-            </ErrorBoundary>
+                              </Tabs.Trigger>
+                            ))}
+                          </Tabs.List>
+                          <Separator />
+                          <section aria-labelledby="market-chart-title" className="min-w-0">
+                            <h2 id="market-chart-title" className="typo-section-heading">
+                              주요 시장 지표
+                            </h2>
+                            {indicators.map((quote, index) => (
+                              <Tabs.Content
+                                key={`${quote.indicator}-${index}`}
+                                value={quote.indicator ?? String(index)}
+                              >
+                                <div className="mt-4 flex items-end justify-between gap-4">
+                                  <div>
+                                    <p className="typo-helper text-muted-foreground">
+                                      {quote.name}
+                                    </p>
+                                    <p className="mt-1 typo-numeric-lg max-sm:typo-numeric-md">
+                                      {quote.value?.toLocaleString("ko-KR") ?? "—"}
+                                      {quote.unit === "KRW" ? "원" : ""}
+                                      {quote.unit === "USD" ? " USD" : ""}
+                                    </p>
+                                  </div>
+                                  {quote.changeRate == null ? (
+                                    <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
+                                  ) : (
+                                    <PriceNumber
+                                      as="p"
+                                      value={quote.changeRate}
+                                      format={{
+                                        style: "unit",
+                                        unit: "percent",
+                                        signDisplay: "exceptZero",
+                                      }}
+                                      className="pb-1 typo-numeric-sm"
+                                    />
+                                  )}
+                                </div>
+                                <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
+                                  차트 준비 중
+                                </div>
+                              </Tabs.Content>
+                            ))}
+                            {indicators.length === 0 && "시장 지표가 없습니다"}
+                          </section>
+                        </Tabs.Root>
+                      )
+                    }}
+                  </SuspenseQuery>
+                </Suspense>
+              </ErrorBoundary>
+            </div>
 
             <section
               id="industry-issues"
@@ -144,51 +148,53 @@ export function RootPage() {
                 산업별 이슈
               </h2>
               <ErrorBoundary fallback="오류가 발생했습니다">
-                <Suspense fallback="로딩중">
-                  <SuspenseQuery
-                    {...getReadNewsSuspenseQueryOptions({
-                      country: market === "domestic" ? "KR" : "US",
-                    })}
-                  >
-                    {({ data: response }) => (
-                      <ol className="grid gap-6 md:grid-cols-2 lg:gap-7">
-                        {response.data?.map((industry, industryIndex) => (
-                          <li
-                            key={`${industry.code}-${industryIndex}`}
-                            className="flex min-w-0 gap-4"
-                          >
-                            <span className="typo-table-value text-muted-foreground tabular-nums">
-                              {industry.rank}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="typo-label-xs text-primary">{industry.displayName}</p>
-                              {industry.news?.length ? (
-                                <>
-                                  {industry.news.map((story, storyIndex) => (
-                                    <div key={`${story.url}-${storyIndex}`}>
-                                      <h3 className="mt-2 typo-heading-xs">
-                                        <a href={story.url}>{story.title}</a>
-                                      </h3>
-                                      <p className="mt-2 typo-body-sm text-muted-foreground">
-                                        {story.publisher}
-                                      </p>
-                                    </div>
-                                  ))}
+                <Suspense data-skeleton fallback="로딩중">
+                  <ol className="grid gap-6 md:grid-cols-2 lg:gap-7">
+                    <SuspenseQuery
+                      {...getReadNewsSuspenseQueryOptions({
+                        country: market === "domestic" ? "KR" : "US",
+                      })}
+                    >
+                      {({ data: response }) => (
+                        <>
+                          {response.data?.map((industry, industryIndex) => (
+                            <li
+                              key={`${industry.code}-${industryIndex}`}
+                              className="flex min-w-0 gap-4"
+                            >
+                              <span className="typo-table-value text-muted-foreground tabular-nums">
+                                {industry.rank}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="typo-label-xs text-primary">{industry.displayName}</p>
+                                {industry.news?.length ? (
+                                  <>
+                                    {industry.news.map((story, storyIndex) => (
+                                      <div key={`${story.url}-${storyIndex}`}>
+                                        <h3 className="mt-2 typo-heading-xs">
+                                          <a href={story.url}>{story.title}</a>
+                                        </h3>
+                                        <p className="mt-2 typo-body-sm text-muted-foreground">
+                                          {story.publisher}
+                                        </p>
+                                      </div>
+                                    ))}
+                                    <p className="mt-2 typo-body-sm text-muted-foreground">
+                                      관련 뉴스는 가격 변동의 원인을 의미하지 않습니다.
+                                    </p>
+                                  </>
+                                ) : (
                                   <p className="mt-2 typo-body-sm text-muted-foreground">
-                                    관련 뉴스는 가격 변동의 원인을 의미하지 않습니다.
+                                    관련 뉴스가 없습니다.
                                   </p>
-                                </>
-                              ) : (
-                                <p className="mt-2 typo-body-sm text-muted-foreground">
-                                  관련 뉴스가 없습니다.
-                                </p>
-                              )}
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                  </SuspenseQuery>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                        </>
+                      )}
+                    </SuspenseQuery>
+                  </ol>
                 </Suspense>
               </ErrorBoundary>
             </section>

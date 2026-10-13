@@ -102,13 +102,10 @@ export function StockChartSection() {
           </Select.Root>
         </div>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="min-w-0">
-          <ErrorBoundary
-            key={`${stockId}-${from}-${to}-${interval}`}
-            fallback="오류가 발생했습니다"
-          >
-            <Suspense fallback="로딩중">
+      <ErrorBoundary key={`${stockId}-${from}-${to}-${interval}`} fallback="오류가 발생했습니다">
+        <Suspense data-skeleton fallback="로딩중">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="h-96 min-w-0">
               <SuspenseQuery
                 {...getChartSuspenseQueryOptions(Number(stockId), { from, to, interval })}
               >
@@ -130,7 +127,7 @@ export function StockChartSection() {
                   return hasData ? (
                     <TradingChart.Root
                       ref={fitContent}
-                      className="h-96 w-full"
+                      className="size-full"
                       aria-label={chartView === "line" ? "라인 차트" : "캔들 차트"}
                       options={{ localization: { locale: "ko-KR" } }}
                     >
@@ -200,86 +197,84 @@ export function StockChartSection() {
                       )}
                     </TradingChart.Root>
                   ) : (
-                    <p className="flex h-96 items-center justify-center typo-body-sm text-muted-foreground">
+                    <p className="flex h-full items-center justify-center typo-body-sm text-muted-foreground">
                       선택한 기간의 차트 데이터가 없습니다. 조건을 변경해주세요.
                     </p>
                   )
                 }}
               </SuspenseQuery>
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        <ErrorBoundary key={`indicators-${stockId}`} fallback="오류가 발생했습니다">
-          <Suspense fallback="로딩중">
-            <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
-              {({ data: response }) => (
-                <dl>
-                  {[
-                    {
-                      label: "전일 종가",
-                      value: response.data.indicators?.previousClose,
-                      currency: response.data.currency,
-                    },
-                    {
-                      label: "시가",
-                      value: response.data.indicators?.open,
-                      currency: response.data.currency,
-                    },
-                    {
-                      label: "고가",
-                      value: response.data.indicators?.high,
-                      currency: response.data.currency,
-                    },
-                    {
-                      label: "저가",
-                      value: response.data.indicators?.low,
-                      currency: response.data.currency,
-                    },
-                    { label: "거래량(주)", value: response.data.indicators?.volume },
-                    {
-                      label: "평소 거래량 대비(배)",
-                      value: response.data.indicators?.volumeRatio20d,
-                    },
-                    {
-                      label: "시가총액",
-                      value: response.data.indicators?.marketCap,
-                      currency: response.data.currency,
-                    },
-                    {
-                      label: "거래대금",
-                      value: response.data.indicators?.tradingValue,
-                      currency: response.data.currency,
-                    },
-                  ].map((metric) => (
-                    <Fragment key={metric.label}>
-                      <div className="flex items-center justify-between gap-3 py-4 typo-body-sm">
-                        <dt className="text-muted-foreground">{metric.label}</dt>
-                        <dd className="text-right">
-                          {metric.value == null ? (
-                            "—"
-                          ) : (
-                            <>
-                              <PriceNumber
-                                value={metric.value}
-                                className="text-foreground"
-                                format={{
-                                  notation: metric.currency ? "compact" : "standard",
-                                }}
-                              />{" "}
-                              {metric.currency}
-                            </>
-                          )}
-                        </dd>
-                      </div>
-                      <Separator />
-                    </Fragment>
-                  ))}
-                </dl>
-              )}
-            </SuspenseQuery>
-          </Suspense>
-        </ErrorBoundary>
-      </div>
+            </div>
+            <dl>
+              <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
+                {({ data: response }) => (
+                  <>
+                    {[
+                      {
+                        label: "전일 종가",
+                        value: response.data.indicators?.previousClose,
+                        currency: response.data.currency,
+                      },
+                      {
+                        label: "시가",
+                        value: response.data.indicators?.open,
+                        currency: response.data.currency,
+                      },
+                      {
+                        label: "고가",
+                        value: response.data.indicators?.high,
+                        currency: response.data.currency,
+                      },
+                      {
+                        label: "저가",
+                        value: response.data.indicators?.low,
+                        currency: response.data.currency,
+                      },
+                      { label: "거래량(주)", value: response.data.indicators?.volume },
+                      {
+                        label: "평소 거래량 대비(배)",
+                        value: response.data.indicators?.volumeRatio20d,
+                      },
+                      {
+                        label: "시가총액",
+                        value: response.data.indicators?.marketCap,
+                        currency: response.data.currency,
+                      },
+                      {
+                        label: "거래대금",
+                        value: response.data.indicators?.tradingValue,
+                        currency: response.data.currency,
+                      },
+                    ].map((metric) => (
+                      <Fragment key={metric.label}>
+                        <div className="flex items-center justify-between gap-3 py-4 typo-body-sm">
+                          <dt className="text-muted-foreground">{metric.label}</dt>
+                          <dd className="text-right">
+                            {metric.value == null ? (
+                              "—"
+                            ) : (
+                              <>
+                                <PriceNumber
+                                  value={metric.value}
+                                  className="text-foreground"
+                                  format={{
+                                    notation: metric.currency ? "compact" : "standard",
+                                  }}
+                                />{" "}
+                                {metric.currency}
+                              </>
+                            )}
+                          </dd>
+                        </div>
+                        <Separator />
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+              </SuspenseQuery>
+            </dl>
+          </div>
+        </Suspense>
+      </ErrorBoundary>
     </section>
   )
 }

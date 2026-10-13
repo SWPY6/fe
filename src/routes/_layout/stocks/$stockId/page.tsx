@@ -49,72 +49,67 @@ export function StockPage() {
             </Button>
           </div>
         </div>
-        <section
-          aria-label="종목 요약 정보"
-          className="flex flex-wrap items-center gap-x-12 gap-y-5"
-        >
+        <section aria-label="종목 요약 정보">
           <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
-            <Suspense fallback="로딩중">
-              <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
-                {({ data: response }) => (
-                  <div>
-                    <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
-                    <p className="mt-1 typo-body-sm text-muted-foreground">
-                      {response.data.profile?.ticker} · {response.data.country} ·{" "}
-                      {response.data.currency}
-                    </p>
-                    <p className="mt-1 typo-body-sm text-muted-foreground">
-                      {response.data.profile?.industries
-                        ?.map((industry) => industry.name)
-                        .join(" · ") || "연결된 산업이 없습니다"}
-                    </p>
-                  </div>
-                )}
-              </SuspenseQuery>
-            </Suspense>
-          </ErrorBoundary>
-          <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
-            <Suspense fallback="로딩중">
-              <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
-                {({ data: response }) => (
-                  <div>
-                    <p className="typo-numeric-md">
-                      {response.data.price == null || !response.data.currency ? (
-                        "—"
-                      ) : (
-                        <>
+            <Suspense data-skeleton fallback="로딩중">
+              <div className="flex flex-wrap items-center gap-x-12 gap-y-5">
+                <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
+                  {({ data: response }) => (
+                    <div>
+                      <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
+                      <p className="mt-1 typo-body-sm text-muted-foreground">
+                        {response.data.profile?.ticker} · {response.data.country} ·{" "}
+                        {response.data.currency}
+                      </p>
+                      <p className="mt-1 typo-body-sm text-muted-foreground">
+                        {response.data.profile?.industries
+                          ?.map((industry) => industry.name)
+                          .join(" · ") || "연결된 산업이 없습니다"}
+                      </p>
+                    </div>
+                  )}
+                </SuspenseQuery>
+                <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
+                  {({ data: response }) => (
+                    <div>
+                      <p className="typo-numeric-md">
+                        {response.data.price == null || !response.data.currency ? (
+                          "—"
+                        ) : (
+                          <>
+                            <PriceNumber
+                              value={response.data.price}
+                              className="text-foreground"
+                              format={{ maximumFractionDigits: 2 }}
+                            />{" "}
+                            {response.data.currency}
+                          </>
+                        )}
+                      </p>
+                      <p className="typo-body">
+                        {response.data.changeRate == null ? (
+                          "—"
+                        ) : (
                           <PriceNumber
-                            value={response.data.price}
-                            className="text-foreground"
-                            format={{ maximumFractionDigits: 2 }}
-                          />{" "}
-                          {response.data.currency}
-                        </>
-                      )}
-                    </p>
-                    <p className="typo-body">
-                      {response.data.changeRate == null ? (
-                        "—"
-                      ) : (
-                        <PriceNumber
-                          value={response.data.changeRate}
-                          format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                        />
-                      )}
-                    </p>
-                    <p className="mt-2 typo-helper text-muted-foreground">
-                      {response.data.priceAt
-                        ? new Date(response.data.priceAt).toLocaleString("ko-KR")
-                        : "기준 시각 없음"}
-                      {response.data.priceTiming === "DELAYED"
-                        ? " · 지연 시세"
-                        : response.data.priceTiming === "REALTIME"
-                          ? " · 실시간 시세"
-                          : ""}
-                    </p>
-                  </div>
-                )}
-              </SuspenseQuery>
+                            value={response.data.changeRate}
+                            format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
+                          />
+                        )}
+                      </p>
+                      <p className="mt-2 typo-helper text-muted-foreground">
+                        {response.data.priceAt
+                          ? new Date(response.data.priceAt).toLocaleString("ko-KR")
+                          : "기준 시각 없음"}
+                        {response.data.priceTiming === "DELAYED"
+                          ? " · 지연 시세"
+                          : response.data.priceTiming === "REALTIME"
+                            ? " · 실시간 시세"
+                            : ""}
+                      </p>
+                    </div>
+                  )}
+                </SuspenseQuery>
+              </div>
             </Suspense>
           </ErrorBoundary>
         </section>
