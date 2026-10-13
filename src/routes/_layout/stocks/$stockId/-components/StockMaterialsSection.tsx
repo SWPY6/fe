@@ -5,12 +5,13 @@ import { getRouteApi } from "@tanstack/react-router"
 import { ExternalLink } from "lucide-react"
 import { Separated } from "react-simplikit"
 
-import {
-  getDisclosuresSuspenseQueryOptions,
-  getNewsSuspenseQueryOptions,
-} from "@/api/generated/api"
 import { Separator } from "@/components/ui/separator"
 import { Tabs } from "@/components/ui/tabs"
+
+import {
+  getDisclosuresMaterialQueryOptions,
+  getNewsMaterialQueryOptions,
+} from "./materialQueryOptions"
 
 const route = getRouteApi("/_layout/stocks/$stockId/")
 
@@ -38,7 +39,7 @@ export function StockMaterialsSection() {
         <Tabs.Content value="news" forceMount className="min-w-0 data-[state=inactive]:hidden">
           <ErrorBoundary fallback="오류가 발생했습니다">
             <Suspense>
-              <SuspenseQuery {...getNewsSuspenseQueryOptions(stockId)}>
+              <SuspenseQuery {...getNewsMaterialQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">
                     <p className="typo-caption text-muted-foreground">총 {response.data.total}건</p>
@@ -113,7 +114,7 @@ export function StockMaterialsSection() {
         >
           <ErrorBoundary fallback="오류가 발생했습니다">
             <Suspense>
-              <SuspenseQuery {...getDisclosuresSuspenseQueryOptions(stockId)}>
+              <SuspenseQuery {...getDisclosuresMaterialQueryOptions(stockId)}>
                 {({ data: response }) => (
                   <div className="flex flex-col gap-5">
                     {response.data.coverage !== "UNMAPPED" && (
