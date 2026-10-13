@@ -130,6 +130,9 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.170.32
         version: 1.170.40(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@tanstack/router-core':
+        specifier: 1.171.33
+        version: 1.171.33
       '@tradingview/lwc-plugin-rounded-candles-series':
         specifier: 1.0.0
         version: 1.0.0(lightweight-charts@5.2.1)

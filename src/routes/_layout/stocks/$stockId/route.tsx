@@ -3,6 +3,9 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 import { getDisclosuresQueryOptions, getNewsQueryOptions } from "@/api/generated/api"
 
 export const Route = createFileRoute("/_layout/stocks/$stockId")({
+  staticData: {
+    testParams: { stockId: "9630" },
+  },
   beforeLoad: ({ params: { stockId } }) => {
     if (!/^[1-9]\d*$/.test(stockId) || !Number.isSafeInteger(Number(stockId))) throw notFound()
   },
