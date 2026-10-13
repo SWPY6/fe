@@ -88,7 +88,18 @@ export function RootPage() {
             <ErrorBoundary fallback="오류가 발생했습니다">
               <Suspense fallback="로딩중">
                 <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
-                  {({ data: response }) => {
+                  {({ data: response, error }) => {
+                    if (error) {
+                      return (
+                        <p
+                          role="alert"
+                          className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground"
+                        >
+                          시장 지표를 불러오지 못했습니다.
+                        </p>
+                      )
+                    }
+
                     const indicators = response.data?.indicators ?? []
 
                     return (
