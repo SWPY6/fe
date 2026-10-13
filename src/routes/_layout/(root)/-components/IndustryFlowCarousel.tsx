@@ -80,19 +80,37 @@ export function IndustryFlowCarousel() {
                   {response.data.map((industry) => (
                     <Carousel.Item key={industry.code}>
                       <p className="typo-caption text-muted-foreground">
-                        평균 등락률 {industry.rank}위 · 소속 종목 {industry.stockCount}개 단순평균
+                        {industry.calculatedAt == null ? (
+                          "집계 전"
+                        ) : (
+                          <>
+                            평균 등락률 {industry.rank}위 · 소속 종목 {industry.stockCount}개
+                            단순평균
+                          </>
+                        )}
                       </p>
                       <h3 className="mt-3 typo-section-heading">
-                        {industry.displayName} 관련 종목의 평균 등락률은{" "}
-                        {industry.avgChangeRate == null ? (
-                          "—"
+                        {industry.calculatedAt == null ? (
+                          <>{industry.displayName} 산업은 아직 집계되지 않았습니다.</>
                         ) : (
-                          <PriceNumber
-                            value={industry.avgChangeRate}
-                            format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                          />
+                          <>
+                            {industry.displayName} 관련 종목의 평균 등락률은{" "}
+                            {industry.avgChangeRate == null ? (
+                              "—"
+                            ) : (
+                              <PriceNumber
+                                value={industry.avgChangeRate}
+                                format={{
+                                  style: "unit",
+                                  unit: "percent",
+                                  signDisplay: "exceptZero",
+                                }}
+                              />
+                            )}
+                          </>
                         )}
                       </h3>
+
                       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 typo-label-sm">
                         <Link to="/industries" className="text-primary hover:underline">
                           {industry.displayName} 산업 보기
