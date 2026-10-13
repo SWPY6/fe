@@ -27,6 +27,7 @@ import type {
   ApiResultListIndustryFlowResponse,
   ApiResultListIndustryNewsResponse,
   ApiResultListIndustryTrendResponse,
+  ApiResultMarketChartResponse,
   ApiResultMarketSummaryResponse,
   ApiResultStockChartResponse,
   ApiResultStockDisclosureResponse,
@@ -35,6 +36,7 @@ import type {
   ApiResultStockNewsResponse,
   ApiResultStockQuoteResponse,
   ApiResultSummary,
+  Chart1Params,
   ChartParams,
   DisclosuresParams,
   ErrorResponse,
@@ -68,6 +70,168 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+/**
+ * 구간 전체의 OHLC를 한 번에 준다. 지표에는 거래량이 없어 volume을 내보내지 않는다. interval이 1D가 아니면 저장된 일봉을 주·월·분기·연 단위로 묶어 준다(외부 호출 없음). 라인 차트는 candles[].close만, 캔들 차트는 OHLC를 쓰므로 차트 모양을 바꿔도 재요청이 필요 없다. 줌 아웃하면 from을 뒤로 밀어, 줌 인하면 interval을 좁혀 다시 호출한다. 마지막 봉이 진행 중이면(closed false) close가 현재값이고 asOf가 그 기준 시각이다. 장중 갱신은 카드와 같은 10초 주기로 폴링하면 현재값 캐시를 공유해 외부 호출이 늘지 않는다. 장 시작 전처럼 현재값이 이미 확정된 거래일의 것이면 진행 중인 봉을 붙이지 않고 asOf가 null이다.
+ * @summary 구간·봉 단위별 지표 차트 조회
+ */
+export const chart1 = (
+    indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<ApiResultMarketChartResponse>(
+      {url: `/api/v1/markets/indicators/${indicator}/chart`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getChart1QueryKey = (indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params,) => {
+    return [
+    `/api/v1/markets/indicators/${indicator}/chart`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getChart1QueryOptions = <TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChart1QueryKey(indicator,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof chart1>>> = ({ signal }) => chart1(indicator,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: indicator !== null && indicator !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type Chart1QueryResult = NonNullable<Awaited<ReturnType<typeof chart1>>>
+export type Chart1QueryError = ErrorResponse
+
+
+export function useChart1<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params: undefined |  Chart1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof chart1>>,
+          TError,
+          Awaited<ReturnType<typeof chart1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChart1<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof chart1>>,
+          TError,
+          Awaited<ReturnType<typeof chart1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChart1<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 구간·봉 단위별 지표 차트 조회
+ */
+
+export function useChart1<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChart1QueryOptions(indicator,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getChart1SuspenseQueryOptions = <TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChart1QueryKey(indicator,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof chart1>>> = ({ signal }) => chart1(indicator,params, requestOptions, signal);
+
+
+
+
+
+   return  queryOptionsBuilder({ queryKey, ...queryOptions, queryFn: queryOptions?.queryFn ?? queryFn}) as UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> } & { throwOnError?: ((this: never, error: TError) => boolean) & { readonly __inferenceOnly: never } }
+}
+
+export type Chart1SuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof chart1>>>
+export type Chart1SuspenseQueryError = ErrorResponse
+
+
+export function useChart1Suspense<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params: undefined |  Chart1Params, options: { query:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChart1Suspense<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChart1Suspense<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 구간·봉 단위별 지표 차트 조회
+ */
+
+export function useChart1Suspense<TData = Awaited<ReturnType<typeof chart1>>, TError = ErrorResponse>(
+ indicator: 'KOSPI' | 'KOSDAQ' | 'NASDAQ' | 'SP500' | 'USD_KRW',
+    params?: Chart1Params, options?: { query?:Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof chart1>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChart1SuspenseQueryOptions(indicator,params,options)
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as  UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 /**
  * 종목명, 티커, 로고, 시장, 통화, 시간대를 준다. 가격은 포함하지 않으므로 같은 stockId로 /api/v1/stocks/{stockId}/quote를 따로 조회해 조합한다. 시세 장애와 무관하게 응답한다.

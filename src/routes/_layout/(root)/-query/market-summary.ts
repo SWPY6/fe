@@ -4,6 +4,7 @@ import type { Summary1Params } from "@/api/generated/api.schemas"
 export function getMarketSummaryQueryOptions(params: Summary1Params) {
   return getSummary1SuspenseQueryOptions(params, {
     query: {
+      refetchInterval: 10_000,
       select: (response) => ({
         ...response,
         data: {

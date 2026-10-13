@@ -17,7 +17,28 @@ import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
+import { MarketIndicatorChart, isChartIndicator } from "./-components/MarketIndicatorChart"
 import { getMarketSummaryQueryOptions } from "./-query/market-summary"
+
+function formatIndicatorValueAt(valueAt: string | undefined, indicator: string | undefined) {
+  if (!valueAt) return "기준 시각 없음"
+
+  const date = new Date(valueAt)
+  if (Number.isNaN(date.getTime())) return "기준 시각 없음"
+
+  const isUsIndex = indicator === "NASDAQ" || indicator === "SP500"
+  const formatted = date.toLocaleString("ko-KR", {
+    timeZone: isUsIndex ? "America/New_York" : "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+
+  return `${formatted} ${isUsIndex ? "ET" : "KST"} 기준`
+}
 
 function HomeMoversErrorFallback({ reset }: ErrorBoundaryFallbackProps) {
   return (
@@ -67,7 +88,18 @@ export function RootPage() {
             <ErrorBoundary fallback="오류가 발생했습니다">
               <Suspense fallback="로딩중">
                 <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
-                  {({ data: response }) => {
+                  {({ data: response, error }) => {
+                    if (error) {
+                      return (
+                        <p
+                          role="alert"
+                          className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground"
+                        >
+                          시장 지표를 불러오지 못했습니다.
+                        </p>
+                      )
+                    }
+
                     const indicators = response.data?.indicators ?? []
 
                     return (
@@ -126,6 +158,11 @@ export function RootPage() {
                                     {quote.unit === "KRW" ? "원" : ""}
                                     {quote.unit === "USD" ? " USD" : ""}
                                   </p>
+                                  {quote.indicator !== "WTI" && (
+                                    <p className="mt-2 typo-helper text-muted-foreground">
+                                      {formatIndicatorValueAt(quote.valueAt, quote.indicator)}
+                                    </p>
+                                  )}
                                 </div>
                                 {quote.changeRate == null ? (
                                   <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
@@ -142,9 +179,13 @@ export function RootPage() {
                                   />
                                 )}
                               </div>
-                              <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
-                                차트 준비 중
-                              </div>
+                              {isChartIndicator(quote.indicator) ? (
+                                <MarketIndicatorChart indicator={quote.indicator} />
+                              ) : (
+                                <p className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
+                                  차트가 없습니다
+                                </p>
+                              )}
                             </Tabs.Content>
                           ))}
                           {indicators.length === 0 && "시장 지표가 없습니다"}
