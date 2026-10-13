@@ -5,6 +5,8 @@ import { OverlayProvider } from "overlay-kit"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { Toaster } from "sonner"
+// 소스 변환으로 삽입하는 렌더러도 최초 의존성 스캔에서 함께 준비한다.
+import "boneyard-js/react"
 
 import { queryClient } from "./api/query/queryClient"
 import { routeTree } from "./routeTree.gen"

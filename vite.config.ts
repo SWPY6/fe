@@ -4,11 +4,14 @@ import react from "@vitejs/plugin-react"
 import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
 
+import skeletonPlugin from "./vite-plugin-skeleton.ts"
+
 export default defineConfig({
   define: {
     FEEDBACK_BUILD_VERSION: JSON.stringify(process.env.BUILD_VERSION ?? `local-${Date.now()}`),
   },
   plugins: [
+    skeletonPlugin(),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
