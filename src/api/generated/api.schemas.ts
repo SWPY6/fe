@@ -793,6 +793,95 @@ export interface ApiResultListIndustryFlowResponse {
   data: IndustryFlowResponse[];
 }
 
+/**
+ * 요청한 조건을 그대로 돌려준다. 화면의 강조 표시에 쓴다
+ */
+export type StockMoverResponseCondition = typeof StockMoverResponseCondition[keyof typeof StockMoverResponseCondition];
+
+
+export const StockMoverResponseCondition = {
+  ALL: 'ALL',
+  RISING: 'RISING',
+  FALLING: 'FALLING',
+  VOLUME_SURGE: 'VOLUME_SURGE',
+} as const;
+
+/**
+ * 산업. 분류되지 않은 종목과 우리 종목 정보에 없는 종목은 null
+ * @nullable
+ */
+export type MoverStockResponseIndustry = typeof MoverStockResponseIndustry[keyof typeof MoverStockResponseIndustry] | null;
+
+
+export const MoverStockResponseIndustry = {
+  AUTOMOBILE: 'AUTOMOBILE',
+  CONSTRUCTION: 'CONSTRUCTION',
+  TRANSPORT: 'TRANSPORT',
+  RETAIL: 'RETAIL',
+  FOOD_BEVERAGE: 'FOOD_BEVERAGE',
+  TELECOM: 'TELECOM',
+  STEEL: 'STEEL',
+  ENERGY: 'ENERGY',
+  CHEMICAL: 'CHEMICAL',
+} as const;
+
+/**
+ * 목록의 한 줄
+ */
+export interface MoverStockResponse {
+  /**
+     * 종목 식별자. 종목 상세로 이동할 때 쓴다. 우리 종목 정보에 없는 종목은
+     * null 이며 그 줄은 상세로 이동할 수 없다 — ETF·우선주·신규 상장이 여기 해당한다.
+     * @nullable
+     */
+  stockId: number | null;
+  /** 종목 코드. 화면에 표시한다 */
+  ticker: string;
+  /** 종목명 */
+  name: string;
+  /**
+     * 산업. 분류되지 않은 종목과 우리 종목 정보에 없는 종목은 null
+     * @nullable
+     */
+  industry: MoverStockResponseIndustry;
+  /** 현재가 */
+  price: number;
+  /** 직전 거래일 종가 대비 등락률 %. 음수 가능 */
+  changeRate: number;
+  /** 당일 누적 거래량 */
+  volume: number;
+  /**
+     * 당일 누적 거래대금. 공급자가 주지 않는 조건에서는 null 이다 —
+     * 임의의 수치로 채우지 않는다.
+     * @nullable
+     */
+  tradingValue: number | null;
+  /**
+     * 시가총액. 거래대금과 같은 이유로 null 일 수 있다
+     * @nullable
+     */
+  marketCap: number | null;
+}
+
+/**
+ * 주요 변동 종목 목록
+ */
+export interface StockMoverResponse {
+  /** 요청한 조건을 그대로 돌려준다. 화면의 강조 표시에 쓴다 */
+  condition: StockMoverResponseCondition;
+  /**
+     * 조건에 맞는 종목 수. stocks 의 길이와 같다 — 서버가 페이지를 나누지 않고
+     * 한 번에 모두 보낸다.
+     */
+  totalCount: number;
+  /** 표시 순서대로다. 순위는 이 배열의 순서이며 따로 내려보내지 않는다 */
+  stocks: MoverStockResponse[];
+}
+
+export interface ApiResultStockMoverResponse {
+  data: StockMoverResponse;
+}
+
 export type StockListItem = StockQuoteResponse & ({
   industryCode: string;
   industryName: string;
@@ -946,6 +1035,59 @@ export type ReadFlowsCountry = typeof ReadFlowsCountry[keyof typeof ReadFlowsCou
 export const ReadFlowsCountry = {
   KR: 'KR',
   US: 'US',
+} as const;
+
+export type ReadMoversParams = {
+/**
+ * 국내(KR) 또는 해외(US). 화면의 시장 토글
+ */
+country?: ReadMoversCountry;
+/**
+ * ALL 전체 종목 · RISING 상승 TOP · FALLING 하락 TOP · VOLUME_SURGE 거래량 급증.
+ * 조건이 모집단과 정렬을 함께 정하므로 목록·순위·결과 수가 모두 바뀐다.
+ */
+condition?: ReadMoversCondition;
+/**
+ * 산업으로 좁힌다. 생략하면 전체 산업
+ */
+industry?: ReadMoversIndustry;
+/**
+ * 종목명 또는 종목 코드 부분 일치. 산업과 함께 주면 둘 다 만족하는 종목만
+ */
+query?: string;
+};
+
+export type ReadMoversCountry = typeof ReadMoversCountry[keyof typeof ReadMoversCountry];
+
+
+export const ReadMoversCountry = {
+  KR: 'KR',
+  US: 'US',
+} as const;
+
+export type ReadMoversCondition = typeof ReadMoversCondition[keyof typeof ReadMoversCondition];
+
+
+export const ReadMoversCondition = {
+  ALL: 'ALL',
+  RISING: 'RISING',
+  FALLING: 'FALLING',
+  VOLUME_SURGE: 'VOLUME_SURGE',
+} as const;
+
+export type ReadMoversIndustry = typeof ReadMoversIndustry[keyof typeof ReadMoversIndustry];
+
+
+export const ReadMoversIndustry = {
+  AUTOMOBILE: 'AUTOMOBILE',
+  CONSTRUCTION: 'CONSTRUCTION',
+  TRANSPORT: 'TRANSPORT',
+  RETAIL: 'RETAIL',
+  FOOD_BEVERAGE: 'FOOD_BEVERAGE',
+  TELECOM: 'TELECOM',
+  STEEL: 'STEEL',
+  ENERGY: 'ENERGY',
+  CHEMICAL: 'CHEMICAL',
 } as const;
 
 export type ReadStocksParams = {

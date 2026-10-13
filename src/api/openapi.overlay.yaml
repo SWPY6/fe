@@ -222,3 +222,25 @@ actions:
     update:
       required:
         - data
+  - target: $.components.schemas.StockMoverResponse
+    description: 목록 응답에 항상 포함되는 조건·건수·종목 배열.
+    update:
+      required: [condition, totalCount, stocks]
+  - target: $.components.schemas.MoverStockResponse
+    description: 종목 행에는 모든 필드가 있고 일부 값만 null일 수 있다.
+    update:
+      required:
+        [stockId, ticker, name, industry, price, changeRate, volume, tradingValue, marketCap]
+  - target: $.components.schemas.MoverStockResponse.properties.stockId
+    update:
+      type: [integer, "null"]
+  - target: $.components.schemas.MoverStockResponse.properties.industry
+    update:
+      type: [string, "null"]
+      enum: [null]
+  - target: $.components.schemas.MoverStockResponse.properties.tradingValue
+    update:
+      type: [number, "null"]
+  - target: $.components.schemas.MoverStockResponse.properties.marketCap
+    update:
+      type: [number, "null"]

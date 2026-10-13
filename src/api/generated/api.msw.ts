@@ -24,6 +24,7 @@ import type {
   ApiResultStockChartResponse,
   ApiResultStockDisclosureResponse,
   ApiResultStockListResponse,
+  ApiResultStockMoverResponse,
   ApiResultStockNewsResponse,
   ApiResultStockQuoteResponse,
   ApiResultSummary,
@@ -35,6 +36,7 @@ import type {
   IndustryTrendResponse,
   Item,
   MajorStockResponse,
+  MoverStockResponse,
   RelatedNewsResponse,
   StockDisclosureItem,
   StockListItem,
@@ -134,6 +136,14 @@ export type IndustryFlowResponseMock = {
   [K in keyof Required<NonNullable<IndustryFlowResponse>>]: NonNullable<Required<NonNullable<IndustryFlowResponse>>[K]>;
 };
 
+export type ApiResultStockMoverResponseMock = {
+  [K in keyof Required<NonNullable<ApiResultStockMoverResponse>>]: NonNullable<Required<NonNullable<ApiResultStockMoverResponse>>[K]>;
+};
+
+export type MoverStockResponseMock = {
+  [K in keyof Required<NonNullable<MoverStockResponse>>]: NonNullable<Required<NonNullable<MoverStockResponse>>[K]>;
+};
+
 export type ApiResultStockListResponseMock = {
   [K in keyof Required<NonNullable<ApiResultStockListResponse>>]: NonNullable<Required<NonNullable<ApiResultStockListResponse>>[K]>;
 };
@@ -181,6 +191,10 @@ export const getMajorStockResponseMock = <O extends Partial<MajorStockResponse> 
 export const getIndustryFlowResponseMock = <O extends Partial<IndustryFlowResponse> = {}>(overrideResponse?: O): MockWithNullableOverrides<IndustryFlowResponse, O, IndustryFlowResponseMock> => ({...{code: faker.helpers.arrayElement(['AUTOMOBILE','CONSTRUCTION','TRANSPORT','RETAIL','FOOD_BEVERAGE','TELECOM','STEEL','ENERGY','CHEMICAL'] as const), displayName: faker.string.alpha({length: {min: 10, max: 20}}), rank: faker.number.int(), avgChangeRate: faker.number.float({fractionDigits: 2}), stockCount: faker.number.int(), majorStocks: Array.from({ length: faker.number.int({min: 0, max: 2}) }, (_, i) => i + 1).map(() => ({...getMajorStockResponseMock() as MajorStockResponseMock})), calculatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z'}, ...overrideResponse}) as MockWithNullableOverrides<IndustryFlowResponse, O, IndustryFlowResponseMock>;
 
 export const getReadFlowsResponseMock = <O extends Partial<Extract<ApiResultListIndustryFlowResponse, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultListIndustryFlowResponse, O, ApiResultListIndustryFlowResponseMock> => ({data: Array.from({ length: faker.number.int({min: 1, max: 4}) }, (_, i) => i + 1).map(() => ({...getIndustryFlowResponseMock() as IndustryFlowResponseMock})), ...overrideResponse}) as MockWithNullableOverrides<ApiResultListIndustryFlowResponse, O, ApiResultListIndustryFlowResponseMock>;
+
+export const getMoverStockResponseMock = <O extends Partial<MoverStockResponse> = {}>(overrideResponse?: O): MockWithNullableOverrides<MoverStockResponse, O, MoverStockResponseMock> => ({...{stockId: faker.number.int(), ticker: faker.string.alpha({length: {min: 10, max: 20}}), name: faker.string.alpha({length: {min: 10, max: 20}}), industry: faker.helpers.arrayElement(['AUTOMOBILE','CONSTRUCTION','TRANSPORT','RETAIL','FOOD_BEVERAGE','TELECOM','STEEL','ENERGY','CHEMICAL'] as const), price: faker.number.float({fractionDigits: 2}), changeRate: faker.number.float({fractionDigits: 2}), volume: faker.number.int(), tradingValue: faker.number.float({fractionDigits: 2}), marketCap: faker.number.float({fractionDigits: 2})}, ...overrideResponse}) as MockWithNullableOverrides<MoverStockResponse, O, MoverStockResponseMock>;
+
+export const getReadMoversResponseMock = <O extends Partial<Extract<ApiResultStockMoverResponse, object>> = {}>(overrideResponse?: O): MockWithNullableOverrides<ApiResultStockMoverResponse, O, ApiResultStockMoverResponseMock> => ({data: {condition: faker.helpers.arrayElement(['ALL','RISING','FALLING','VOLUME_SURGE'] as const), totalCount: faker.number.int(), stocks: Array.from({ length: faker.number.int({min: 1, max: 4}) }, (_, i) => i + 1).map(() => ({...getMoverStockResponseMock() as MoverStockResponseMock}))}, ...overrideResponse}) as MockWithNullableOverrides<ApiResultStockMoverResponse, O, ApiResultStockMoverResponseMock>;
 
 export const getStockListItemMock = <O extends Partial<StockListItem> = {}>(overrideResponse?: O): MockWithNullableOverrides<StockListItem, O, StockListItemMock> => ({...{...{stockId: faker.number.int(), ticker: (() => faker.string.alpha({ length: 4, casing: "upper" }))(), name: (() => faker.company.name())(), currency: faker.helpers.arrayElement(['KRW','USD','USDT'] as const), price: (() => faker.number.float({ min: 20, max: 500, fractionDigits: 2 }))(), change: (() => faker.number.float({ min: -10, max: 10, fractionDigits: 2 }))(), changeRate: (() => faker.number.float({ min: -5, max: 5, fractionDigits: 2 }))(), priceAt: faker.date.past().toISOString().slice(0, 19) + 'Z', priceTiming: faker.helpers.arrayElement(['REALTIME','DELAYED'] as const), indicators: {previousClose: faker.number.float({fractionDigits: 2}), open: faker.number.float({fractionDigits: 2}), high: faker.number.float({fractionDigits: 2}), low: faker.number.float({fractionDigits: 2}), volume: (() => faker.number.int({ min: 100_000, max: 2_000_000 }))(), volumeRatio20d: (() => faker.number.float({ min: 0.5, max: 3, fractionDigits: 2 }))(), marketCap: (() => faker.number.int({ min: 1_000_000_000, max: 100_000_000_000 }))(), tradingValue: faker.number.float({fractionDigits: 2})}},...{industryCode: faker.string.alpha({length: {min: 10, max: 20}}), industryName: faker.string.alpha({length: {min: 10, max: 20}}), caution: faker.datatype.boolean(), contextSummary: faker.string.alpha({length: {min: 10, max: 20}})},}, ...overrideResponse}) as MockWithNullableOverrides<StockListItem, O, StockListItemMock>;
 
@@ -295,6 +309,18 @@ export const getReadFlowsMockHandler = (overrideResponse?: ApiResultListIndustry
   }, options)
 }
 
+export const getReadMoversMockHandler = (overrideResponse?: ApiResultStockMoverResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiResultStockMoverResponse> | ApiResultStockMoverResponse), options?: RequestHandlerOptions) => {
+  return http.get('*/api/v1/stocks/movers', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+
+
+    return HttpResponse.json(overrideResponse !== undefined
+    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
+    : getReadMoversResponseMock(),
+      { status: 200
+      })
+  }, options)
+}
+
 export const getReadStocksMockHandler = (overrideResponse?: ApiResultStockListResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<ApiResultStockListResponse> | ApiResultStockListResponse), options?: RequestHandlerOptions) => {
   return http.get('*/api/v1/stocks', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
 
@@ -316,5 +342,6 @@ export const getOpenAPIDefinitionMock = () => [
   getReadTrendsMockHandler(),
   getReadNewsMockHandler(),
   getReadFlowsMockHandler(),
+  getReadMoversMockHandler(),
   getReadStocksMockHandler()
 ]
