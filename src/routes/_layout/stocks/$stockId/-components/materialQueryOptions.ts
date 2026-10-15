@@ -17,6 +17,7 @@ function canAutoRefetch(query: { state: { error: unknown } }, code: "P009" | "P0
 export const getNewsMaterialQueryOptions = (stockId: number) =>
   getNewsSuspenseQueryOptions(stockId, undefined, {
     query: {
+      refetchOnMount: (query) => canAutoRefetch(query, "P009"),
       refetchOnWindowFocus: (query) => canAutoRefetch(query, "P009"),
       refetchOnReconnect: (query) => canAutoRefetch(query, "P009"),
     },
@@ -25,6 +26,7 @@ export const getNewsMaterialQueryOptions = (stockId: number) =>
 export const getDisclosuresMaterialQueryOptions = (stockId: number) =>
   getDisclosuresSuspenseQueryOptions(stockId, undefined, {
     query: {
+      refetchOnMount: (query) => canAutoRefetch(query, "P011"),
       refetchOnWindowFocus: (query) => canAutoRefetch(query, "P011"),
       refetchOnReconnect: (query) => canAutoRefetch(query, "P011"),
     },
