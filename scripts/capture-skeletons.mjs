@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 import { createServer } from "vite"
 
+import { validateSkeletonData } from "../vite-plugin-skeleton.ts"
+
 const projectRoot = resolve(import.meta.dirname, "..")
 const output = resolve(projectRoot, "bones")
 const captured = await mkdtemp(resolve(tmpdir(), "swpy6-skeletons-"))
@@ -75,18 +77,7 @@ try {
       const file = `${id}.bones.json`
       if (!files.includes(file)) throw new Error(`캡처 결과가 없는 스켈레톤: ${id}`)
       const data = JSON.parse(await readFile(resolve(captured, file), "utf8"))
-      for (const width of [375, 768, 1280]) {
-        const snapshot = data.breakpoints?.[width]
-        if (
-          !snapshot ||
-          snapshot.name !== id ||
-          !(snapshot.width > 0) ||
-          !(snapshot.height > 0) ||
-          !snapshot.bones?.length
-        ) {
-          throw new Error(`실제 화면에서 캡처하지 못한 스켈레톤: ${id} (${width}px)`)
-        }
-      }
+      validateSkeletonData(data, id)
     }),
   )
 

@@ -20,7 +20,7 @@ function Layout() {
         <Header.Row>
           <Header.Left>
             <Link to="/" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
-              ploutos.
+              ploutos
             </Link>
           </Header.Left>
         </Header.Row>
@@ -47,7 +47,7 @@ function Layout() {
       <footer className="flex flex-col gap-8 pb-8">
         <Separator />
         <div>
-          <p className="typo-wordmark-sm text-primary">ploutos.</p>
+          <p className="typo-wordmark-sm text-primary">ploutos</p>
           <p className="mt-2 typo-caption text-muted-foreground">
             제공되는 정보는 투자 판단을 위한 참고 자료이며, 특정 종목의 매수·매도를 권유하지
             않습니다.

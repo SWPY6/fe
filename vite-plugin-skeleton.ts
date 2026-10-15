@@ -2,7 +2,54 @@ import { createHash } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { basename, dirname, relative, resolve } from "node:path"
 
+import { normalizeBone, type AnyBone } from "boneyard-js"
 import type { Plugin } from "vite"
+
+export function validateSkeletonData(data: unknown, skeletonId: string) {
+  const breakpoints = (data as { breakpoints?: Record<string, unknown> } | null)?.breakpoints
+  if (
+    !breakpoints ||
+    typeof breakpoints !== "object" ||
+    Array.isArray(breakpoints) ||
+    [375, 768, 1280].some((width) => !Object.hasOwn(breakpoints, width))
+  ) {
+    throw new Error(`스켈레톤 JSON에 375·768·1280px 캡처가 필요합니다: ${skeletonId}`)
+  }
+
+  for (const [width, snapshot] of Object.entries(breakpoints)) {
+    const result = snapshot as Record<string, unknown> | null
+    if (
+      !Number.isFinite(Number(width)) ||
+      Number(width) <= 0 ||
+      !result ||
+      result.name !== skeletonId ||
+      [result.viewportWidth, result.width, result.height].some(
+        (size) => typeof size !== "number" || !Number.isFinite(size) || size <= 0,
+      ) ||
+      !Array.isArray(result.bones) ||
+      !result.bones.length
+    ) {
+      throw new Error(`스켈레톤 캡처 데이터가 올바르지 않습니다: ${skeletonId} (${width}px)`)
+    }
+    for (const raw of result.bones) {
+      if (!raw || typeof raw !== "object") {
+        throw new Error(`스켈레톤 bone 형식이 올바르지 않습니다: ${skeletonId} (${width}px)`)
+      }
+      const bone = normalizeBone(raw as AnyBone)
+      if (
+        ![bone.x, bone.y, bone.w, bone.h].every(Number.isFinite) ||
+        bone.w <= 0 ||
+        bone.h <= 0 ||
+        !(typeof bone.r === "number"
+          ? Number.isFinite(bone.r) && bone.r >= 0
+          : typeof bone.r === "string" && /^(?:\d+(?:\.\d+)?)(?:px|%)$/.test(bone.r)) ||
+        (bone.c !== undefined && typeof bone.c !== "boolean")
+      ) {
+        throw new Error(`스켈레톤 bone 크기가 올바르지 않습니다: ${skeletonId} (${width}px)`)
+      }
+    }
+  }
+}
 
 export default function skeletonPlugin(): Plugin {
   let projectRoot = process.cwd()
@@ -214,36 +261,14 @@ export default function skeletonPlugin(): Plugin {
           message: `스켈레톤 JSON을 읽을 수 없습니다: ${skeletonId}\n${path}\n${error instanceof Error ? error.message : String(error)}`,
         })
       }
-      if (
-        !skeletonData ||
-        typeof skeletonData !== "object" ||
-        !("breakpoints" in skeletonData) ||
-        !skeletonData.breakpoints ||
-        typeof skeletonData.breakpoints !== "object" ||
-        Array.isArray(skeletonData.breakpoints) ||
-        !Object.keys(skeletonData.breakpoints).length
-      ) {
+      try {
+        validateSkeletonData(skeletonData, skeletonId)
+      } catch (error) {
         this.error({
           id: source.file,
           loc: source,
-          message: `스켈레톤 JSON 형식이 올바르지 않습니다: ${skeletonId}\n${path}`,
+          message: `${error instanceof Error ? error.message : String(error)}\n${path}`,
         })
-      }
-      for (const result of Object.values(skeletonData.breakpoints)) {
-        if (
-          !result ||
-          typeof result !== "object" ||
-          !("name" in result) ||
-          result.name !== skeletonId ||
-          !("bones" in result) ||
-          !Array.isArray(result.bones)
-        ) {
-          this.error({
-            id: source.file,
-            loc: source,
-            message: `스켈레톤 JSON의 이름 또는 캡처 데이터가 일치하지 않습니다: ${skeletonId}\n${path}`,
-          })
-        }
       }
       return `export default ${JSON.stringify(skeletonData)}`
     },

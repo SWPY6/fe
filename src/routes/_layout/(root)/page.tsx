@@ -1,10 +1,15 @@
 // oxlint-disable react/no-array-index-key
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { ErrorBoundary, Suspense, type ErrorBoundaryFallbackProps } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { Separated } from "react-simplikit"
 
-import { getReadNewsSuspenseQueryOptions } from "@/api/generated/api"
+import {
+  getReadNewsSuspenseQueryOptions,
+  getReadMoversSuspenseQueryOptions,
+  getReadMoversQueryKey,
+} from "@/api/generated/api"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -12,11 +17,48 @@ import { Tabs } from "@/components/ui/tabs"
 import { useGlobalUrlState } from "@/hooks/useGlobalUrlState"
 
 import { IndustryFlowCarousel } from "./-components/IndustryFlowCarousel"
+import { MarketIndicatorChart, isChartIndicator } from "./-components/MarketIndicatorChart"
 import { getMarketSummaryQueryOptions } from "./-query/market-summary"
+
+function formatIndicatorValueAt(valueAt: string | undefined, indicator: string | undefined) {
+  if (!valueAt) return "기준 시각 없음"
+
+  const date = new Date(valueAt)
+  if (Number.isNaN(date.getTime())) return "기준 시각 없음"
+
+  const isUsIndex = indicator === "NASDAQ" || indicator === "SP500"
+  const formatted = date.toLocaleString("ko-KR", {
+    timeZone: isUsIndex ? "America/New_York" : "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+
+  return `${formatted} ${isUsIndex ? "ET" : "KST"} 기준`
+}
+
+function HomeMoversErrorFallback({ reset }: ErrorBoundaryFallbackProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <p>종목을 불러오지 못했습니다.</p>
+      <Button type="button" variant="outline" onClick={reset}>
+        다시 시도
+      </Button>
+    </div>
+  )
+}
 
 export function RootPage() {
   const [{ market }, setGlobalUrlState] = useGlobalUrlState()
   const region = market === "domestic" ? "DOMESTIC" : "OVERSEAS"
+  const queryClient = useQueryClient()
+  const moverParams = {
+    country: market === "domestic" ? "KR" : "US",
+    condition: "RISING",
+  } as const
 
   return (
     <main id="market-overview" className="py-8">
@@ -47,7 +89,18 @@ export function RootPage() {
               <ErrorBoundary fallback="오류가 발생했습니다">
                 <Suspense data-skeleton fallback="로딩중">
                   <SuspenseQuery {...getMarketSummaryQueryOptions({ region })}>
-                    {({ data: response }) => {
+                    {({ data: response, error }) => {
+                      if (error) {
+                        return (
+                          <p
+                            role="alert"
+                            className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground"
+                          >
+                            시장 지표를 불러오지 못했습니다.
+                          </p>
+                        )
+                      }
+
                       const indicators = response.data?.indicators ?? []
 
                       return (
@@ -108,6 +161,11 @@ export function RootPage() {
                                       {quote.unit === "KRW" ? "원" : ""}
                                       {quote.unit === "USD" ? " USD" : ""}
                                     </p>
+                                    {quote.indicator !== "WTI" && (
+                                      <p className="mt-2 typo-helper text-muted-foreground">
+                                        {formatIndicatorValueAt(quote.valueAt, quote.indicator)}
+                                      </p>
+                                    )}
                                   </div>
                                   {quote.changeRate == null ? (
                                     <p className="pb-1 typo-numeric-sm text-muted-foreground">—</p>
@@ -124,9 +182,13 @@ export function RootPage() {
                                     />
                                   )}
                                 </div>
-                                <div className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
-                                  차트 준비 중
-                                </div>
+                                {isChartIndicator(quote.indicator) ? (
+                                  <MarketIndicatorChart indicator={quote.indicator} />
+                                ) : (
+                                  <p className="mt-5 flex h-44 items-center justify-center typo-helper text-muted-foreground">
+                                    차트가 없습니다
+                                  </p>
+                                )}
                               </Tabs.Content>
                             ))}
                             {indicators.length === 0 && "시장 지표가 없습니다"}
@@ -205,16 +267,73 @@ export function RootPage() {
               className="flex flex-col gap-6"
             >
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 id="market-movers-title" className="typo-section-heading">
-                    주요 변동 종목
-                  </h2>
-                  <p className="mt-2 typo-body-sm text-muted-foreground">준비 중입니다.</p>
-                </div>
+                <h2 id="market-movers-title" className="typo-section-heading">
+                  주요 변동 종목
+                </h2>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/movers">전체 보기</Link>
                 </Button>
               </div>
+              <ErrorBoundary
+                key={market}
+                fallback={HomeMoversErrorFallback}
+                onReset={() =>
+                  queryClient.removeQueries({
+                    queryKey: getReadMoversQueryKey(moverParams),
+                    exact: true,
+                  })
+                }
+              >
+                <Suspense fallback={<p>종목을 불러오는 중입니다.</p>}>
+                  <SuspenseQuery {...getReadMoversSuspenseQueryOptions(moverParams)}>
+                    {({ data: response }) => {
+                      const stocks = response.data?.stocks
+                      if (!Array.isArray(stocks))
+                        throw new Error("종목 목록 응답이 올바르지 않습니다.")
+                      const topStocks = stocks.slice(0, 4)
+                      if (topStocks.length === 0) return <p>현재 표시할 상승 종목이 없습니다.</p>
+
+                      return (
+                        <ol className="grid gap-4 md:grid-cols-2">
+                          {topStocks.map((stock, index) => (
+                            <li
+                              key={`${stock.ticker ?? stock.name ?? "stock"}-${index}`}
+                              className="flex min-w-0 items-center justify-between gap-4 border-b border-border py-3"
+                            >
+                              <div className="min-w-0">
+                                {stock.stockId != null ? (
+                                  <Link
+                                    to="/stocks/$stockId"
+                                    params={{ stockId: String(stock.stockId) }}
+                                    className="typo-table-label hover:text-primary hover:underline"
+                                  >
+                                    {stock.name ?? "이름 없음"}
+                                  </Link>
+                                ) : (
+                                  <span className="typo-table-label">
+                                    {stock.name ?? "이름 없음"}
+                                  </span>
+                                )}
+                                <p className="typo-caption text-muted-foreground">
+                                  {stock.ticker ?? "—"}
+                                </p>
+                              </div>
+                              <div className="shrink-0 text-right tabular-nums">
+                                <p>
+                                  {stock.price == null ? "—" : stock.price.toLocaleString("ko-KR")}
+                                </p>
+                                <p className="typo-caption text-muted-foreground">
+                                  {stock.changeRate == null ? "—" : `${stock.changeRate}%`}
+                                </p>
+                              </div>
+                            </li>
+                          ))}
+                        </ol>
+                      )
+                    }}
+                  </SuspenseQuery>
+                </Suspense>
+              </ErrorBoundary>
             </section>
           </Separated>
         </Tabs.Content>

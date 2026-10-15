@@ -50,9 +50,9 @@ export function StockPage() {
           </div>
         </div>
         <section aria-label="종목 요약 정보">
-          <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
-            <Suspense data-skeleton fallback="로딩중">
-              <div className="flex flex-wrap items-center gap-x-12 gap-y-5">
+          <Suspense data-skeleton fallback="로딩중">
+            <div className="flex flex-wrap items-center gap-x-12 gap-y-5">
+              <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
                 <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
                   {({ data: response }) => (
                     <div>
@@ -69,6 +69,8 @@ export function StockPage() {
                     </div>
                   )}
                 </SuspenseQuery>
+              </ErrorBoundary>
+              <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
                 <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
                   {({ data: response }) => (
                     <div>
@@ -109,9 +111,9 @@ export function StockPage() {
                     </div>
                   )}
                 </SuspenseQuery>
-              </div>
-            </Suspense>
-          </ErrorBoundary>
+              </ErrorBoundary>
+            </div>
+          </Suspense>
         </section>
         <StockChartSection />
         <StockMaterialsSection key={stockId} />
