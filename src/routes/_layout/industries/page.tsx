@@ -103,18 +103,24 @@ export function IndustriesPage() {
                                       <div>
                                         <h2 className="typo-subheading">{industry.displayName}</h2>
                                         <p className="mt-1 typo-caption text-muted-foreground">
-                                          평균 등락률 {industry.rank}위 ·{" "}
-                                          {industry.avgChangeRate == null ? (
-                                            "—"
+                                          {industry.calculatedAt == null ? (
+                                            "집계 전"
                                           ) : (
-                                            <PriceNumber
-                                              value={industry.avgChangeRate}
-                                              format={{
-                                                style: "unit",
-                                                unit: "percent",
-                                                signDisplay: "exceptZero",
-                                              }}
-                                            />
+                                            <>
+                                              평균 등락률 {industry.rank}위 ·{" "}
+                                              {industry.avgChangeRate == null ? (
+                                                "—"
+                                              ) : (
+                                                <PriceNumber
+                                                  value={industry.avgChangeRate}
+                                                  format={{
+                                                    style: "unit",
+                                                    unit: "percent",
+                                                    signDisplay: "exceptZero",
+                                                  }}
+                                                />
+                                              )}
+                                            </>
                                           )}
                                         </p>
                                       </div>
@@ -212,7 +218,9 @@ export function IndustriesPage() {
                                         {!industry.stocks?.length && (
                                           <Table.Row>
                                             <Table.Cell colSpan={3}>
-                                              표시할 종목이 없습니다
+                                              {industry.calculatedAt == null
+                                                ? "종목 정보가 아직 준비되지 않았습니다."
+                                                : "표시할 종목이 없습니다."}
                                             </Table.Cell>
                                           </Table.Row>
                                         )}
