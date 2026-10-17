@@ -251,6 +251,10 @@
 }
 
 @layer base {
+  html:not(:has(body[data-scroll-locked])) {
+    overflow-y: scroll;
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;

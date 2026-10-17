@@ -1,12 +1,17 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
+import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, getRouteApi } from "@tanstack/react-router"
 import { Star } from "lucide-react"
 import { Separated, useStorageState } from "react-simplikit"
 
 import { getQuoteSuspenseQueryOptions, getSummarySuspenseQueryOptions } from "@/api/generated/api"
+import { ApiError } from "@/api/http/error"
+import { getErrorDescription } from "@/api/query/errorPolicy"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
+import { QueryErrorBoundary } from "@/components/ui/QueryErrorBoundary"
+import { Result } from "@/components/ui/Result"
 import { Separator } from "@/components/ui/separator"
 
 import { StockChartSection } from "./-components/StockChartSection"
@@ -50,70 +55,122 @@ export function StockPage() {
           </div>
         </div>
         <section aria-label="종목 요약 정보">
-          <Suspense data-skeleton fallback="로딩중">
-            <div className="flex flex-wrap items-center gap-x-12 gap-y-5">
-              <ErrorBoundary key={`identity-${stockId}`} fallback="오류가 발생했습니다">
-                <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
-                  {({ data: response }) => (
-                    <div>
-                      <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
-                      <p className="mt-1 typo-body-sm text-muted-foreground">
-                        {response.data.profile?.ticker} · {response.data.country} ·{" "}
-                        {response.data.currency}
-                      </p>
-                      <p className="mt-1 typo-body-sm text-muted-foreground">
-                        {response.data.profile?.industries
-                          ?.map((industry) => industry.name)
-                          .join(" · ") || "연결된 산업이 없습니다"}
-                      </p>
-                    </div>
-                  )}
-                </SuspenseQuery>
-              </ErrorBoundary>
-              <ErrorBoundary key={`quote-${stockId}`} fallback="오류가 발생했습니다">
-                <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
-                  {({ data: response }) => (
-                    <div>
-                      <p className="typo-numeric-md">
-                        {response.data.price == null || !response.data.currency ? (
-                          "—"
-                        ) : (
-                          <>
+          <div className="flex flex-wrap items-center gap-x-12 gap-y-5">
+            <QueryErrorResetBoundary>
+              <QueryErrorBoundary
+                shouldCatch={ApiError}
+                resetKeys={[stockId]}
+                fallback={({ error, reset }) => (
+                  <Result
+                    role="alert"
+                    title={
+                      error.data?.error.code === "P002"
+                        ? "종목을 찾을 수 없습니다"
+                        : "종목 정보를 불러오지 못했습니다"
+                    }
+                    description={getErrorDescription(error)}
+                    button={
+                      error.data?.error.code === "P002" ? (
+                        <Result.Button asChild>
+                          <Link to="/movers">다른 종목 찾기</Link>
+                        </Result.Button>
+                      ) : (
+                        <Result.Button onClick={reset}>다시 시도</Result.Button>
+                      )
+                    }
+                  />
+                )}
+              >
+                <Suspense data-skeleton fallback="로딩중">
+                  <SuspenseQuery {...getSummarySuspenseQueryOptions(Number(stockId))}>
+                    {({ data: response }) => (
+                      <div>
+                        <h2 className="typo-subheading">{response.data.profile?.name ?? "—"}</h2>
+                        <p className="mt-1 typo-body-sm text-muted-foreground">
+                          {response.data.profile?.ticker} · {response.data.country} ·{" "}
+                          {response.data.currency}
+                        </p>
+                        <p className="mt-1 typo-body-sm text-muted-foreground">
+                          {response.data.profile?.industries
+                            ?.map((industry) => industry.name)
+                            .join(" · ") || "연결된 산업이 없습니다"}
+                        </p>
+                      </div>
+                    )}
+                  </SuspenseQuery>
+                </Suspense>
+              </QueryErrorBoundary>
+            </QueryErrorResetBoundary>
+            <QueryErrorResetBoundary>
+              <QueryErrorBoundary
+                shouldCatch={ApiError}
+                resetKeys={[stockId]}
+                fallback={({ error, reset }) => (
+                  <Result
+                    role="alert"
+                    title={
+                      error.data?.error.code === "P002"
+                        ? "종목을 찾을 수 없습니다"
+                        : "시세를 불러오지 못했습니다"
+                    }
+                    description={getErrorDescription(error)}
+                    button={
+                      error.data?.error.code === "P002" ? (
+                        <Result.Button asChild>
+                          <Link to="/movers">다른 종목 찾기</Link>
+                        </Result.Button>
+                      ) : (
+                        <Result.Button onClick={reset}>다시 시도</Result.Button>
+                      )
+                    }
+                  />
+                )}
+              >
+                <Suspense data-skeleton fallback="로딩중">
+                  <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
+                    {({ data: response }) => (
+                      <div>
+                        <p className="typo-numeric-md">
+                          {response.data.price == null || !response.data.currency ? (
+                            "—"
+                          ) : (
+                            <>
+                              <PriceNumber
+                                value={response.data.price}
+                                className="text-foreground"
+                                format={{ maximumFractionDigits: 2 }}
+                              />{" "}
+                              {response.data.currency}
+                            </>
+                          )}
+                        </p>
+                        <p className="typo-body">
+                          {response.data.changeRate == null ? (
+                            "—"
+                          ) : (
                             <PriceNumber
-                              value={response.data.price}
-                              className="text-foreground"
-                              format={{ maximumFractionDigits: 2 }}
-                            />{" "}
-                            {response.data.currency}
-                          </>
-                        )}
-                      </p>
-                      <p className="typo-body">
-                        {response.data.changeRate == null ? (
-                          "—"
-                        ) : (
-                          <PriceNumber
-                            value={response.data.changeRate}
-                            format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
-                          />
-                        )}
-                      </p>
-                      <p className="mt-2 typo-helper text-muted-foreground">
-                        {response.data.priceAt
-                          ? new Date(response.data.priceAt).toLocaleString("ko-KR")
-                          : "기준 시각 없음"}
-                        {response.data.priceTiming === "DELAYED"
-                          ? " · 지연 시세"
-                          : response.data.priceTiming === "REALTIME"
-                            ? " · 실시간 시세"
-                            : ""}
-                      </p>
-                    </div>
-                  )}
-                </SuspenseQuery>
-              </ErrorBoundary>
-            </div>
-          </Suspense>
+                              value={response.data.changeRate}
+                              format={{ style: "unit", unit: "percent", signDisplay: "exceptZero" }}
+                            />
+                          )}
+                        </p>
+                        <p className="mt-2 typo-helper text-muted-foreground">
+                          {response.data.priceAt
+                            ? new Date(response.data.priceAt).toLocaleString("ko-KR")
+                            : "기준 시각 없음"}
+                          {response.data.priceTiming === "DELAYED"
+                            ? " · 지연 시세"
+                            : response.data.priceTiming === "REALTIME"
+                              ? " · 실시간 시세"
+                              : ""}
+                        </p>
+                      </div>
+                    )}
+                  </SuspenseQuery>
+                </Suspense>
+              </QueryErrorBoundary>
+            </QueryErrorResetBoundary>
+          </div>
         </section>
         <StockChartSection />
         <StockMaterialsSection key={stockId} />

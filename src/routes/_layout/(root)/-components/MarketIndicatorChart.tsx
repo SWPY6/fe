@@ -1,10 +1,14 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { QueryErrorResetBoundary, keepPreviousData, useQuery } from "@tanstack/react-query"
 import type { IChartApi, LogicalRange } from "lightweight-charts"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useDebouncedCallback } from "react-simplikit"
 
 import { getChart1QueryOptions } from "@/api/generated/api"
+import { ApiError } from "@/api/http/error"
+import { getErrorDescription } from "@/api/query/errorPolicy"
 import { TradingChart } from "@/components/ui/chart"
+import { QueryErrorBoundary } from "@/components/ui/QueryErrorBoundary"
+import { Result } from "@/components/ui/Result"
 
 const chartIndicators = ["KOSPI", "KOSDAQ", "NASDAQ", "SP500", "USD_KRW"] as const
 type ChartIndicator = (typeof chartIndicators)[number]
@@ -90,6 +94,35 @@ export function MarketIndicatorChart({ indicator }: { indicator: ChartIndicator 
 
 function IndicatorChart({ indicator }: { indicator: ChartIndicator }) {
   const [params, setParams] = useState<ChartRequest>(undefined)
+
+  return (
+    <QueryErrorResetBoundary>
+      <QueryErrorBoundary
+        shouldCatch={ApiError}
+        fallback={({ error, reset }) => (
+          <Result
+            role="alert"
+            title="차트를 불러오지 못했습니다"
+            description={getErrorDescription(error)}
+            button={<Result.Button onClick={reset}>다시 시도</Result.Button>}
+          />
+        )}
+      >
+        <IndicatorChartContent indicator={indicator} params={params} onParamsChange={setParams} />
+      </QueryErrorBoundary>
+    </QueryErrorResetBoundary>
+  )
+}
+
+function IndicatorChartContent({
+  indicator,
+  params,
+  onParamsChange,
+}: {
+  indicator: ChartIndicator
+  params: ChartRequest
+  onParamsChange: (params: ChartRequest) => void
+}) {
   const [chart, setChart] = useState<IChartApi | null>(null)
   const pendingView = useRef<PendingView | null>("fit")
   const restoringView = useRef(false)
@@ -99,7 +132,11 @@ function IndicatorChart({ indicator }: { indicator: ChartIndicator }) {
   }, [])
   const query = useQuery(
     getChart1QueryOptions(indicator, params, {
-      query: { refetchInterval: 10_000, placeholderData: keepPreviousData },
+      query: {
+        refetchInterval: 10_000,
+        placeholderData: keepPreviousData,
+        throwOnError: (_error, { state }) => state.data === undefined,
+      },
     }),
   )
   const candles = query.data?.data.candles
@@ -122,7 +159,7 @@ function IndicatorChart({ indicator }: { indicator: ChartIndicator }) {
       const next = requestForVisibleRange(logical, candles, params)
       if (!next) return
       pendingView.current = next.visible
-      setParams(next.params)
+      onParamsChange(next.params)
     },
   })
 
@@ -159,12 +196,13 @@ function IndicatorChart({ indicator }: { indicator: ChartIndicator }) {
 
   return (
     <div>
+      {query.isRefetchError && (
+        <output className="mt-5 typo-helper text-muted-foreground">
+          차트를 갱신하지 못했습니다. 마지막으로 받은 정보를 표시합니다.
+        </output>
+      )}
       {query.isPending ? (
         <p className={chartMessageClassName}>차트를 불러오는 중입니다.</p>
-      ) : query.isError ? (
-        <p role="alert" className={chartMessageClassName}>
-          차트를 불러오지 못했습니다.
-        </p>
       ) : !Array.isArray(candles) ? (
         <p role="alert" className={chartMessageClassName}>
           차트 데이터가 빠졌습니다.

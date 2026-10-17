@@ -15,11 +15,15 @@ export const Route = createFileRoute("/_layout")({
 
 function Layout() {
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <Header.Root>
         <Header.Row>
           <Header.Left>
-            <Link to="/" className="typo-wordmark text-primary" aria-label="ploutos 시장 요약">
+            <Link
+              to="/"
+              className="-m-2 inline-flex min-h-11 items-center p-2 typo-wordmark text-primary"
+              aria-label="ploutos 시장 요약"
+            >
               ploutos
             </Link>
           </Header.Left>
@@ -43,7 +47,9 @@ function Layout() {
           </ul>
         </Header.Navigation>
       </Header.Root>
-      <Outlet />
+      <div className="min-w-0 flex-1">
+        <Outlet />
+      </div>
       <footer className="flex flex-col gap-8 pb-8">
         <Separator />
         <div>
@@ -54,6 +60,6 @@ function Layout() {
           </p>
         </div>
       </footer>
-    </>
+    </div>
   )
 }
