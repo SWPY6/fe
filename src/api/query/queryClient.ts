@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
+import { ApiError } from "../http/error"
 import { getErrorPolicy } from "./errorPolicy"
 
 interface ErrorMeta extends Record<string, unknown> {
@@ -17,6 +18,7 @@ declare module "@tanstack/react-query" {
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError(error, query) {
+      if (error instanceof ApiError && (error.status ?? 0) >= 500) return
       const message = getErrorPolicy(error)?.message
       if (!message) return
       toast.error(query.meta?.errorToastMessage ?? message, {
@@ -26,6 +28,7 @@ export const queryClient = new QueryClient({
   }),
   mutationCache: new MutationCache({
     onError(error, _variables, _context, mutation) {
+      if (error instanceof ApiError && (error.status ?? 0) >= 500) return
       const message = getErrorPolicy(error)?.message
       if (!message) return
       toast.error(mutation.meta?.errorToastMessage ?? message, {

@@ -1,12 +1,17 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
+import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { getRouteApi, Link } from "@tanstack/react-router"
 import { Pin } from "lucide-react"
 import { useStorageState } from "react-simplikit"
 
 import { getReadTrendsSuspenseQueryOptions } from "@/api/generated/api"
+import { ApiError } from "@/api/http/error"
+import { getErrorDescription } from "@/api/query/errorPolicy"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
+import { QueryErrorBoundary } from "@/components/ui/QueryErrorBoundary"
+import { Result } from "@/components/ui/Result"
 import { Separator } from "@/components/ui/separator"
 import { Table } from "@/components/ui/table"
 import { Tabs } from "@/components/ui/tabs"
@@ -73,182 +78,197 @@ export function IndustriesPage() {
             </div>
             <div className="flex flex-col gap-8">
               <p className="typo-caption text-muted-foreground">고정 {pinned[market].length}/3</p>
-              <ErrorBoundary key={`${market}-${filter}`} fallback="오류가 발생했습니다">
-                <Suspense data-skeleton fallback="로딩중">
-                  <div className="grid gap-x-7 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
-                    <SuspenseQuery
-                      {...getReadTrendsSuspenseQueryOptions({
-                        country: market === "domestic" ? "KR" : "US",
-                        filter,
-                      })}
-                    >
-                      {({ data: response }) => {
-                        const industries = response.data.toSorted(function pinnedFirst(a, b) {
-                          return (
-                            Number(pinned[market].includes(b.code ?? "")) -
-                            Number(pinned[market].includes(a.code ?? ""))
-                          )
-                        })
-                        return industries.length === 0 ? (
-                          <p className="col-span-full">표시할 산업이 없습니다</p>
-                        ) : (
-                          <>
-                            {industries.map((industry) => {
-                              const isPinned = pinned[market].includes(industry.code ?? "")
-                              return (
-                                <div key={industry.code} className="flex min-w-0 flex-col gap-8">
-                                  <Separator />
-                                  <section className="flex min-w-0 flex-col gap-6">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div>
-                                        <h2 className="typo-subheading">{industry.displayName}</h2>
-                                        <p className="mt-1 typo-caption text-muted-foreground">
-                                          {industry.calculatedAt == null ? (
-                                            "집계 전"
-                                          ) : (
-                                            <>
-                                              평균 등락률 {industry.rank}위 ·{" "}
-                                              {industry.avgChangeRate == null ? (
-                                                "—"
-                                              ) : (
-                                                <PriceNumber
-                                                  value={industry.avgChangeRate}
-                                                  format={{
-                                                    style: "unit",
-                                                    unit: "percent",
-                                                    signDisplay: "exceptZero",
-                                                  }}
-                                                />
-                                              )}
-                                            </>
-                                          )}
-                                        </p>
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        aria-pressed={isPinned}
-                                        disabled={
-                                          !industry.code ||
-                                          (!isPinned && pinned[market].length >= 3)
-                                        }
-                                        onClick={() => {
-                                          setPinned((current) => {
-                                            if (!industry.code) return current
-                                            if (current[market].includes(industry.code)) {
+              <QueryErrorResetBoundary>
+                <QueryErrorBoundary
+                  shouldCatch={ApiError}
+                  resetKeys={[market, filter]}
+                  fallback={({ error, reset }) => (
+                    <Result
+                      role="alert"
+                      title="산업별 동향을 불러오지 못했습니다"
+                      description={getErrorDescription(error)}
+                      button={<Result.Button onClick={reset}>다시 시도</Result.Button>}
+                    />
+                  )}
+                >
+                  <Suspense data-skeleton fallback="로딩중">
+                    <div className="grid gap-x-7 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
+                      <SuspenseQuery
+                        {...getReadTrendsSuspenseQueryOptions({
+                          country: market === "domestic" ? "KR" : "US",
+                          filter,
+                        })}
+                      >
+                        {({ data: response }) => {
+                          const industries = response.data.toSorted(function pinnedFirst(a, b) {
+                            return (
+                              Number(pinned[market].includes(b.code ?? "")) -
+                              Number(pinned[market].includes(a.code ?? ""))
+                            )
+                          })
+                          return industries.length === 0 ? (
+                            <p className="col-span-full">표시할 산업이 없습니다</p>
+                          ) : (
+                            <>
+                              {industries.map((industry) => {
+                                const isPinned = pinned[market].includes(industry.code ?? "")
+                                return (
+                                  <div key={industry.code} className="flex min-w-0 flex-col gap-8">
+                                    <Separator />
+                                    <section className="flex min-w-0 flex-col gap-6">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                          <h2 className="typo-subheading">
+                                            {industry.displayName}
+                                          </h2>
+                                          <p className="mt-1 typo-caption text-muted-foreground">
+                                            {industry.calculatedAt == null ? (
+                                              "집계 전"
+                                            ) : (
+                                              <>
+                                                평균 등락률 {industry.rank}위 ·{" "}
+                                                {industry.avgChangeRate == null ? (
+                                                  "—"
+                                                ) : (
+                                                  <PriceNumber
+                                                    value={industry.avgChangeRate}
+                                                    format={{
+                                                      style: "unit",
+                                                      unit: "percent",
+                                                      signDisplay: "exceptZero",
+                                                    }}
+                                                  />
+                                                )}
+                                              </>
+                                            )}
+                                          </p>
+                                        </div>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          aria-pressed={isPinned}
+                                          disabled={
+                                            !industry.code ||
+                                            (!isPinned && pinned[market].length >= 3)
+                                          }
+                                          onClick={() => {
+                                            setPinned((current) => {
+                                              if (!industry.code) return current
+                                              if (current[market].includes(industry.code)) {
+                                                return {
+                                                  ...current,
+                                                  [market]: current[market].filter(
+                                                    (code) => code !== industry.code,
+                                                  ),
+                                                }
+                                              }
+                                              if (current[market].length >= 3) return current
                                               return {
                                                 ...current,
-                                                [market]: current[market].filter(
-                                                  (code) => code !== industry.code,
-                                                ),
+                                                [market]: [...current[market], industry.code],
                                               }
-                                            }
-                                            if (current[market].length >= 3) return current
-                                            return {
-                                              ...current,
-                                              [market]: [...current[market], industry.code],
-                                            }
-                                          })
-                                        }}
-                                      >
-                                        <Pin className="size-4" aria-hidden="true" />
-                                        {isPinned ? "고정 해제하기" : "상단에 고정하기"}
-                                      </Button>
-                                    </div>
-                                    <Table.Root className="min-w-0 table-fixed">
-                                      <Table.Header>
-                                        <Table.Row>
-                                          <Table.Head>종목</Table.Head>
-                                          <Table.Head className="text-right">현재가</Table.Head>
-                                          <Table.Head className="text-right">등락률</Table.Head>
-                                        </Table.Row>
-                                      </Table.Header>
-                                      <Table.Body>
-                                        {industry.stocks?.map((stock) => (
-                                          <Table.Row key={stock.ticker} className="h-17">
-                                            <Table.Cell>
-                                              <span className="block truncate typo-table-label">
-                                                {stock.stockId == null ? (
-                                                  stock.name
-                                                ) : (
-                                                  <Link
-                                                    to="/stocks/$stockId"
-                                                    params={{ stockId: String(stock.stockId) }}
-                                                    className="hover:text-primary hover:underline"
-                                                  >
-                                                    {stock.name}
-                                                  </Link>
-                                                )}
-                                              </span>
-                                              <span className="typo-caption text-muted-foreground">
-                                                {stock.ticker}
-                                              </span>
-                                            </Table.Cell>
-                                            <Table.Cell className="text-right">
-                                              {stock.price == null ? (
-                                                "—"
-                                              ) : (
-                                                <PriceNumber
-                                                  value={stock.price}
-                                                  format={{
-                                                    style: "currency",
-                                                    currency: industry.currency,
-                                                    currencyDisplay: "code",
-                                                  }}
-                                                  className="text-foreground"
-                                                />
-                                              )}
-                                            </Table.Cell>
-                                            <Table.Cell className="text-right">
-                                              {stock.changeRate == null ? (
-                                                "—"
-                                              ) : (
-                                                <PriceNumber
-                                                  value={stock.changeRate}
-                                                  format={{
-                                                    style: "unit",
-                                                    unit: "percent",
-                                                    signDisplay: "exceptZero",
-                                                  }}
-                                                />
-                                              )}
-                                            </Table.Cell>
-                                          </Table.Row>
-                                        ))}
-                                        {!industry.stocks?.length && (
+                                            })
+                                          }}
+                                        >
+                                          <Pin className="size-4" aria-hidden="true" />
+                                          {isPinned ? "고정 해제하기" : "상단에 고정하기"}
+                                        </Button>
+                                      </div>
+                                      <Table.Root className="min-w-0 table-fixed">
+                                        <Table.Header>
                                           <Table.Row>
-                                            <Table.Cell colSpan={3}>
-                                              {industry.calculatedAt == null
-                                                ? "종목 정보가 아직 준비되지 않았습니다."
-                                                : "표시할 종목이 없습니다."}
-                                            </Table.Cell>
+                                            <Table.Head>종목</Table.Head>
+                                            <Table.Head className="text-right">현재가</Table.Head>
+                                            <Table.Head className="text-right">등락률</Table.Head>
                                           </Table.Row>
-                                        )}
-                                      </Table.Body>
-                                    </Table.Root>
-                                    <Link
-                                      to="/movers"
-                                      search={(previous) => ({
-                                        ...previous,
-                                        industry: industry.code,
-                                        page: 1,
-                                        sort: "ALL",
-                                      })}
-                                      className="self-start typo-label-sm text-primary hover:underline"
-                                    >
-                                      산업 종목 전체 보기
-                                    </Link>
-                                  </section>
-                                </div>
-                              )
-                            })}
-                          </>
-                        )
-                      }}
-                    </SuspenseQuery>
-                  </div>
-                </Suspense>
-              </ErrorBoundary>
+                                        </Table.Header>
+                                        <Table.Body>
+                                          {industry.stocks?.map((stock) => (
+                                            <Table.Row key={stock.ticker} className="relative h-17">
+                                              <Table.Cell>
+                                                <span className="block truncate typo-table-label">
+                                                  {stock.stockId == null ? (
+                                                    stock.name
+                                                  ) : (
+                                                    <Link
+                                                      to="/stocks/$stockId"
+                                                      params={{ stockId: String(stock.stockId) }}
+                                                      className="after:absolute after:inset-0 hover:text-primary hover:underline focus-visible:after:outline-2 focus-visible:after:outline-ring"
+                                                    >
+                                                      {stock.name}
+                                                    </Link>
+                                                  )}
+                                                </span>
+                                                <span className="typo-caption text-muted-foreground">
+                                                  {stock.ticker}
+                                                </span>
+                                              </Table.Cell>
+                                              <Table.Cell className="text-right">
+                                                {stock.price == null ? (
+                                                  "—"
+                                                ) : (
+                                                  <PriceNumber
+                                                    value={stock.price}
+                                                    format={{
+                                                      style: "currency",
+                                                      currency: industry.currency,
+                                                      currencyDisplay: "code",
+                                                    }}
+                                                    className="text-foreground"
+                                                  />
+                                                )}
+                                              </Table.Cell>
+                                              <Table.Cell className="text-right">
+                                                {stock.changeRate == null ? (
+                                                  "—"
+                                                ) : (
+                                                  <PriceNumber
+                                                    value={stock.changeRate}
+                                                    format={{
+                                                      style: "unit",
+                                                      unit: "percent",
+                                                      signDisplay: "exceptZero",
+                                                    }}
+                                                  />
+                                                )}
+                                              </Table.Cell>
+                                            </Table.Row>
+                                          ))}
+                                          {!industry.stocks?.length && (
+                                            <Table.Row>
+                                              <Table.Cell colSpan={3}>
+                                                {industry.calculatedAt == null
+                                                  ? "종목 정보가 아직 준비되지 않았습니다."
+                                                  : "표시할 종목이 없습니다."}
+                                              </Table.Cell>
+                                            </Table.Row>
+                                          )}
+                                        </Table.Body>
+                                      </Table.Root>
+                                      <Link
+                                        to="/movers"
+                                        search={(previous) => ({
+                                          ...previous,
+                                          industry: industry.code,
+                                          page: 1,
+                                          sort: "ALL",
+                                        })}
+                                        className="-mx-3 -my-2 inline-flex min-h-11 items-center self-start px-3 py-2 typo-label-sm text-primary hover:underline"
+                                      >
+                                        산업 종목 전체 보기
+                                      </Link>
+                                    </section>
+                                  </div>
+                                )
+                              })}
+                            </>
+                          )
+                        }}
+                      </SuspenseQuery>
+                    </div>
+                  </Suspense>
+                </QueryErrorBoundary>
+              </QueryErrorResetBoundary>
             </div>
           </section>
         </Tabs.Content>

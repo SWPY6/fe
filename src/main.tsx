@@ -1,5 +1,5 @@
 import { DefaultProps, DefaultPropsProvider, Delay } from "@suspensive/react"
-import { QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider, QueryErrorResetBoundary } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { getRouteSegments, hasMissingPathParams } from "@tanstack/router-core"
 import { OverlayProvider } from "overlay-kit"
@@ -100,7 +100,9 @@ export function App() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <QueryErrorResetBoundary>
+        <App />
+      </QueryErrorResetBoundary>
     </QueryClientProvider>
   </StrictMode>,
 )

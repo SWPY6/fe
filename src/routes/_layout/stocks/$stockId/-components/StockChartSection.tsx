@@ -1,13 +1,18 @@
-import { ErrorBoundary, Suspense } from "@suspensive/react"
+import { Suspense } from "@suspensive/react"
 import { SuspenseQuery } from "@suspensive/react-query"
-import { getRouteApi } from "@tanstack/react-router"
+import { QueryErrorResetBoundary } from "@tanstack/react-query"
+import { Link, getRouteApi } from "@tanstack/react-router"
 import type { IChartApi } from "lightweight-charts"
 import { Fragment, useState } from "react"
 
 import { getChartSuspenseQueryOptions, getQuoteSuspenseQueryOptions } from "@/api/generated/api"
+import { ApiError } from "@/api/http/error"
+import { getErrorDescription } from "@/api/query/errorPolicy"
 import { PriceNumber } from "@/components/domain/PriceNumber"
 import { Button } from "@/components/ui/button"
 import { TradingChart } from "@/components/ui/chart"
+import { QueryErrorBoundary } from "@/components/ui/QueryErrorBoundary"
+import { Result } from "@/components/ui/Result"
 import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 
@@ -102,184 +107,238 @@ export function StockChartSection() {
           </Select.Root>
         </div>
       </div>
-      <Suspense data-skeleton fallback="로딩중">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <div className="min-w-0">
-            <ErrorBoundary
-              key={`${stockId}-${from}-${to}-${interval}`}
-              fallback="오류가 발생했습니다"
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="grid min-h-96 min-w-0">
+          <QueryErrorResetBoundary key={`${stockId}-${from}-${to}-${interval}`}>
+            <QueryErrorBoundary
+              shouldCatch={ApiError}
+              fallback={({ error, reset }) => (
+                <Result
+                  role="alert"
+                  title={
+                    error.data?.error.code === "P002"
+                      ? "종목을 찾을 수 없습니다"
+                      : "차트를 불러오지 못했습니다"
+                  }
+                  description={getErrorDescription(error)}
+                  button={
+                    error.data?.error.code === "P002" ? (
+                      <Result.Button asChild>
+                        <Link to="/movers">다른 종목 찾기</Link>
+                      </Result.Button>
+                    ) : (
+                      <Result.Button onClick={reset}>다시 시도</Result.Button>
+                    )
+                  }
+                />
+              )}
             >
-              <SuspenseQuery
-                {...getChartSuspenseQueryOptions(Number(stockId), { from, to, interval })}
+              <Suspense
+                fallback={
+                  <output className="flex items-center justify-center typo-body-sm text-muted-foreground">
+                    차트를 불러오는 중입니다.
+                  </output>
+                }
               >
-                {({ data: response }) => {
-                  const candles = response.data.candles
-                  const candlestickData = candles.map(({ tradeAt, open, high, low, close }) => ({
-                    time: tradeAt,
-                    open,
-                    high,
-                    low,
-                    close,
-                  }))
-                  const lineData = candles.map(({ tradeAt, close }) => ({
-                    time: tradeAt,
-                    value: close,
-                  }))
-                  const hasData = candles.length > 0
+                <SuspenseQuery
+                  {...getChartSuspenseQueryOptions(Number(stockId), { from, to, interval })}
+                >
+                  {({ data: response }) => {
+                    const candles = response.data.candles
+                    const candlestickData = candles.map(({ tradeAt, open, high, low, close }) => ({
+                      time: tradeAt,
+                      open,
+                      high,
+                      low,
+                      close,
+                    }))
+                    const lineData = candles.map(({ tradeAt, close }) => ({
+                      time: tradeAt,
+                      value: close,
+                    }))
+                    const hasData = candles.length > 0
 
-                  return hasData ? (
-                    <TradingChart.Root
-                      ref={fitContent}
-                      className="h-96 w-full"
-                      aria-label={chartView === "line" ? "라인 차트" : "캔들 차트"}
-                      options={{ localization: { locale: "ko-KR" } }}
-                    >
-                      {chartView === "line" ? (
-                        <TradingChart.Line data={lineData}>
-                          <TradingChart.Tooltip>
-                            {({ time }) => {
-                              const candle = candles.find((item) => item.tradeAt === time)
-                              if (!candle) return null
+                    return hasData ? (
+                      <TradingChart.Root
+                        ref={fitContent}
+                        className="h-96 w-full"
+                        aria-label={chartView === "line" ? "라인 차트" : "캔들 차트"}
+                        options={{ localization: { locale: "ko-KR" } }}
+                      >
+                        {chartView === "line" ? (
+                          <TradingChart.Line data={lineData}>
+                            <TradingChart.Tooltip>
+                              {({ time }) => {
+                                const candle = candles.find((item) => item.tradeAt === time)
+                                if (!candle) return null
 
-                              return (
-                                <div className="grid gap-2">
-                                  <div className="flex items-center justify-between gap-4">
-                                    <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
-                                    <span>{response.data.currency}</span>
+                                return (
+                                  <div className="grid gap-2">
+                                    <div className="flex items-center justify-between gap-4">
+                                      <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
+                                      <span>{response.data.currency}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span>종가</span>
+                                      <PriceNumber
+                                        value={candle.close}
+                                        className="text-inherit"
+                                        format={{ maximumFractionDigits: 2 }}
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="flex items-center justify-between gap-4">
-                                    <span>종가</span>
-                                    <PriceNumber
-                                      value={candle.close}
-                                      className="text-inherit"
-                                      format={{ maximumFractionDigits: 2 }}
-                                    />
-                                  </div>
-                                </div>
-                              )
-                            }}
-                          </TradingChart.Tooltip>
-                        </TradingChart.Line>
-                      ) : (
-                        <TradingChart.Candle data={candlestickData}>
-                          <TradingChart.Tooltip>
-                            {({ time }) => {
-                              const candle = candles.find((item) => item.tradeAt === time)
-                              if (!candle) return null
+                                )
+                              }}
+                            </TradingChart.Tooltip>
+                          </TradingChart.Line>
+                        ) : (
+                          <TradingChart.Candle data={candlestickData}>
+                            <TradingChart.Tooltip>
+                              {({ time }) => {
+                                const candle = candles.find((item) => item.tradeAt === time)
+                                if (!candle) return null
 
-                              return (
-                                <div className="grid gap-2">
-                                  <div className="flex items-center justify-between gap-4">
-                                    <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
-                                    <span>{response.data.currency}</span>
+                                return (
+                                  <div className="grid gap-2">
+                                    <div className="flex items-center justify-between gap-4">
+                                      <time dateTime={candle.tradeAt}>{candle.tradeAt}</time>
+                                      <span>{response.data.currency}</span>
+                                    </div>
+                                    <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                      {[
+                                        { label: "시가", value: candle.open },
+                                        { label: "고가", value: candle.high },
+                                        { label: "저가", value: candle.low },
+                                        { label: "종가", value: candle.close },
+                                      ].map(({ label, value }) => (
+                                        <Fragment key={label}>
+                                          <dt>{label}</dt>
+                                          <dd className="text-right">
+                                            <PriceNumber
+                                              value={value}
+                                              className="text-inherit"
+                                              format={{ maximumFractionDigits: 2 }}
+                                            />
+                                          </dd>
+                                        </Fragment>
+                                      ))}
+                                    </dl>
                                   </div>
-                                  <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                    {[
-                                      { label: "시가", value: candle.open },
-                                      { label: "고가", value: candle.high },
-                                      { label: "저가", value: candle.low },
-                                      { label: "종가", value: candle.close },
-                                    ].map(({ label, value }) => (
-                                      <Fragment key={label}>
-                                        <dt>{label}</dt>
-                                        <dd className="text-right">
-                                          <PriceNumber
-                                            value={value}
-                                            className="text-inherit"
-                                            format={{ maximumFractionDigits: 2 }}
-                                          />
-                                        </dd>
-                                      </Fragment>
-                                    ))}
-                                  </dl>
-                                </div>
-                              )
-                            }}
-                          </TradingChart.Tooltip>
-                        </TradingChart.Candle>
-                      )}
-                    </TradingChart.Root>
-                  ) : (
-                    <p className="flex h-96 items-center justify-center typo-body-sm text-muted-foreground">
-                      선택한 기간의 차트 데이터가 없습니다. 조건을 변경해주세요.
-                    </p>
-                  )
-                }}
-              </SuspenseQuery>
-            </ErrorBoundary>
-          </div>
-          <ErrorBoundary key={`indicators-${stockId}`} fallback="오류가 발생했습니다">
-            <dl>
-              <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
-                {({ data: response }) => (
-                  <>
-                    {[
-                      {
-                        label: "전일 종가",
-                        value: response.data.indicators?.previousClose,
-                        currency: response.data.currency,
-                      },
-                      {
-                        label: "시가",
-                        value: response.data.indicators?.open,
-                        currency: response.data.currency,
-                      },
-                      {
-                        label: "고가",
-                        value: response.data.indicators?.high,
-                        currency: response.data.currency,
-                      },
-                      {
-                        label: "저가",
-                        value: response.data.indicators?.low,
-                        currency: response.data.currency,
-                      },
-                      { label: "거래량(주)", value: response.data.indicators?.volume },
-                      {
-                        label: "평소 거래량 대비(배)",
-                        value: response.data.indicators?.volumeRatio20d,
-                      },
-                      {
-                        label: "시가총액",
-                        value: response.data.indicators?.marketCap,
-                        currency: response.data.currency,
-                      },
-                      {
-                        label: "거래대금",
-                        value: response.data.indicators?.tradingValue,
-                        currency: response.data.currency,
-                      },
-                    ].map((metric) => (
-                      <Fragment key={metric.label}>
-                        <div className="flex items-center justify-between gap-3 py-4 typo-body-sm">
-                          <dt className="text-muted-foreground">{metric.label}</dt>
-                          <dd className="text-right">
-                            {metric.value == null ? (
-                              "—"
-                            ) : (
-                              <>
-                                <PriceNumber
-                                  value={metric.value}
-                                  className="text-foreground"
-                                  format={{
-                                    notation: metric.currency ? "compact" : "standard",
-                                  }}
-                                />{" "}
-                                {metric.currency}
-                              </>
-                            )}
-                          </dd>
-                        </div>
-                        <Separator />
-                      </Fragment>
-                    ))}
-                  </>
-                )}
-              </SuspenseQuery>
-            </dl>
-          </ErrorBoundary>
+                                )
+                              }}
+                            </TradingChart.Tooltip>
+                          </TradingChart.Candle>
+                        )}
+                      </TradingChart.Root>
+                    ) : (
+                      <p className="flex h-96 items-center justify-center typo-body-sm text-muted-foreground">
+                        선택한 기간의 차트 데이터가 없습니다. 조건을 변경해주세요.
+                      </p>
+                    )
+                  }}
+                </SuspenseQuery>
+              </Suspense>
+            </QueryErrorBoundary>
+          </QueryErrorResetBoundary>
         </div>
-      </Suspense>
+        <QueryErrorResetBoundary>
+          <QueryErrorBoundary
+            shouldCatch={ApiError}
+            resetKeys={[stockId]}
+            fallback={({ error, reset }) => (
+              <Result
+                role="alert"
+                title={
+                  error.data?.error.code === "P002"
+                    ? "종목을 찾을 수 없습니다"
+                    : "주요 지표를 불러오지 못했습니다"
+                }
+                description={getErrorDescription(error)}
+                button={
+                  error.data?.error.code === "P002" ? (
+                    <Result.Button asChild>
+                      <Link to="/movers">다른 종목 찾기</Link>
+                    </Result.Button>
+                  ) : (
+                    <Result.Button onClick={reset}>다시 시도</Result.Button>
+                  )
+                }
+              />
+            )}
+          >
+            <Suspense data-skeleton fallback="로딩중">
+              <dl>
+                <SuspenseQuery {...getQuoteSuspenseQueryOptions(Number(stockId))}>
+                  {({ data: response }) => (
+                    <>
+                      {[
+                        {
+                          label: "전일 종가",
+                          value: response.data.indicators?.previousClose,
+                          currency: response.data.currency,
+                        },
+                        {
+                          label: "시가",
+                          value: response.data.indicators?.open,
+                          currency: response.data.currency,
+                        },
+                        {
+                          label: "고가",
+                          value: response.data.indicators?.high,
+                          currency: response.data.currency,
+                        },
+                        {
+                          label: "저가",
+                          value: response.data.indicators?.low,
+                          currency: response.data.currency,
+                        },
+                        { label: "거래량(주)", value: response.data.indicators?.volume },
+                        {
+                          label: "평소 거래량 대비(배)",
+                          value: response.data.indicators?.volumeRatio20d,
+                        },
+                        {
+                          label: "시가총액",
+                          value: response.data.indicators?.marketCap,
+                          currency: response.data.currency,
+                        },
+                        {
+                          label: "거래대금",
+                          value: response.data.indicators?.tradingValue,
+                          currency: response.data.currency,
+                        },
+                      ].map((metric) => (
+                        <Fragment key={metric.label}>
+                          <div className="flex items-center justify-between gap-3 py-4 typo-body-sm">
+                            <dt className="text-muted-foreground">{metric.label}</dt>
+                            <dd className="text-right">
+                              {metric.value == null ? (
+                                "—"
+                              ) : (
+                                <>
+                                  <PriceNumber
+                                    value={metric.value}
+                                    className="text-foreground"
+                                    format={{
+                                      notation: metric.currency ? "compact" : "standard",
+                                    }}
+                                  />{" "}
+                                  {metric.currency}
+                                </>
+                              )}
+                            </dd>
+                          </div>
+                          <Separator />
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+                </SuspenseQuery>
+              </dl>
+            </Suspense>
+          </QueryErrorBoundary>
+        </QueryErrorResetBoundary>
+      </div>
     </section>
   )
 }
